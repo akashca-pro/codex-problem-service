@@ -68,5 +68,5 @@ export interface IProblem extends Document {
     testcaseCollection : ITestCaseCollection;
     examples : IExamples;
     active : boolean;
-    solutionCode : ITemplateSolution[];
+    solutionCode : ITemplateSolution[] | null;
 }

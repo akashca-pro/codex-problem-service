@@ -30,7 +30,7 @@ export interface IFailedTestCase {
  */
 export interface IExecutionResult {
     stats : IStats;
-    failedTestCase : IFailedTestCase
+    failedTestCase : IFailedTestCase | null
 }
 
 /**
@@ -41,15 +41,15 @@ export interface IExecutionResult {
 export interface ISubmission extends Document {
     problemId : Types.ObjectId;
     userId : string;
-    country : string;
-    battleId : string;
+    country : string | null;
+    battleId : string | null;
     title : string;
     score : number;
     language : Language;
     userCode : string;
-    executionResult : IExecutionResult;
-    executionTime : number;
-    memoryUsage : number;
+    executionResult : IExecutionResult | null;
+    executionTime : number | null;
+    memoryUsage : number | null;
     difficulty : Difficulty;
     isFirst : boolean;
 }
