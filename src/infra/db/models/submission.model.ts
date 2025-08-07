@@ -24,7 +24,7 @@ const StatsSchema = new Schema<IStats>(
 const ExecutionSchema = new Schema<IExecutionResult>(
     {
         stats : { type : StatsSchema, required : true },
-        failedTestCase : { type : FailedTestCaseSchema, required : true }
+        failedTestCase : { type : FailedTestCaseSchema, required : false, default : null }
     },
     {_id : false}
 )

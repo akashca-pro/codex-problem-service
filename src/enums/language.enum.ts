@@ -8,14 +8,3 @@ enum Language {
     PYTHON = 'python',
     GO = 'go'
 }
-
-/**
- * Enum representing the difficulty of the problem.
- * 
- * @enum
- */
-enum Difficulty {
-    EASY = 'easy',
-    MEDIUM = 'medium',
-    HARD = 'hard'
-}
