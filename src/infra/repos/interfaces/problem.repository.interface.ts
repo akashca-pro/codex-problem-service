@@ -1,6 +1,11 @@
 import { IExample, IProblem, ISolutionCode, IStarterCode, ITestCase } from "@/infra/db/types/problem";
 import { BaseRepository } from "../base.repository";
 
+/**
+ * The interface representing the structure of problem repository.
+ * 
+ * @interface
+ */
 export interface IProblemRepository extends BaseRepository <IProblem>{
 
     /**

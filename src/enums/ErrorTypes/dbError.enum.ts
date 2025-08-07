@@ -10,6 +10,6 @@ enum DbErrorType {
 
     TestCaseNotFound = 'Testcase not found.',
 
-    
+    SubmissionNotFound = 'Submission data not found.'
 }
 

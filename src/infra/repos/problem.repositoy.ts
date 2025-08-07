@@ -3,7 +3,13 @@ import { IExample, IProblem, ISolutionCode, IStarterCode, ITestCase } from "../d
 import { BaseRepository } from "./base.repository";
 import { IProblemRepository } from "./interfaces/problem.repository.interface";
 
-
+/**
+ * This class implements the problem repository.
+ * 
+ * @class
+ * @extends {BaseRepository}
+ * @implements {IProblemRepository}
+ */
 export class ProblemRepository extends BaseRepository<IProblem> implements IProblemRepository {
 
     constructor(){
