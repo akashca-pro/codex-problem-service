@@ -34,10 +34,23 @@ export interface IExamples {
 /**
  * Interface representing the structure of a code template to be shown in the user end.
  * 
+ * @interface
  */
 export interface IStarterCode {
     language : Language;
     code : string;
+}
+
+/**
+ * Interface representing the structure of template solution of the code.
+ * 
+ * @interface
+ */
+export interface ITemplateSolution {
+    language : Language;
+    code : string;
+    executionTime : number;
+    memoryTaken : number;
 }
 
 /**
@@ -55,6 +68,5 @@ export interface IProblem extends Document {
     testcaseCollection : ITestCaseCollection;
     examples : IExamples;
     active : boolean;
-    createdAt : Date;
-    updatedAt : Date;
+    solutionCode : ITemplateSolution[];
 }

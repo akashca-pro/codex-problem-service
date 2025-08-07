@@ -1,5 +1,5 @@
 import mongoose, {Schema} from "mongoose";
-import { IExamples, IProblem, IStarterCode, ITestCase, ITestCaseCollection } from "../types/problem";
+import { IExamples, IProblem, IStarterCode, ITemplateSolution, ITestCase, ITestCaseCollection } from "../types/problem";
 
 const StarterCodeSchema = new Schema<IStarterCode>(
     {
@@ -32,6 +32,15 @@ const ExamplesSchema = new Schema<IExamples>(
     }
 )
 
+const SolutionCodeSchema = new Schema<ITemplateSolution>(
+    {
+        language : { type : String, required : true, enum : Object.values(Language) },
+        code : { type : String, required : true },
+        executionTime : { type : Number , required : false, default : undefined },
+        memoryTaken : { type : Number, required : false, default : undefined }
+    }
+)
+
 /**
  * Mongodb schema for problem collection.
  * 
@@ -46,6 +55,7 @@ const ProblemSchema = new Schema<IProblem>(
         constraints: { type: [String], required: true },
         starterCode: { type: [StarterCodeSchema], required: true },
         testcaseCollection: { type: TestCaseCollectionSchema, required: true },
+        solutionCode : { type : [SolutionCodeSchema], required : false, default : undefined },
         examples: { type: ExamplesSchema, required: true },
         active: { type: Boolean, default: true },
     },
