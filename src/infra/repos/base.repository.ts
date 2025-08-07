@@ -8,10 +8,10 @@ import { Model, Document, FilterQuery, UpdateQuery } from 'mongoose';
  */
 export abstract class BaseRepository <T extends Document> {
 
-    #_model : Model<T>;
+    protected _model : Model<T>;
 
     constructor(model : Model<T>){
-        this.#_model = model;
+        this._model = model;
     }
 
     /**
@@ -20,16 +20,16 @@ export abstract class BaseRepository <T extends Document> {
      * @returns The created document.
      */
     async create(data : Partial<T>) : Promise<T> {
-        return this.#_model.create(data);
+        return this._model.create(data);
     }
 
     /**
      * Finds a document by its ID.
-     * @param id - The ID of the document.
+     * @param documentId - The ID of the document.
      * @returns The found document or null.
      */
-    async findById(id : string) : Promise<T | null> {
-        return this.#_model.findById(id);
+    async findById(documentId : string) : Promise<T | null> {
+        return this._model.findById(documentId);
     }
     
     /**
@@ -38,7 +38,7 @@ export abstract class BaseRepository <T extends Document> {
      * @returns The found document or null.
      */
     async findOne(filter : FilterQuery<T>) : Promise<T | null> {
-        return this.#_model.findOne(filter);
+        return this._model.findOne(filter);
     }
 
     /**
@@ -47,26 +47,51 @@ export abstract class BaseRepository <T extends Document> {
      * @returns An array of found documents.
      */
     async find(filter : FilterQuery<T>) : Promise<T[]> {
-        return this.#_model.find(filter)
+        return this._model.find(filter)
     }
 
     /**
      * Updates a document by its ID.
-     * @param id - The ID of the document to update.
+     * @param documentId - The ID of the document to update.
      * @param update - The update query.
-     * @returns The updated document or null.
      */
-    async update(id : string, update : UpdateQuery<T>) : Promise<T | null> {
-        return this.#_model.findByIdAndUpdate(id, update, { new : true });
+    async update(documentId : string, update : UpdateQuery<T>) : Promise<void> {
+        await this._model.findByIdAndUpdate(documentId, update, { new : true });
+    }
+
+    /**
+     * Updates object that inside an array which itself is an object (field in the db) .
+     * @param documentId - The ID of the document to update.
+     * @param arrayName - The field name which itself an array of objects.
+     * @param itemId - The _id if the item inside the array.
+     * @param updatedFields - The object contains updated fields
+     */
+    async updateEmbeddedArrayItems(
+        documentId : string,
+        arrayName : string,
+        itemId : string,
+        updatedFields : Record<string,any>
+    ) : Promise<void> {
+
+        const updateQuery : Record<string,any> = {};
+
+        for(const [key, value] of Object.entries(updatedFields)){
+            updateQuery[`${arrayName}.$.${key}`] = value;
+        }
+
+       await this._model.updateOne(
+        {_id : documentId, [`${arrayName}._id`] : itemId },
+        { $set : updateQuery }
+       )
     }
 
     /**
      * Deletes a document by its ID.
-     * @param id - The ID of the document to delete.
+     * @param documentId - The ID of the document to delete.
      * @returns The deleted document or null.
      */
-    async delete(id: string): Promise<T | null> {
-        return this.#_model.findByIdAndDelete(id).exec();
+    async delete(documentId: string): Promise<T | null> {
+        return this._model.findByIdAndDelete(documentId).exec();
     }
 
 }

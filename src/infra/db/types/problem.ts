@@ -6,6 +6,7 @@ import { Document } from "mongoose";
  * @interface
  */
 export interface ITestCase {
+    _id : string;
     input : string;
     output : string;
 }
@@ -25,7 +26,8 @@ export interface ITestCaseCollection {
  * 
  * @interface
  */
-export interface IExamples {
+export interface IExample {
+    _id : string;
     input : string;
     output : string;
     explanation : string;
@@ -37,6 +39,7 @@ export interface IExamples {
  * @interface
  */
 export interface IStarterCode {
+    _id : string;
     language : Language;
     code : string;
 }
@@ -46,7 +49,7 @@ export interface IStarterCode {
  * 
  * @interface
  */
-export interface ITemplateSolution {
+export interface ISolutionCode {
     language : Language;
     code : string;
     executionTime : number;
@@ -64,9 +67,9 @@ export interface IProblem extends Document {
     difficulty : Difficulty
     tags : string[];
     constraints : string[];
-    starterCode : IStarterCode[];
+    starterCodes : IStarterCode[];
     testcaseCollection : ITestCaseCollection;
-    examples : IExamples;
+    examples : IExample[];
     active : boolean;
-    solutionCode : ITemplateSolution[] | null;
+    solutionCodes : ISolutionCode[] | null;
 }

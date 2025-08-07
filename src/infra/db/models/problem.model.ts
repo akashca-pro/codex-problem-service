@@ -1,5 +1,5 @@
 import mongoose, {Schema} from "mongoose";
-import { IExamples, IProblem, IStarterCode, ITemplateSolution, ITestCase, ITestCaseCollection } from "../types/problem";
+import { IExample, IProblem, IStarterCode, ISolutionCode, ITestCase, ITestCaseCollection } from "../types/problem";
 
 const StarterCodeSchema = new Schema<IStarterCode>(
     {
@@ -24,7 +24,7 @@ const TestCaseCollectionSchema = new Schema<ITestCaseCollection>(
     {_id : false}
 )
 
-const ExamplesSchema = new Schema<IExamples>(
+const ExamplesSchema = new Schema<IExample>(
     {
         input : { type : String, required : true },
         output : { type : String, required : true },
@@ -32,7 +32,7 @@ const ExamplesSchema = new Schema<IExamples>(
     }
 )
 
-const SolutionCodeSchema = new Schema<ITemplateSolution>(
+const SolutionCodeSchema = new Schema<ISolutionCode>(
     {
         language : { type : String, required : true, enum : Object.values(Language) },
         code : { type : String, required : true },
@@ -53,10 +53,10 @@ const ProblemSchema = new Schema<IProblem>(
         difficulty: { type: String, enum: Object.values(Difficulty), required: true },
         tags: { type: [String], required: true },
         constraints: { type: [String], required: true },
-        starterCode: { type: [StarterCodeSchema], required: true },
+        starterCodes: { type: [StarterCodeSchema], required: true },
         testcaseCollection: { type: TestCaseCollectionSchema, required: true },
-        solutionCode : { type : [SolutionCodeSchema], required : false, default : undefined },
-        examples: { type: ExamplesSchema, required: true },
+        solutionCodes : { type : [SolutionCodeSchema], required : false, default : undefined },
+        examples: { type: [ExamplesSchema], required: true },
         active: { type: Boolean, default: true },
     },
 
