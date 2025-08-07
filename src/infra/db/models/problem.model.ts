@@ -1,5 +1,5 @@
 import mongoose, {Schema} from "mongoose";
-import { IExample, IProblem, IStarterCode, ISolutionCode, ITestCase, ITestCaseCollection } from "../types/problem";
+import { IExample, IProblem, IStarterCode, ISolutionCode, ITestCase, ITestCaseCollection } from "../interface/problem.interface";
 
 const StarterCodeSchema = new Schema<IStarterCode>(
     {

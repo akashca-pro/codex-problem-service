@@ -1,4 +1,4 @@
-import { IExecutionResult } from "@/infra/db/types/submission";
+import { IExecutionResult } from "@/infra/db/interface/submission.interface";
 
 /**
  * Interface representing the structure of the submission repository.

@@ -5,6 +5,6 @@
  * @enum
  */
 enum TestCaseCollectionType {
-    RUN = "run",
-    SUBMIT = "submit"
+    RUN = "RUN",
+    SUBMIT = "SUBMIT"
 }

@@ -14,5 +14,5 @@ export const config : Config = {
     REDIS_URL : process.env.REDIS_URL || '',
     GRPC_SERVER_URL : process.env.GRPC_SERVER_URL || '',
     METRICS_PORT : Number(process.env.METRICS_PORT) || 9102,
-    SERVICE_NAME : process.env.SERVICE_NAME || 'PB_SB_LD_SERVICE'
+    SERVICE_NAME : process.env.SERVICE_NAME || 'PROBLEM_SERVICE'
 }

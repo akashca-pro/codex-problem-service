@@ -4,7 +4,7 @@
  * @enum
  */
 enum Language {
-    JAVASCRIPT = 'javascript',
-    PYTHON = 'python',
-    GO = 'go'
+    JAVASCRIPT = 'JAVASCRIPT',
+    PYTHON = 'PYTHON',
+    GO = 'GO'
 }

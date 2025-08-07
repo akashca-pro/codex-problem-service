@@ -4,7 +4,7 @@
  * @enum
  */
 enum Difficulty {
-    EASY = 'easy',
-    MEDIUM = 'medium',
-    HARD = 'hard'
+    EASY = 'EASY',
+    MEDIUM = 'MEDIUM',
+    HARD = 'HARD'
 }

@@ -1,5 +1,5 @@
 import { ProblemModel } from "../db/models/problem.model";
-import { IExample, IProblem, ISolutionCode, IStarterCode, ITestCase } from "../db/types/problem";
+import { IExample, IProblem, ISolutionCode, IStarterCode, ITestCase } from "../db/interface/problem.interface";
 import { BaseRepository } from "./base.repository";
 import { IProblemRepository } from "./interfaces/problem.repository.interface";
 

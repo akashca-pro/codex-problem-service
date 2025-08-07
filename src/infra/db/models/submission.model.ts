@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IExecutionResult, IFailedTestCase, IStats, ISubmission } from "../types/submission";
+import { IExecutionResult, IFailedTestCase, IStats, ISubmission } from "../interface/submission.interface";
 
 
 const FailedTestCaseSchema = new Schema<IFailedTestCase>(
