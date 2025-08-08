@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
 import { config } from '.';
 import logger from '@akashcapro/codex-shared-utils/utils/logger';
-import { RedisEvents } from './enums/redis';
+import { RedisEvents } from '../enums/redis.enum';
 
 class RedisClient {
     private static _instance : Redis

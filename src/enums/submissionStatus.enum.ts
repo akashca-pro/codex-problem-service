@@ -4,8 +4,8 @@
  * @enum
  */
 enum SubmissionStatus {
-    ACCEPTED = 'ACCEPTED',
-    FAILED = 'FAILED',
-    PENDING = 'PENDING'
+    ACCEPTED = 'accepted',
+    FAILED = 'failed',
+    PENDING = 'pending'
 }
 

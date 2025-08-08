@@ -17,8 +17,8 @@ const TestCaseSchema = new Schema<ITestCase>(
 
 const TestCaseCollectionSchema = new Schema<ITestCaseCollection>(
     {
-        run : { type : [TestCaseSchema], required : true },
-        submit : { type : [TestCaseSchema], required : true }
+        run : { type : [TestCaseSchema], required : true, default : [] },
+        submit : { type : [TestCaseSchema], required : true , default : [] }
     },
 
     {_id : false}
@@ -48,19 +48,24 @@ const SolutionCodeSchema = new Schema<ISolutionCode>(
  */
 const ProblemSchema = new Schema<IProblem>(
     {
-        title: { type: String, required: true },
+        title: { type: String, required: true , unique : true},
         description: { type: String, required: true },
         difficulty: { type: String, enum: Object.values(Difficulty), required: true },
         tags: { type: [String], required: true },
-        constraints: { type: [String], required: true },
-        starterCodes: { type: [StarterCodeSchema], required: true },
-        testcaseCollection: { type: TestCaseCollectionSchema, required: true },
-        solutionCodes : { type : [SolutionCodeSchema], required : false, default : undefined },
-        examples: { type: [ExamplesSchema], required: true },
+        constraints: { type: [String], required: false , default : []},
+        starterCodes: { type: [StarterCodeSchema], required: false, default : [] },
+        testcaseCollection: { type: TestCaseCollectionSchema, required: false, default : {} },
+        solutionCodes : { type : [SolutionCodeSchema], required : false , default : []},
+        examples: { type: [ExamplesSchema], required: false  , default : []},
         active: { type: Boolean, default: true },
     },
 
     { timestamps : true }
 )
+
+ProblemSchema.index({ createdAt : -1 });
+ProblemSchema.index({ difficulty: 1, createdAt: -1 });
+ProblemSchema.index({ title : "text" });
+ProblemSchema.index({ tags : 1 });
 
 export const ProblemModel = mongoose.model<IProblem>('Problem',ProblemSchema);
