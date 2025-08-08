@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import TYPES from "@/config/inversify/types";
-import { IUpdateProblemService } from "./interfaces/updateProblem.service.interface";
+import { IUpdateBasicProblemDetailsService } from "./interfaces/updateProblem.service.interface";
 import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
 import { IUpdateProblemRequestDTO } from "@/dtos/problem/updateProblemRequestDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
@@ -9,10 +9,10 @@ import { ResponseDTO } from "@/dtos/ResponseDTO";
  * The implementation of the update problem service.
  * 
  * @class
- * @implements {IUpdateProblemService}
+ * @implements {IUpdateBasicProblemDetailsService}
  */
 @injectable()
-export class UpdateProblemService implements IUpdateProblemService {
+export class UpdateProblemService implements IUpdateBasicProblemDetailsService {
 
     #_problemRepo : IProblemRepository
 
@@ -33,30 +33,33 @@ export class UpdateProblemService implements IUpdateProblemService {
      * Executes the update problem service.
      * 
      * @async
-     * @param {IUpdateProblemRequestDTO} data - The data to be update
+     * @param {IUpdateProblemRequestDTO} updatedData - The data to be update
      */
-    async execute(data: IUpdateProblemRequestDTO): Promise<ResponseDTO> {
+    async execute(
+        problemId : string,
+        updatedData: IUpdateProblemRequestDTO
+    ): Promise<ResponseDTO> {
         
-        const problemExist = await this.#_problemRepo.findById(data._id);
+        const updatedQuery : IUpdateProblemRequestDTO = {};
 
-        if(!problemExist){
+        if(updatedData.title) updatedQuery.title = updatedData.title;
+        if(updatedData.description) updatedQuery.description = updatedData.description;
+        if(updatedData.difficulty) updatedQuery.difficulty = updatedData.difficulty;
+        if(updatedData.tags) updatedQuery.tags = updatedData.tags;
+        if(updatedData.constraints) updatedQuery.constraints = updatedData.constraints;
+        if(updatedData.questionId) updatedQuery.questionId = updatedData.questionId;
+        if(updatedData.examples) updatedQuery.examples = updatedData.examples;
+        if(updatedData.starterCodes) updatedQuery.starterCodes = updatedData.starterCodes;
+        if(updatedData.active) updatedQuery.active = updatedData.active;
+
+        const updatedProblem = await this.#_problemRepo.update(problemId,updatedQuery);
+
+        if(!updatedProblem){
             return {
                 data : null,
-                success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
+                success : false
             }
         }
-
-        const updatingData = {
-            questionId : data.questionId,
-            title : data.title,
-            description : data.description,
-            difficuly : data.difficuly,
-            active : data.active,
-            tags : data.tags
-        }
-
-        await this.#_problemRepo.update(data._id,updatingData);
 
         return {
             data : null,

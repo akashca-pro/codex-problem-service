@@ -8,11 +8,10 @@ const TYPES = {
     // Problem services
 
     ICreateProblemService : Symbol.for("ICreateProblemService"),
-    IUpdateProblemService : Symbol.for("IUpdateProblemService"),
+    IUpdateBasicProblemDetailsService : Symbol.for("IUpdateBasicProblemDetailsService"),
     IGetProblemService : Symbol.for("IGetProblemService"),
     IListProblemService : Symbol.for("IListProblemService"),
-    IAddTagsService : Symbol.for("IAddTagsService"),
-    
+
 
 }
 

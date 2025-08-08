@@ -14,15 +14,13 @@ import { SubmissionRepository } from '@/infra/repos/submission.repository';
 
 import { ICreateProblemService } from '@/services/problem/interfaces/createProblem.service.interface';
 
-import { IUpdateProblemService } from '@/services/problem/interfaces/updateProblem.service.interface';
+import { IUpdateBasicProblemDetailsService } from '@/services/problem/interfaces/updateProblem.service.interface';
 import { CreateProblemService } from '@/services/problem/createProblem.service';
 import { UpdateProblemService } from '@/services/problem/updateProblem.service';
 import { IGetProblemService } from '@/services/problem/interfaces/getProblem.service.interface';
 import { GetProblemService } from '@/services/problem/getProblem.service';
 import { IListProblemService } from '@/services/problem/interfaces/ListProblem.service.interface';
 import { ListProblemService } from '@/services/problem/ListProblem.service';
-import { IAddTagsService } from '@/services/problem/interfaces/addTags.service.interface';
-import { AddTagsService } from '@/services/problem/addTags.service';
 
 // Submission Services
 
@@ -46,7 +44,7 @@ container
     .bind<ICreateProblemService>(TYPES.ICreateProblemService)
     .to(CreateProblemService);
 container
-    .bind<IUpdateProblemService>(TYPES.IUpdateProblemService)
+    .bind<IUpdateBasicProblemDetailsService>(TYPES.IUpdateBasicProblemDetailsService)
     .to(UpdateProblemService);
 container
     .bind<IGetProblemService>(TYPES.IGetProblemService)
@@ -54,7 +52,4 @@ container
 container
     .bind<IListProblemService>(TYPES.IListProblemService)
     .to(ListProblemService);
-container
-    .bind<IAddTagsService>(TYPES.IAddTagsService)
-    .to(AddTagsService);
 

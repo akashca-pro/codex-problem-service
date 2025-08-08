@@ -6,13 +6,14 @@ import { ResponseDTO } from "@/dtos/ResponseDTO";
  * 
  * @interface
  */
-export interface IUpdateProblemService {
+export interface IUpdateBasicProblemDetailsService {
 
     /**
      * 
-     * @param {IUpdateProblemRequestDTO} data - The updated data for problem from user.
+     * @param problemId - The id of the problem document.
+     * @param {IUpdateProblemRequestDTO} updatedData - The updated data for problem from user.
      * @returns {ResponseDTO} - The response data.
      */
-    execute(data : IUpdateProblemRequestDTO ) : Promise<ResponseDTO>
+    execute(problemId : string ,updatedData : IUpdateProblemRequestDTO ) : Promise<ResponseDTO>
 
 }

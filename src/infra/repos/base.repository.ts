@@ -1,4 +1,5 @@
 import { Model, Document, FilterQuery, UpdateQuery } from 'mongoose';
+import { IProblem } from '../db/interface/problem.interface';
 
 /**
  * Abstract base class for a generic repository.
@@ -77,8 +78,8 @@ export abstract class BaseRepository <T extends Document> {
      * @param documentId - The ID of the document to update.
      * @param update - The update query.
      */
-    async update(documentId : string, update : UpdateQuery<T>) : Promise<void> {
-        await this._model.findByIdAndUpdate(documentId, update, { new : true });
+    async update(documentId : string, update : UpdateQuery<T>) : Promise<IProblem | null> {
+        return await this._model.findByIdAndUpdate(documentId, update, { new : true });
     }
 
     /**
