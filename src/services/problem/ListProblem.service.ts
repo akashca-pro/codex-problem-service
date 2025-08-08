@@ -37,7 +37,7 @@ export class ListProblemService implements IListProblemService {
         if(data.questionId) filter.questionId = data.questionId;
         if(data.tag) filter.tags = data.tag;
         if(data.active) filter.active = data.active;
-        if(data.search) filter.title = { $regex : data.search , $options : 'i' };
+        if (data.search) filter.$text = { $search: data.search };
 
         const skip = (data.page - 1) * data.limit;
 
