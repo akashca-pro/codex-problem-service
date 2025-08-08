@@ -81,9 +81,6 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         testCaseCollectionType: TestCaseCollectionType,
         testCases : ITestCase[]
     ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
         await this.update(problemId, {
             $push: {
                 [`testcaseCollection.${testCaseCollectionType}`]: {
@@ -97,9 +94,6 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         problemId: string, 
         constraints: string[]
     ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
         await this.update(problemId,{
             $push : {
                 constraints : { $each : constraints }
@@ -110,9 +104,6 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
     async removeConstraint(
         problemId: string
     ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
         await this.update(problemId,{
             $pop : { constraints : 1 }
         })
@@ -122,9 +113,6 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         problemId: string, 
         tags: string[]
     ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
         await this.update(problemId,{
             $push : { 
                 tags : { $each : tags }
