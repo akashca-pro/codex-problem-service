@@ -48,6 +48,7 @@ const SolutionCodeSchema = new Schema<ISolutionCode>(
  */
 const ProblemSchema = new Schema<IProblem>(
     {
+        questionId : { type : String, required : true, unique : true },
         title: { type: String, required: true , unique : true},
         description: { type: String, required: true },
         difficulty: { type: String, enum: Object.values(Difficulty), required: true },
@@ -67,5 +68,6 @@ ProblemSchema.index({ createdAt : -1 });
 ProblemSchema.index({ difficulty: 1, createdAt: -1 });
 ProblemSchema.index({ title : "text" });
 ProblemSchema.index({ tags : 1 });
+ProblemSchema.index({ questionId : 1 });
 
 export const ProblemModel = mongoose.model<IProblem>('Problem',ProblemSchema);

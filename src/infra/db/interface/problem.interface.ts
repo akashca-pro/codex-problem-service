@@ -62,6 +62,7 @@ export interface ISolutionCode {
  * @interface
  */
 export interface IProblem extends Document {
+    questionId : string;
     title : string;
     description : string;
     difficulty : Difficulty
