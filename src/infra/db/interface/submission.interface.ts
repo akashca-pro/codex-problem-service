@@ -44,6 +44,7 @@ export interface ISubmission extends Document {
     country : string | null;
     battleId : string | null;
     title : string;
+    status : SubmissionStatus;
     score : number;
     language : Language;
     userCode : string;
