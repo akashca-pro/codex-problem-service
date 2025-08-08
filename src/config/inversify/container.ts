@@ -15,6 +15,7 @@ import { SubmissionRepository } from '@/infra/repos/submission.repository';
 import { ICreateProblemService } from '@/services/problem/interfaces/createProblem.service.interface';
 
 import { IUpdateProblemService } from '@/services/problem/interfaces/updateProblem.service.interface';
+import { CreateProblemService } from '@/services/problem/createProblem.service';
 
 // Submission Services
 
@@ -34,6 +35,8 @@ container
 /**
  * Problem Services
  */
-
+container
+    .bind<ICreateProblemService>(TYPES.ICreateProblemService)
+    .to(CreateProblemService);
 
     

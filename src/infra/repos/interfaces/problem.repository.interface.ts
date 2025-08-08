@@ -9,6 +9,16 @@ import { BaseRepository } from "../base.repository";
 export interface IProblemRepository extends BaseRepository <IProblem>{
 
     /**
+     * This method is responsible for get problem data based on provided title.
+     * 
+     * @param title - The of the problem
+     * @returns {IProblem | null} - The problem data or null if not found.
+     */
+    findByTitle(
+        title : string
+    ) : Promise<IProblem | null>
+
+    /**
      * This method is responsible for adding testcase to the specific field (run & submit).
      * 
      * @async

@@ -16,6 +16,10 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         super(ProblemModel)
     }
 
+    async findByTitle(title: string): Promise<IProblem | null> {
+        return await this._model.findOne({ title })
+    }
+
     async addTestCase(
         problemId: string, 
         testCaseCollectionType: TestCaseCollectionType, 
