@@ -71,11 +71,11 @@ export interface IProblemRepository extends BaseRepository <IProblem>{
      *
      * @async
      * @param problemId - The id of the document.
-     * @param constraint - The constraint string to be added.
+     * @param constraints[] - The constraints to be added (can be added one or more) .
      */
     addContraint(
         problemId : string,
-        constraint : string
+        constraints : string[]
     ): Promise<void>
 
     /**
@@ -93,11 +93,11 @@ export interface IProblemRepository extends BaseRepository <IProblem>{
      *
      * @async
      * @param problemId - The id of the document.
-     * @param tag - The tag string to be added.
+     * @param tags[] - The tags to be added (can be one or more).
      */
     addTag(
         problemId : string,
-        tag : string
+        tags : string[]
     ) : Promise<void>
 
     /**

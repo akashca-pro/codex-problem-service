@@ -91,13 +91,15 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
 
     async addContraint(
         problemId: string, 
-        constraints: string
+        constraints: string[]
     ): Promise<void> {
         const problem = await this.findById(problemId);
         if (!problem) throw new Error(DbErrorType.ProblemNotFound);
 
         await this.update(problemId,{
-            $push : { constraints : constraints }
+            $push : {
+                constraints : { $each : constraints }
+            }
         })
     }
 
@@ -114,13 +116,15 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
 
     async addTag(
         problemId: string, 
-        tag: string
+        tags: string[]
     ): Promise<void> {
         const problem = await this.findById(problemId);
         if (!problem) throw new Error(DbErrorType.ProblemNotFound);
 
         await this.update(problemId,{
-            $push : { tags : tag }
+            $push : { 
+                tags : { $each : tags }
+            }
         })
     }
 
