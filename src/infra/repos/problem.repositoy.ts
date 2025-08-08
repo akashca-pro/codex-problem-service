@@ -16,7 +16,9 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         super(ProblemModel)
     }
 
-    async findByTitle(title: string): Promise<IProblem | null> {
+    async findByTitle(
+        title: string
+    ): Promise<IProblem | null> {
         return await this._model.findOne({ title })
     }
 
@@ -25,35 +27,7 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         testCaseCollectionType: TestCaseCollectionType, 
         testCase: ITestCase
     ): Promise<void> {
-        
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
-        await this.update(
-            problemId,
-            { $push : { [`testcaseCollection.${testCaseCollectionType}`] : testCase } }
-        );
-
-    }
-
-    async updateTestCase(
-        problemId : string,
-        testCaseId : string,
-        testCaseCollectionType : TestCaseCollectionType,
-        updatedTestCase : ITestCase,
-    ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
-        const testCases = problem.testcaseCollection[testCaseCollectionType];
-        const targetTestCase = testCases.find(tc => tc._id.toString() === testCaseId);
-
-        if (!targetTestCase) throw new Error(DbErrorType.TestCaseNotFound);
-
-        targetTestCase.input = updatedTestCase.input;
-        targetTestCase.output = updatedTestCase.output;
-
-        await problem.save();
+        await this.update( problemId, { $push : { [`testcaseCollection.${testCaseCollectionType}`] : testCase } } );
     }
 
     async removeTestCase(
@@ -63,11 +37,6 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
     ): Promise<void> {
         const problem = await this.findById(problemId);
         if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
-        const testCases = problem.testcaseCollection[testCaseCollectionType];
-        const targetTestCase = testCases.find(tc => tc._id.toString() === testCaseId);
-
-        if (!targetTestCase) throw new Error(DbErrorType.TestCaseNotFound);
 
         await this.update(problemId, {
             $pull : {
@@ -88,139 +57,6 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
                 },
             },
         });
-    }
-
-    async addContraint(
-        problemId: string, 
-        constraints: string[]
-    ): Promise<void> {
-        await this.update(problemId,{
-            $push : {
-                constraints : { $each : constraints }
-            }
-        })
-    }
-
-    async removeConstraint(
-        problemId: string
-    ): Promise<void> {
-        await this.update(problemId,{
-            $pop : { constraints : 1 }
-        })
-    }
-
-    async addTag(
-        problemId: string, 
-        tags: string[]
-    ): Promise<void> {
-        await this.update(problemId,{
-            $push : { 
-                tags : { $each : tags }
-            }
-        })
-    }
-
-    async removeTag(
-        problemId: string
-    ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
-        await this.update(problemId,{
-            $pop : { tags : 1 }
-        })
-    }
-
-    async addStarterCode(
-        problemId: string, 
-        starterCode: Partial<IStarterCode>
-    ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
-        await this.update(problemId,{
-            $push : { starterCodes : starterCode }
-        })
-    }
-
-    async updateStarterCode(
-        problemId: string, 
-        starterCodeId: string,
-        starterCode : IStarterCode
-    ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
-        await this._model.updateOne(
-            { _id : problemId, "starterCodes._id" : starterCodeId },
-            {
-                $set : {
-                    "starterCodes.$.language" : starterCode.language,
-                    "starterCodes.$.code" : starterCode.code
-                }
-            }
-        );
-    }
-
-    async removeStarterCode(
-        problemId: string,
-        starterCodeId: string
-    ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
-        await this.update(problemId,{
-            $pull : {
-                starterCodes : { _id : starterCodeId }
-            }
-        })
-    }
-
-    async addExample(
-        problemId: string, 
-        example: Partial<IExample>
-    ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
-        await this.update(problemId,{
-            $push : { examples : example }
-        })
-    }
-
-    async updateExample(
-        problemId: string, 
-        exampleId: string, 
-        example: IExample
-    ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
-        await this._model.updateOne(
-            { _id : problemId, "examples._id" : exampleId },
-            {
-                $set : {
-                    "examples.$.input" : example.input,
-                    "examples.$.output" : example.output,
-                    "examples.$.explanation" : example.explanation,
-                }
-            }
-        );
-    }
-
-    async removeExample(
-        problemId: string,
-        exampleId: string
-    ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
-        await this.update(problemId,{
-            $pull : {
-                examples : { _id : exampleId }
-            }
-        })
-
     }
 
     async addSolutionCode(
