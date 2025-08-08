@@ -51,6 +51,28 @@ export abstract class BaseRepository <T extends Document> {
     }
 
     /**
+     * Retrieves a paginated list of documents that match the given filter.
+     *
+     * @param filter - The MongoDB filter query to match documents.
+     * @param skip - The number of documents to skip (used for pagination).
+     * @param limit - The maximum number of documents to return.
+     * @param sort - The sort order for the result set (default: descending by createdAt).
+     * @returns A promise that resolves to an array of documents matching the criteria.
+     */
+    async findPaginated(
+        filter : FilterQuery<T>,
+        skip : number,
+        limit : number,
+        sort : Record<string, 1 | -1 > = { createdAt : -1 }
+    ) : Promise<T[]> {
+        return this._model.find(filter)
+        .skip(skip)
+        .limit(limit)
+        .sort(sort)
+        .exec();
+    }
+
+    /**
      * Updates a document by its ID.
      * @param documentId - The ID of the document to update.
      * @param update - The update query.
@@ -83,6 +105,15 @@ export abstract class BaseRepository <T extends Document> {
         {_id : documentId, [`${arrayName}._id`] : itemId },
         { $set : updateQuery }
        )
+    }
+
+    /**
+     * 
+     * @param filter - The filter query.
+     * @returns The count of documents.
+     */
+    async countDocuments(filter : FilterQuery<T>) : Promise<number> {
+        return await this._model.countDocuments(filter);
     }
 
     /**
