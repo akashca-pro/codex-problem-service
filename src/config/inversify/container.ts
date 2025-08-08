@@ -16,6 +16,9 @@ import { ICreateProblemService } from '@/services/problem/interfaces/createProbl
 
 import { IUpdateProblemService } from '@/services/problem/interfaces/updateProblem.service.interface';
 import { CreateProblemService } from '@/services/problem/createProblem.service';
+import { UpdateProblemService } from '@/services/problem/updateProblem.service';
+import { IGetProblemService } from '@/services/problem/interfaces/getProblem.service.interface';
+import { GetProblemService } from '@/services/problem/getProblem.service';
 
 // Submission Services
 
@@ -38,5 +41,9 @@ container
 container
     .bind<ICreateProblemService>(TYPES.ICreateProblemService)
     .to(CreateProblemService);
-
-    
+container
+    .bind<IUpdateProblemService>(TYPES.IUpdateProblemService)
+    .to(UpdateProblemService);
+container
+    .bind<IGetProblemService>(TYPES.IGetProblemService)
+    .to(GetProblemService);

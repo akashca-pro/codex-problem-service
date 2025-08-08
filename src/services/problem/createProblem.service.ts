@@ -32,7 +32,7 @@ export class CreateProblemService implements ICreateProblemService {
     /**
      * Executes the create problem service.
      * 
-     * @param {ICreateProblemRequestDTO} data - The data from user to create a problem.
+     * @param {ICreateProblemRequestDTO} data - The data from user to update a problem.
      * @returns {ResponseDTO} - The response data.
      */
     async execute(data: ICreateProblemRequestDTO): Promise<ResponseDTO> {
@@ -40,7 +40,11 @@ export class CreateProblemService implements ICreateProblemService {
         const problemAlreadyExist = await this.#_problemRepo.findByTitle(data.title);
 
         if(problemAlreadyExist){
-            throw new Error(ProblemErrorType.ProblemNotFound);
+            return {
+                data : null,
+                success : false,
+                errorMessage : ProblemErrorType.ProblemNotFound
+            }
         }
 
         const result = await this.#_problemRepo.create(data);

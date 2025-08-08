@@ -5,6 +5,7 @@
  * @interface
  */
 export interface ICreateProblemRequestDTO {
+    questionId : string;
     title : string;
     description : string;
     difficulty : Difficulty;
