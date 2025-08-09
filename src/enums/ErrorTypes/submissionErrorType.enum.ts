@@ -6,6 +6,8 @@
  */
 enum SubmissionErrorType {
     
-    SubmissionNotFound = 'Submission not found'
+    SubmissionNotFound = 'Submission not found',
+
+    SubmissionAlreadyExist = 'Submission already exists'
 
 }

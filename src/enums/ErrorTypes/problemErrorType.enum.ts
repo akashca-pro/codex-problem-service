@@ -7,4 +7,6 @@
 enum ProblemErrorType {
 
     ProblemNotFound = 'Problem not found',
+
+    ProblemAlreadyExists = 'Problem already exists'
 }

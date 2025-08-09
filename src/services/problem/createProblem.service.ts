@@ -43,7 +43,7 @@ export class CreateProblemService implements ICreateProblemService {
             return {
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
+                errorMessage : ProblemErrorType.ProblemAlreadyExists
             }
         }
 

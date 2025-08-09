@@ -21,7 +21,7 @@ const TYPES = {
     // Submission Services
 
     ICreateSubmissionService : Symbol.for("ICreateSubmissionService"),
-
+    IUpdateSubmissionService : Symbol.for("IUpdateSubmissionService")
 
 }
 
