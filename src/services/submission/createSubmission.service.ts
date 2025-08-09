@@ -5,6 +5,7 @@ import TYPES from "@/config/inversify/types";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { ICreateSubmissionRequestDTO } from "@/dtos/submission/CreateSubmissionRequestDTO";
 import mongoose from "mongoose";
+import { SubmissionErrorType } from "@/enums/ErrorTypes/submissionErrorType.enum";
 
 /**
  * Implementaion of create submission service.

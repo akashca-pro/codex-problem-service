@@ -1,3 +1,5 @@
+import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
+import { SubmissionErrorType } from "@/enums/ErrorTypes/submissionErrorType.enum";
 import { status } from "@grpc/grpc-js";
 
 /**

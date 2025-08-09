@@ -3,7 +3,7 @@
  * 
  * @enum
  */
-enum Language {
+export enum Language {
     JAVASCRIPT = 'javascript',
     PYTHON = 'python',
     GO = 'go'

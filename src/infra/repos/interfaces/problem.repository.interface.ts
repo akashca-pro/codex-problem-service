@@ -1,6 +1,7 @@
 import { IExample, IProblem, ISolutionCode, IStarterCode, ITestCase } from "@/infra/db/interface/problem.interface";
 import { BaseRepository } from "../base.repository";
 import { FilterQuery } from "mongoose";
+import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
 
 /**
  * The interface representing the structure of problem repository.

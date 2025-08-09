@@ -3,7 +3,7 @@
  * 
  * @enum
  */
-enum SubmissionStatus {
+export enum SubmissionStatus {
     ACCEPTED = 'accepted',
     FAILED = 'failed',
     PENDING = 'pending'

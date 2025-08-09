@@ -4,6 +4,7 @@ import TYPES from "@/config/inversify/types";
 import { ISubmissionRepository } from "@/infra/repos/interfaces/submission.repository.interface";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { IUpdateSubmissionRequestDTO } from "@/dtos/submission/UpdateSubmissionRequestDTO";
+import { SubmissionErrorType } from "@/enums/ErrorTypes/submissionErrorType.enum";
 
 /**
  * Implementaion of update submission service.

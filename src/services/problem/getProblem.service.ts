@@ -5,6 +5,7 @@ import TYPES from "@/config/inversify/types";
 import { IGetProblemRequestDTO } from "@/dtos/problem/getProblemRequestDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { IProblem } from "@/infra/db/interface/problem.interface";
+import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
 
 /**
  * Implementaion of get problem service.

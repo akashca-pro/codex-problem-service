@@ -1,3 +1,5 @@
+import { Difficulty } from "@/enums/difficulty.enum";
+import { Language } from "@/enums/language.enum";
 
 /**
  * Data Transfer Object (DTO) representing data to create submission document.

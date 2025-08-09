@@ -4,6 +4,7 @@ import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.
 import TYPES from "@/config/inversify/types";
 import { IRemoveSolutionCodeRequestDTO } from "@/dtos/problem/solutionCodeRequestDTOs";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
+import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
 
 /**
  * Implementaion of remove solution code service.

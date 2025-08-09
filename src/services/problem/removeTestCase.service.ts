@@ -4,6 +4,7 @@ import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.
 import TYPES from "@/config/inversify/types";
 import { IRemoveTestCaseRequestDTO } from "@/dtos/problem/testCaseRequestDTOs";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
+import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
 
 /**
  * Implementation of the remove test case service.

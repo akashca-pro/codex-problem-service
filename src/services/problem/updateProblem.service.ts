@@ -4,6 +4,7 @@ import { IUpdateBasicProblemDetailsService } from "./interfaces/updateProblem.se
 import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
 import { IUpdateBasicProblemRequestDTO } from "@/dtos/problem/updateProblemRequestDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
+import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
 
 /**
  * The implementation of the update problem service.

@@ -1,5 +1,7 @@
 import mongoose, {Schema} from "mongoose";
 import { IExample, IProblem, IStarterCode, ISolutionCode, ITestCase, ITestCaseCollection } from "../interface/problem.interface";
+import { Language } from "@/enums/language.enum";
+import { Difficulty } from "@/enums/difficulty.enum";
 
 const StarterCodeSchema = new Schema<IStarterCode>(
     {

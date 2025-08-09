@@ -1,5 +1,8 @@
 import mongoose, { Schema } from "mongoose";
 import { IExecutionResult, IFailedTestCase, IStats, ISubmission } from "../interface/submission.interface";
+import { SubmissionStatus } from "@/enums/submissionStatus.enum";
+import { Language } from "@/enums/language.enum";
+import { Difficulty } from "@/enums/difficulty.enum";
 
 
 const FailedTestCaseSchema = new Schema<IFailedTestCase>(

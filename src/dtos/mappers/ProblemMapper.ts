@@ -1,3 +1,4 @@
+import { Difficulty } from "@/enums/difficulty.enum";
 import { ICreateProblemRequestDTO } from "../problem/CreateProblemRequestDTO";
 
 

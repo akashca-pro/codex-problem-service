@@ -1,3 +1,4 @@
+import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
 import { ITestCase } from "@/infra/db/interface/problem.interface";
 
 /**

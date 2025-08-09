@@ -4,6 +4,7 @@ import { inject, injectable } from "inversify";
 import TYPES from "@/config/inversify/types";
 import { IAddTestCaseRequestDTO } from "@/dtos/problem/testCaseRequestDTOs";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
+import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
 
 /**
  * Implementaion of Add test case service.

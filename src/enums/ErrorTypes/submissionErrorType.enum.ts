@@ -4,7 +4,7 @@
  * 
  * @enum
  */
-enum SubmissionErrorType {
+export enum SubmissionErrorType {
     
     SubmissionNotFound = 'Submission not found',
 

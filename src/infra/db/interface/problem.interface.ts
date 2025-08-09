@@ -1,3 +1,5 @@
+import { Difficulty } from "@/enums/difficulty.enum";
+import { Language } from "@/enums/language.enum";
 import { Document } from "mongoose";
 
 /**

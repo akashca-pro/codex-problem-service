@@ -1,3 +1,4 @@
+import { Difficulty } from "@/enums/difficulty.enum";
 
 /**
  * DTO (Data Tranfer Object) representing the data to list all problems.

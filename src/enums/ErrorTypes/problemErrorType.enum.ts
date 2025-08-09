@@ -4,7 +4,7 @@
  * 
  * @enum
  */
-enum ProblemErrorType {
+export enum ProblemErrorType {
 
     ProblemNotFound = 'Problem not found',
 

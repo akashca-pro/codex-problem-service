@@ -2,6 +2,7 @@ import { ProblemModel } from "../db/models/problem.model";
 import { IExample, IProblem, ISolutionCode, IStarterCode, ITestCase } from "../db/interface/problem.interface";
 import { BaseRepository } from "./base.repository";
 import { IProblemRepository } from "./interfaces/problem.repository.interface";
+import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
 
 /**
  * This class implements the problem repository.
@@ -35,9 +36,6 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         testCaseId: string, 
         testCaseCollectionType: TestCaseCollectionType
     ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
         await this.update(problemId, {
             $pull : {
                 [`testcaseCollection.${testCaseCollectionType}`]: { _id: testCaseId }
@@ -63,9 +61,6 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         problemId: string, 
         solutionCode: ISolutionCode
     ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
         await this.update(problemId,{
             $push : { solutionCodes : solutionCode }
         })
@@ -76,9 +71,6 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         solutionCodeId: string, 
         solutionCode: ISolutionCode
     ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
         await this._model.updateOne(
             { _id : problemId, "solutionCodes._id" : solutionCodeId },
             {
@@ -96,9 +88,6 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         problemId: string, 
         solutionCodeId: string
     ): Promise<void> {
-        const problem = await this.findById(problemId);
-        if (!problem) throw new Error(DbErrorType.ProblemNotFound);
-
         await this.update(problemId,{
             $pull : {
                 solutionCodes : { _id : solutionCodeId }

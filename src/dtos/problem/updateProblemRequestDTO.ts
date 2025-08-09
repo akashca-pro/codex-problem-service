@@ -1,3 +1,4 @@
+import { Difficulty } from "@/enums/difficulty.enum";
 import { IExample, IStarterCode } from "@/infra/db/interface/problem.interface";
 
 /**

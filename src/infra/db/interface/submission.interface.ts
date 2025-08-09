@@ -1,3 +1,6 @@
+import { Difficulty } from "@/enums/difficulty.enum";
+import { Language } from "@/enums/language.enum";
+import { SubmissionStatus } from "@/enums/submissionStatus.enum";
 import { Document, Types } from "mongoose";
 
 /**

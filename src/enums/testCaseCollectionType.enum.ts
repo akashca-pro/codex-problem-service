@@ -4,7 +4,7 @@
  * 
  * @enum
  */
-enum TestCaseCollectionType {
+export enum TestCaseCollectionType {
     RUN = "run",
     SUBMIT = "submit"
 }
