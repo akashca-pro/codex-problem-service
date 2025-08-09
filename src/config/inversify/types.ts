@@ -14,6 +14,7 @@ const TYPES = {
     IAddTestCaseService : Symbol.for("IAddTestCaseService"),
     IBulkUploadTestCaseService : Symbol.for("IBulkUploadTestCaseService"),
     IRemoveTestCaseService : Symbol.for("IRemoveTestCaseService"),
+    IAddSolutionCodeService : Symbol.for("IAddSolutionCodeService"),
 
 
 }

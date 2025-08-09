@@ -26,6 +26,8 @@ import { IBulkUploadTestCase } from '@/services/problem/interfaces/bulkUploadTes
 import { BulkUploadTestCase } from '@/services/problem/bulkUploadTestCase.service';
 import { IRemoveTestCaseService } from '@/services/problem/interfaces/removeTestCase.service.interface';
 import { RemoveTestCaseService } from '@/services/problem/removeTestCase.service';
+import { IAddSolutionCodeService } from '@/services/problem/interfaces/addSolutionCode.service.interface';
+import { AddSolutionCodeService } from '@/services/problem/addSolutionCode.service';
 
 // Submission Services
 
@@ -66,3 +68,6 @@ container
 container
     .bind<IRemoveTestCaseService>(TYPES.IRemoveTestCaseService)
     .to(RemoveTestCaseService);
+container
+    .bind<IAddSolutionCodeService>(TYPES.IAddSolutionCodeService)
+    .to(AddSolutionCodeService)

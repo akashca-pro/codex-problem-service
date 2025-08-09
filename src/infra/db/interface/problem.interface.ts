@@ -52,8 +52,8 @@ export interface IStarterCode {
 export interface ISolutionCode {
     language : Language;
     code : string;
-    executionTime : number;
-    memoryTaken : number;
+    executionTime? : number;
+    memoryTaken? : number;
 }
 
 /**

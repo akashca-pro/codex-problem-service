@@ -61,7 +61,7 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
 
     async addSolutionCode(
         problemId: string, 
-        solutionCode: Partial<ISolutionCode>
+        solutionCode: ISolutionCode
     ): Promise<void> {
         const problem = await this.findById(problemId);
         if (!problem) throw new Error(DbErrorType.ProblemNotFound);

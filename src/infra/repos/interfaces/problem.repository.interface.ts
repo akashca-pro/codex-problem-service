@@ -70,7 +70,7 @@ export interface IProblemRepository extends BaseRepository <IProblem>{
      */
     addSolutionCode (
         problemId : string,
-        solutionCode : Partial<ISolutionCode>
+        solutionCode : ISolutionCode
     ) : Promise<void>
 
     /**
