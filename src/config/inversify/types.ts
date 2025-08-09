@@ -12,6 +12,7 @@ const TYPES = {
     IGetProblemService : Symbol.for("IGetProblemService"),
     IListProblemService : Symbol.for("IListProblemService"),
     IAddTestCaseService : Symbol.for("IAddTestCaseService"),
+    IBulkUploadTestCaseService : Symbol.for("IBulkUploadTestCaseService")
 
 
 }

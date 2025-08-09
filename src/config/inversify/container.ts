@@ -23,6 +23,8 @@ import { IListProblemService } from '@/services/problem/interfaces/ListProblem.s
 import { ListProblemService } from '@/services/problem/ListProblem.service';
 import { IAddTestCaseService } from '@/services/problem/interfaces/addTestCase.service.interface';
 import { AddTestCaseService } from '@/services/problem/addTestCase.service';
+import { IBulkUploadTestCase } from '@/services/problem/interfaces/bulkUploadTestCase.service.interface';
+import { BulkUploadTestCase } from '@/services/problem/bulkUploadTestCase.service';
 
 // Submission Services
 
@@ -57,4 +59,6 @@ container
 container
     .bind<IAddTestCaseService>(TYPES.IAddTestCaseService)
     .to(AddTestCaseService);
-
+container
+    .bind<IBulkUploadTestCase>(TYPES.IBulkUploadTestCaseService)
+    .to(BulkUploadTestCase);

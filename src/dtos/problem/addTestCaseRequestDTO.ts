@@ -10,3 +10,15 @@ export interface IAddTestCaseRequestDTO {
     testCaseCollectionType : TestCaseCollectionType;
     testCase : ITestCase
 }
+
+
+/**
+ * DTO (Data Tranfer Object) representing the structure of the bulk upload test case request.
+ * 
+ * @interface
+ */
+export interface IBulkUploadTestCaseRequestDTO {
+    _id : string;
+    testCaseCollectionType : TestCaseCollectionType;
+    testCase : ITestCase[]
+}
