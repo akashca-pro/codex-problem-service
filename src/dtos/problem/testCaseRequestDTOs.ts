@@ -22,3 +22,14 @@ export interface IBulkUploadTestCaseRequestDTO {
     testCaseCollectionType : TestCaseCollectionType;
     testCase : ITestCase[]
 }
+
+/**
+ * DTO (Data Tranfer Object) representing the structure of the remove test case request.
+ * 
+ * @interface
+ */
+export interface IRemoveTestCaseRequestDTO {
+    _id : string;
+    testCaseId : string;
+    testCaseCollectionType : TestCaseCollectionType;
+}

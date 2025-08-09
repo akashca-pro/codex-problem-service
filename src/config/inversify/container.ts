@@ -13,7 +13,6 @@ import { SubmissionRepository } from '@/infra/repos/submission.repository';
 // Problem Services
 
 import { ICreateProblemService } from '@/services/problem/interfaces/createProblem.service.interface';
-
 import { IUpdateBasicProblemDetailsService } from '@/services/problem/interfaces/updateProblem.service.interface';
 import { CreateProblemService } from '@/services/problem/createProblem.service';
 import { UpdateProblemService } from '@/services/problem/updateProblem.service';
@@ -25,6 +24,8 @@ import { IAddTestCaseService } from '@/services/problem/interfaces/addTestCase.s
 import { AddTestCaseService } from '@/services/problem/addTestCase.service';
 import { IBulkUploadTestCase } from '@/services/problem/interfaces/bulkUploadTestCase.service.interface';
 import { BulkUploadTestCase } from '@/services/problem/bulkUploadTestCase.service';
+import { IRemoveTestCaseService } from '@/services/problem/interfaces/removeTestCase.service.interface';
+import { RemoveTestCaseService } from '@/services/problem/removeTestCase.service';
 
 // Submission Services
 
@@ -62,3 +63,6 @@ container
 container
     .bind<IBulkUploadTestCase>(TYPES.IBulkUploadTestCaseService)
     .to(BulkUploadTestCase);
+container
+    .bind<IRemoveTestCaseService>(TYPES.IRemoveTestCaseService)
+    .to(RemoveTestCaseService);

@@ -1,4 +1,4 @@
-import { IAddTestCaseRequestDTO } from "@/dtos/problem/addTestCaseRequestDTO";
+import { IAddTestCaseRequestDTO } from "@/dtos/problem/testCaseRequestDTOs";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 
 /**

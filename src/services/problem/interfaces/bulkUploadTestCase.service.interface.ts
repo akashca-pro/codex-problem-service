@@ -1,4 +1,4 @@
-import { IBulkUploadTestCaseRequestDTO } from "@/dtos/problem/addTestCaseRequestDTO";
+import { IBulkUploadTestCaseRequestDTO } from "@/dtos/problem/testCaseRequestDTOs";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 
 /**
@@ -12,7 +12,7 @@ export interface IBulkUploadTestCase {
      * Executes the bulk upload test case service.
      * 
      * @async
-     * @param {IAddTestCaseRequestDTO} data - The data for adding testcase
+     * @param {IBulkUploadTestCaseRequestDTO} data - The data for adding testcase
      * @return {ResponseDTO}
      */
     execute(data : IBulkUploadTestCaseRequestDTO) : Promise<ResponseDTO>

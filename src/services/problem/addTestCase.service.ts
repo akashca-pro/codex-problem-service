@@ -2,7 +2,7 @@ import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.
 import { IAddTestCaseService } from "./interfaces/addTestCase.service.interface";
 import { inject, injectable } from "inversify";
 import TYPES from "@/config/inversify/types";
-import { IAddTestCaseRequestDTO } from "@/dtos/problem/addTestCaseRequestDTO";
+import { IAddTestCaseRequestDTO } from "@/dtos/problem/testCaseRequestDTOs";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 
 /**

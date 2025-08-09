@@ -1,18 +1,19 @@
-import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
-import { IBulkUploadTestCase } from "./interfaces/bulkUploadTestCase.service.interface";
 import { inject, injectable } from "inversify";
+import { IRemoveTestCaseService } from "./interfaces/removeTestCase.service.interface";
+import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
 import TYPES from "@/config/inversify/types";
-import { IBulkUploadTestCaseRequestDTO } from "@/dtos/problem/testCaseRequestDTOs";
+import { IRemoveTestCaseRequestDTO } from "@/dtos/problem/testCaseRequestDTOs";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 
 /**
- * Implementaion of bulk upload test case service.
+ * Implementation of the remove test case service.
  * 
  * @class
- * @implements {IBulkUploadTestCase}
+ * @implements {IRemoveTestCaseService}
  */
+
 @injectable()
-export class BulkUploadTestCase implements IBulkUploadTestCase {
+export class RemoveTestCaseService implements IRemoveTestCaseService  {
 
     #_problemRepo : IProblemRepository
 
@@ -24,13 +25,12 @@ export class BulkUploadTestCase implements IBulkUploadTestCase {
      */
     constructor(
         @inject(TYPES.IProblemRepository)
-        problemRepo : IProblemRepository
+        problemRepo  : IProblemRepository
     ){
-        this.#_problemRepo = problemRepo;
+        this.#_problemRepo = problemRepo
     }
 
-
-    async execute(data: IBulkUploadTestCaseRequestDTO): Promise<ResponseDTO> {
+    async execute(data: IRemoveTestCaseRequestDTO): Promise<ResponseDTO> {
         
         const problemExist = await this.#_problemRepo.findById(data._id);
 
@@ -42,10 +42,10 @@ export class BulkUploadTestCase implements IBulkUploadTestCase {
             }
         }
 
-        await this.#_problemRepo.bulkUploadTestCase(
+        await this.#_problemRepo.removeTestCase(
             data._id,
-            data.testCaseCollectionType,
-            data.testCase);
+            data.testCaseId,
+            data.testCaseCollectionType);
 
         return {
             data : null,
