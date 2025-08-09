@@ -40,6 +40,8 @@ import { CreateSubmissionService } from '@/services/submission/createSubmission.
 import { IUpdateSubmissionService } from '@/services/submission/interfaces/updateSubmission.service.interface';
 import { UpdateSubmissionService } from '@/services/submission/updateSubmission.service';
 import { GrpcCreateProblemHandler } from '@/transport/grpc/handlers/problem/CreateProblemHandler';
+import { IGetSubmissionsService } from '@/services/submission/interfaces/getSubmissions.service.interface';
+import { GetSubmissionsService } from '@/services/submission/getSubmission.service';
 
 // Submission Services
 
@@ -99,6 +101,10 @@ container
 container
     .bind<IUpdateSubmissionService>(TYPES.IUpdateSubmissionService)
     .to(UpdateSubmissionService);
+container
+    .bind<IGetSubmissionsService>(TYPES.IGetSubmissionsService)
+    .to(GetSubmissionsService);
+    
 
 /**
  * Grpc handlers
