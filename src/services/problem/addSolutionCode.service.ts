@@ -2,11 +2,11 @@ import { inject, injectable } from "inversify";
 import { IAddSolutionCodeService } from "./interfaces/addSolutionCode.service.interface";
 import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
 import TYPES from "@/config/inversify/types";
-import { IAddSolutionCodeRequestDTO } from "@/dtos/problem/addSolutionCodeRequestDTO";
+import { IAddSolutionCodeRequestDTO } from "@/dtos/problem/solutionCodeRequestDTOs";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 
 /**
- * Implementaion of Add test case service.
+ * Implementaion of Add solution code service.
  * 
  * @class
  * @implements {IAddSolutionCodeService}

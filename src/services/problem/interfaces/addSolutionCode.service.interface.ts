@@ -1,4 +1,4 @@
-import { IAddSolutionCodeRequestDTO } from "@/dtos/problem/addSolutionCodeRequestDTO";
+import { IAddSolutionCodeRequestDTO } from "@/dtos/problem/solutionCodeRequestDTOs";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 
 /**

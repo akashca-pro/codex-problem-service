@@ -28,6 +28,8 @@ import { IRemoveTestCaseService } from '@/services/problem/interfaces/removeTest
 import { RemoveTestCaseService } from '@/services/problem/removeTestCase.service';
 import { IAddSolutionCodeService } from '@/services/problem/interfaces/addSolutionCode.service.interface';
 import { AddSolutionCodeService } from '@/services/problem/addSolutionCode.service';
+import { IUpdateSolutionCodeService } from '@/services/problem/interfaces/updateSolutionCode.service.interface';
+import { UpdateSolutionCodeService } from '@/services/problem/updateSolutionCode.service';
 
 // Submission Services
 
@@ -70,4 +72,7 @@ container
     .to(RemoveTestCaseService);
 container
     .bind<IAddSolutionCodeService>(TYPES.IAddSolutionCodeService)
-    .to(AddSolutionCodeService)
+    .to(AddSolutionCodeService);
+container
+    .bind<IUpdateSolutionCodeService>(TYPES.IUpdateSolutionCodeService)
+    .to(UpdateSolutionCodeService);

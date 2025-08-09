@@ -1,23 +1,23 @@
-import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
-import { IBulkUploadTestCase } from "./interfaces/bulkUploadTestCase.service.interface";
 import { inject, injectable } from "inversify";
+import { IUpdateSolutionCodeService } from "./interfaces/updateSolutionCode.service.interface";
+import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
 import TYPES from "@/config/inversify/types";
-import { IBulkUploadTestCaseRequestDTO } from "@/dtos/problem/testCaseRequestDTOs";
+import { IUpdateSolutionCodeRequestDTO } from "@/dtos/problem/solutionCodeRequestDTOs";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 
 /**
- * Implementaion of bulk upload test case service.
+ * Implementaion of update solutioncode service.
  * 
  * @class
- * @implements {IBulkUploadTestCase}
+ * @implements {IUpdateSolutionCodeService}
  */
 @injectable()
-export class BulkUploadTestCase implements IBulkUploadTestCase {
+export class UpdateSolutionCodeService implements IUpdateSolutionCodeService {
 
     #_problemRepo : IProblemRepository
 
     /**
-     * Creates an instance of BulkUploadTestCase.
+     * Creates an instance of the UpdateSolutionCodeService.
      * 
      * @param problemRepo - The problem repository.
      * @constructor
@@ -26,11 +26,10 @@ export class BulkUploadTestCase implements IBulkUploadTestCase {
         @inject(TYPES.IProblemRepository)
         problemRepo : IProblemRepository
     ){
-        this.#_problemRepo = problemRepo;
+        this.#_problemRepo = problemRepo
     }
 
-
-    async execute(data: IBulkUploadTestCaseRequestDTO): Promise<ResponseDTO> {
+    async execute(data: IUpdateSolutionCodeRequestDTO): Promise<ResponseDTO> {
         
         const problemExist = await this.#_problemRepo.findById(data._id);
 
@@ -42,14 +41,16 @@ export class BulkUploadTestCase implements IBulkUploadTestCase {
             }
         }
 
-        await this.#_problemRepo.bulkUploadTestCase(
+        await this.#_problemRepo.updateSolutionCode(
             data._id,
-            data.testCaseCollectionType,
-            data.testCase);
+            data.solutionCodeId,
+            data.solutionCode
+        );
 
         return {
             data : null,
-            success : true
+            success : true,
         }
     }
 }
+ 

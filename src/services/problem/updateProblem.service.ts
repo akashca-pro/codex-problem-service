@@ -29,16 +29,20 @@ export class UpdateProblemService implements IUpdateBasicProblemDetailsService {
         this.#_problemRepo = problemRepo
     }
 
-    /**
-     * Executes the update problem service.
-     * 
-     * @async
-     * @param {IUpdateProblemRequestDTO} updatedData - The data to be update
-     */
     async execute(
         problemId : string,
         updatedData: IUpdateProblemRequestDTO
     ): Promise<ResponseDTO> {
+
+        const problemExist = await this.#_problemRepo.findById(problemId);
+
+        if(!problemExist){
+            return { 
+                data : null,
+                success : false,
+                errorMessage : ProblemErrorType.ProblemNotFound
+            }
+        }
         
         const updatedQuery : IUpdateProblemRequestDTO = {};
 

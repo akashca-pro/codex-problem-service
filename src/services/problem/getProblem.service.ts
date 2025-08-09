@@ -30,13 +30,6 @@ export class GetProblemService implements IGetProblemService {
         this.#_problemRepo = problemRepo
     }
 
-    /**
-     * Executes the get problem service.
-     * 
-     * @async
-     * @param data - The data can be either id , title or questionId of the problem.
-     * @return {ResponseDTO} - The response data.
-     */
     async execute(data: IGetProblemRequestDTO): Promise<ResponseDTO> {
         
         let problem : IProblem | null = null;

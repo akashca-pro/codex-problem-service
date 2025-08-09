@@ -18,7 +18,7 @@ export class RemoveTestCaseService implements IRemoveTestCaseService  {
     #_problemRepo : IProblemRepository
 
     /**
-     * Creates an instance of AddTestCaseService.
+     * Creates an instance of RemoveTestCaseService.
      * 
      * @param problemRepo - The problem repository.
      * @constructor
