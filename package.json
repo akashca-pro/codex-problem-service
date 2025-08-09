@@ -15,7 +15,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@akashcapro/codex-shared-utils": "^0.1.36",
+    "@akashcapro/codex-shared-utils": "^0.2.36",
     "@grpc/grpc-js": "^1.13.4",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",

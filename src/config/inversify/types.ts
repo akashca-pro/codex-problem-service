@@ -21,7 +21,12 @@ const TYPES = {
     // Submission Services
 
     ICreateSubmissionService : Symbol.for("ICreateSubmissionService"),
-    IUpdateSubmissionService : Symbol.for("IUpdateSubmissionService")
+    IUpdateSubmissionService : Symbol.for("IUpdateSubmissionService"),
+    
+    // Grpc Handlers
+
+    GrpcCreateProblemHandler : Symbol.for("GrpcCreateProblemHandler"),
+    
 
 }
 

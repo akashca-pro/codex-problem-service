@@ -32,10 +32,14 @@ import { IUpdateSolutionCodeService } from '@/services/problem/interfaces/update
 import { UpdateSolutionCodeService } from '@/services/problem/updateSolutionCode.service';
 import { IRemoveSolutionCodeService } from '@/services/problem/interfaces/removeSolutionCode.service.interface';
 import { RemoveSolutionCodeService } from '@/services/problem/removeSolutionCode.service';
+
+// Submission services
+
 import { ICreateSubmissionService } from '@/services/submission/interfaces/createSubmission.service.interface';
 import { CreateSubmissionService } from '@/services/submission/createSubmission.service';
 import { IUpdateSubmissionService } from '@/services/submission/interfaces/updateSubmission.service.interface';
 import { UpdateSubmissionService } from '@/services/submission/updateSubmission.service';
+import { GrpcCreateProblemHandler } from '@/transport/grpc/handlers/problem/CreateProblemHandler';
 
 // Submission Services
 
@@ -95,3 +99,13 @@ container
 container
     .bind<IUpdateSubmissionService>(TYPES.IUpdateSubmissionService)
     .to(UpdateSubmissionService);
+
+/**
+ * Grpc handlers
+ */
+container
+    .bind<GrpcCreateProblemHandler>(TYPES.GrpcCreateProblemHandler)
+    .to(GrpcCreateProblemHandler);
+
+
+export default container
