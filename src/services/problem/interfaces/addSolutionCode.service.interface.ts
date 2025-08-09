@@ -12,7 +12,7 @@ export interface IAddSolutionCodeService {
      * Executes the add solution code service.
      * 
      * @async
-     * @param {IAddSolutionCodeRequestDTO} data - The data for adding testcase
+     * @param {IAddSolutionCodeRequestDTO} data - The data for adding solution code.
      * @return {ResponseDTO}
      */
     execute(data : IAddSolutionCodeRequestDTO) : Promise<ResponseDTO>

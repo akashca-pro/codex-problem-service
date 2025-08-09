@@ -9,6 +9,7 @@ import { ResponseDTO } from "@/dtos/ResponseDTO";
 export interface IUpdateBasicProblemDetailsService {
 
     /**
+     * Executes the Update basic problem details service.
      * 
      * @param problemId - The id of the problem document.
      * @param {IUpdateProblemRequestDTO} updatedData - The updated data for problem from user.

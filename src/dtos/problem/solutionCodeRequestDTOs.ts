@@ -23,3 +23,15 @@ export interface IUpdateSolutionCodeRequestDTO {
     solutionCodeId : string;
     solutionCode : ISolutionCode;
 }
+
+/**
+ * DTO (Data Tranfer Object) representing the structure of the remove solution code request.
+ * 
+ * @interface
+ */
+export interface IRemoveSolutionCodeRequestDTO {
+
+    _id : string;
+    solutionCodeId : string;
+
+}

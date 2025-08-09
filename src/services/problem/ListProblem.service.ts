@@ -3,7 +3,7 @@ import { IListProblemService } from "./interfaces/ListProblem.service.interface"
 import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
 import TYPES from "@/config/inversify/types";
 import { IListProblemsRequestDTO } from "@/dtos/problem/listProblemsRequestDTO";
-import { ResponseDTO } from "@/dtos/ResponseDTO";
+import { PaginationDTO } from "@/dtos/PaginationDTO";
 
 /**
  * Implementaion of List problem service.
@@ -29,7 +29,7 @@ export class ListProblemService implements IListProblemService {
         this.#_problemRepo = problemRepo
     }
 
-    async execute(data: IListProblemsRequestDTO): Promise<ResponseDTO> {
+    async execute(data: IListProblemsRequestDTO): Promise<PaginationDTO> {
         
         const filter : Record<string, any> = {};
 
@@ -49,13 +49,10 @@ export class ListProblemService implements IListProblemService {
         const totalPages = Math.ceil(totalItems/ data.limit);
 
         return {
-            success : true,
-            data : {
-                problems,
-                totalPages,
-                currentPage : data.page,
-                totalItems
-            }
+            body : problems,
+            currentPage : data.page,
+            totalItems,
+            totalPages
         }
     }
 }

@@ -16,7 +16,7 @@ const TYPES = {
     IRemoveTestCaseService : Symbol.for("IRemoveTestCaseService"),
     IAddSolutionCodeService : Symbol.for("IAddSolutionCodeService"),
     IUpdateSolutionCodeService : Symbol.for("IUpdateSolutionCodeService"),
-    
+    IRemoveSolutionCodeService : Symbol.for("IRemoveSolutionCodeService"),
 
 
 }

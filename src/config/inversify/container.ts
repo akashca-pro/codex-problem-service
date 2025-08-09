@@ -30,6 +30,8 @@ import { IAddSolutionCodeService } from '@/services/problem/interfaces/addSoluti
 import { AddSolutionCodeService } from '@/services/problem/addSolutionCode.service';
 import { IUpdateSolutionCodeService } from '@/services/problem/interfaces/updateSolutionCode.service.interface';
 import { UpdateSolutionCodeService } from '@/services/problem/updateSolutionCode.service';
+import { IRemoveSolutionCodeService } from '@/services/problem/interfaces/removeSolutionCode.service.interface';
+import { RemoveSolutionCodeService } from '@/services/problem/removeSolutionCode.service';
 
 // Submission Services
 
@@ -76,3 +78,6 @@ container
 container
     .bind<IUpdateSolutionCodeService>(TYPES.IUpdateSolutionCodeService)
     .to(UpdateSolutionCodeService);
+container
+    .bind<IRemoveSolutionCodeService>(TYPES.IRemoveSolutionCodeService)
+    .to(RemoveSolutionCodeService);

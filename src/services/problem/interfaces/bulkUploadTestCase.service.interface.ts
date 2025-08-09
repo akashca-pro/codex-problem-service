@@ -12,7 +12,7 @@ export interface IBulkUploadTestCase {
      * Executes the bulk upload test case service.
      * 
      * @async
-     * @param {IBulkUploadTestCaseRequestDTO} data - The data for adding testcase
+     * @param {IBulkUploadTestCaseRequestDTO} data - The data for adding testcases
      * @return {ResponseDTO}
      */
     execute(data : IBulkUploadTestCaseRequestDTO) : Promise<ResponseDTO>

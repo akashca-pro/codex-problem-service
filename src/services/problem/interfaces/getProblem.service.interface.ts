@@ -12,7 +12,7 @@ export interface IGetProblemService {
      * Executes the get problem service.
      * 
      * @async
-     * @param data - The data can be either id , title or questionId of the problem.
+     * @param data - The data can be either be id , title or questionId of the problem.
      * @return {ResponseDTO} - The response data.
      * 
      * @remarks

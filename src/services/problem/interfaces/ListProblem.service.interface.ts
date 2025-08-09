@@ -1,3 +1,4 @@
+import { PaginationDTO } from "@/dtos/PaginationDTO";
 import { IListProblemsRequestDTO } from "@/dtos/problem/listProblemsRequestDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 
@@ -15,6 +16,6 @@ export interface IListProblemService {
      * @param data - The data includes page , limit and filters.
      * @returns {ResponseDTO} - The response data.
      */
-    execute(data : IListProblemsRequestDTO) : Promise<ResponseDTO>
+    execute(data : IListProblemsRequestDTO) : Promise<PaginationDTO>
 
 }
