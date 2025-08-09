@@ -1,11 +1,11 @@
 import { IExample, IStarterCode } from "@/infra/db/interface/problem.interface";
 
 /**
- * DTO (Data Tranfer Object) representing the structure of the update problem request.
+ * DTO (Data Tranfer Object) representing the data to update basic problem details.
  * 
  * @interface
  */
-export interface IUpdateProblemRequestDTO {
+export interface IUpdateBasicProblemRequestDTO {
     questionId? : string;
     title? : string;
     description? : string;

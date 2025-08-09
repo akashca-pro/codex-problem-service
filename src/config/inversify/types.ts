@@ -18,6 +18,10 @@ const TYPES = {
     IUpdateSolutionCodeService : Symbol.for("IUpdateSolutionCodeService"),
     IRemoveSolutionCodeService : Symbol.for("IRemoveSolutionCodeService"),
 
+    // Submission Services
+
+    ICreateSubmissionService : Symbol.for("ICreateSubmissionService"),
+
 
 }
 

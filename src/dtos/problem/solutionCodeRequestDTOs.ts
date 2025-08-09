@@ -1,7 +1,7 @@
 import { ISolutionCode } from "@/infra/db/interface/problem.interface";
 
 /**
- * DTO (Data Tranfer Object) representing the structure of the add solution code request.
+ * DTO (Data Tranfer Object) representing the data to add a solution code.
  * 
  * @interface
  */
@@ -13,7 +13,7 @@ export interface IAddSolutionCodeRequestDTO {
 }
 
 /**
- * DTO (Data Tranfer Object) representing the structure of the update solution code request.
+ * DTO (Data Tranfer Object) representing the data to update solution code.
  * 
  * @interface
  */
@@ -25,7 +25,7 @@ export interface IUpdateSolutionCodeRequestDTO {
 }
 
 /**
- * DTO (Data Tranfer Object) representing the structure of the remove solution code request.
+ * DTO (Data Tranfer Object) representing the data to remove solution code.
  * 
  * @interface
  */

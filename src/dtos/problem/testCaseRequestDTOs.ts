@@ -1,7 +1,7 @@
 import { ITestCase } from "@/infra/db/interface/problem.interface";
 
 /**
- * DTO (Data Tranfer Object) representing the structure of the add test case request.
+ * DTO (Data Tranfer Object) representing the data to add a new test case.
  * 
  * @interface
  */
@@ -13,7 +13,7 @@ export interface IAddTestCaseRequestDTO {
 
 
 /**
- * DTO (Data Tranfer Object) representing the structure of the bulk upload test case request.
+ * DTO (Data Tranfer Object) representing the data to bulk upload test cases.
  * 
  * @interface
  */
@@ -24,7 +24,7 @@ export interface IBulkUploadTestCaseRequestDTO {
 }
 
 /**
- * DTO (Data Tranfer Object) representing the structure of the remove test case request.
+ * DTO (Data Tranfer Object) representing the data to remove test case.
  * 
  * @interface
  */

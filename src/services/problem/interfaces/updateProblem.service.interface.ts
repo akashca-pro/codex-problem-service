@@ -1,4 +1,4 @@
-import { IUpdateProblemRequestDTO } from "@/dtos/problem/updateProblemRequestDTO";
+import { IUpdateBasicProblemRequestDTO } from "@/dtos/problem/updateProblemRequestDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 
 /**
@@ -12,9 +12,9 @@ export interface IUpdateBasicProblemDetailsService {
      * Executes the Update basic problem details service.
      * 
      * @param problemId - The id of the problem document.
-     * @param {IUpdateProblemRequestDTO} updatedData - The updated data for problem from user.
+     * @param {IUpdateBasicProblemRequestDTO} updatedData - The updated data for problem from user.
      * @returns {ResponseDTO} - The response data.
      */
-    execute(problemId : string ,updatedData : IUpdateProblemRequestDTO ) : Promise<ResponseDTO>
+    execute(problemId : string ,updatedData : IUpdateBasicProblemRequestDTO ) : Promise<ResponseDTO>
 
 }

@@ -23,9 +23,6 @@ export class SubmissionRepository
         executionResult : IExecutionResult
     ): Promise<void> {
         
-        const submission = await this.findById(submissionId);
-        if(!submission) throw new Error(DbErrorType.SubmissionNotFound);
-
         await this.update(submissionId,{
             $set : {
                 executionResult : executionResult

@@ -1,6 +1,6 @@
 
 /**
- * Enum representing the error types related to db.
+ * Enum representing the error types related to problem services.
  * 
  * @enum
  */

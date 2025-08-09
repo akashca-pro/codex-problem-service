@@ -1,6 +1,6 @@
 
 /**
- * DTO (Data Tranfer Object) representing the structure of the list Problem request.
+ * DTO (Data Tranfer Object) representing the data to list all problems.
  * 
  * @interface
  */

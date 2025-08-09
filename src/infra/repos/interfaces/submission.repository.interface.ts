@@ -1,11 +1,12 @@
-import { IExecutionResult } from "@/infra/db/interface/submission.interface";
+import { IExecutionResult, ISubmission } from "@/infra/db/interface/submission.interface";
+import { BaseRepository } from "../base.repository";
 
 /**
  * Interface representing the structure of the submission repository.
  * 
  * @interface
  */
-export interface ISubmissionRepository {
+export interface ISubmissionRepository extends BaseRepository<ISubmission> {
 
     /**
      * 

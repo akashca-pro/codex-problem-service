@@ -1,6 +1,6 @@
 
 /**
- * DTO (Data Tranfer Object) representing the structure of the Get Problem request.
+ * DTO (Data Tranfer Object) representing the data to get a problem document.
  * 
  * @interface
  */

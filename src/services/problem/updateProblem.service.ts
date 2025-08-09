@@ -2,7 +2,7 @@ import { inject, injectable } from "inversify";
 import TYPES from "@/config/inversify/types";
 import { IUpdateBasicProblemDetailsService } from "./interfaces/updateProblem.service.interface";
 import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
-import { IUpdateProblemRequestDTO } from "@/dtos/problem/updateProblemRequestDTO";
+import { IUpdateBasicProblemRequestDTO } from "@/dtos/problem/updateProblemRequestDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 
 /**
@@ -31,7 +31,7 @@ export class UpdateProblemService implements IUpdateBasicProblemDetailsService {
 
     async execute(
         problemId : string,
-        updatedData: IUpdateProblemRequestDTO
+        updatedData: IUpdateBasicProblemRequestDTO
     ): Promise<ResponseDTO> {
 
         const problemExist = await this.#_problemRepo.findById(problemId);
@@ -44,7 +44,7 @@ export class UpdateProblemService implements IUpdateBasicProblemDetailsService {
             }
         }
         
-        const updatedQuery : IUpdateProblemRequestDTO = {};
+        const updatedQuery : IUpdateBasicProblemRequestDTO = {};
 
         if(updatedData.title) updatedQuery.title = updatedData.title;
         if(updatedData.description) updatedQuery.description = updatedData.description;
