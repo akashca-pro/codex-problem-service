@@ -73,7 +73,7 @@ export class GrpcAddSolutionCodeHandler {
      */
     getServiceHandler() : object {
         return {
-            addTestCase : this.addSolutionCode.bind(this)
+            addSolutionCode : this.addSolutionCode.bind(this)
         }
     }  
 }

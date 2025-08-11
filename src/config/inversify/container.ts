@@ -52,6 +52,7 @@ import { GrpcAddTestCaseHandler } from '@/transport/grpc/handlers/problem/AddTes
 import { GrpcBulkUploadTestCaseHandler } from '@/transport/grpc/handlers/problem/bulkUploadTestCaseHandler';
 import { GrpcRemoveTestCaseHandler } from '@/transport/grpc/handlers/problem/RemoveTestCaseHandler';
 import { GrpcAddSolutionCodeHandler } from '@/transport/grpc/handlers/problem/AddSolutionCodeHandler';
+import { GrpcUpdateSolutionCodeHandler } from '@/transport/grpc/handlers/problem/UpdateSolutionCodeHandler';
 
 // Submission Services
 
@@ -143,6 +144,9 @@ container
 container
     .bind<GrpcAddSolutionCodeHandler>(TYPES.GrpcAddSolutionCodeHandler)
     .to(GrpcAddSolutionCodeHandler);
+container
+    .bind<GrpcUpdateSolutionCodeHandler>(TYPES.GrpcUpdateSolutionCodeHandler)
+    .to(GrpcUpdateSolutionCodeHandler);
 
 
 export default container

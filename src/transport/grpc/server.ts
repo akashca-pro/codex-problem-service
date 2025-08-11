@@ -12,6 +12,7 @@ import { GrpcAddTestCaseHandler } from "./handlers/problem/AddTestCaseHandler";
 import { GrpcBulkUploadTestCaseHandler } from "./handlers/problem/bulkUploadTestCaseHandler";
 import { GrpcRemoveTestCaseHandler } from "./handlers/problem/RemoveTestCaseHandler";
 import { GrpcAddSolutionCodeHandler } from "./handlers/problem/AddSolutionCodeHandler";
+import { GrpcUpdateSolutionCodeHandler } from "./handlers/problem/UpdateSolutionCodeHandler";
 
 // problem 
 const createProblem = container.get<GrpcCreateProblemHandler>(TYPES.GrpcCreateProblemHandler);
@@ -22,6 +23,7 @@ const addTestCase = container.get<GrpcAddTestCaseHandler>(TYPES.GrpcAddTestCaseH
 const bulkUploadTestCase = container.get<GrpcBulkUploadTestCaseHandler>(TYPES.GrpcBulkUploadTestCaseHandler);
 const removeTestCase = container.get<GrpcRemoveTestCaseHandler>(TYPES.GrpcRemoveTestCaseHandler);
 const addSolutionCode = container.get<GrpcAddSolutionCodeHandler>(TYPES.GrpcAddSolutionCodeHandler);
+const updateSolutionCode = container.get<GrpcUpdateSolutionCodeHandler>(TYPES.GrpcUpdateSolutionCodeHandler);
 
 const problemHandler = {
     ...createProblem.getServiceHandler(),
@@ -32,6 +34,7 @@ const problemHandler = {
     ...bulkUploadTestCase.getServiceHandler(),
     ...removeTestCase.getServiceHandler(),
     ...addSolutionCode.getServiceHandler(),
+    ...updateSolutionCode.getServiceHandler(),
 
 }
 

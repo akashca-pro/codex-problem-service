@@ -15,7 +15,7 @@ import {
 import { Language } from "@/enums/language.enum";
 import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
 import { IAddTestCaseRequestDTO, IBulkUploadTestCaseRequestDTO, IRemoveTestCaseRequestDTO } from "../problem/testCaseRequestDTOs";
-import { IAddSolutionCodeRequestDTO } from "../problem/solutionCodeRequestDTOs";
+import { IAddSolutionCodeRequestDTO, IUpdateSolutionCodeRequestDTO } from "../problem/solutionCodeRequestDTOs";
 
 export class ProblemMapper {
     
@@ -100,9 +100,18 @@ export class ProblemMapper {
     }
 
     static toAddSolutionCodeService (body : IAddSolutionCodeInputDTO ) : IAddSolutionCodeRequestDTO {
-        if(!body.solutionCode) throw new Error('No Solution code found in IAddSolutionCodeInputDTO')
+        if(!body.solutionCode) throw new Error('No Solution code found in IAddSolutionCodeInputDTO');
         return {
             _id : body.Id,
+            solutionCode : this._mapGrpcSolutionCode(body.solutionCode)
+        }
+    }
+
+    static toUpdateSolutionCodeService (body : IUpdateSolutionCodeInputDTO) : IUpdateSolutionCodeRequestDTO {
+        if(!body.solutionCode) throw new Error('No Solution code found in IAddSolutionCodeInputDTO');
+        return {
+            _id : body.Id,
+            solutionCodeId : body.solutionCodeId,
             solutionCode : this._mapGrpcSolutionCode(body.solutionCode)
         }
     }
@@ -227,5 +236,11 @@ export interface IRemoveTestCaseInputDTO {
 
 export interface IAddSolutionCodeInputDTO {
     Id : string;
+    solutionCode? : IGrpcSolutionCode
+}
+
+export interface IUpdateSolutionCodeInputDTO {
+    Id : string;
+    solutionCodeId : string;
     solutionCode? : IGrpcSolutionCode
 }
