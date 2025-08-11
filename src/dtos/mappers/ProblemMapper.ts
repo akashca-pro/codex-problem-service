@@ -12,7 +12,7 @@ import {
 from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { Language } from "@/enums/language.enum";
 import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
-import { IAddTestCaseRequestDTO } from "../problem/testCaseRequestDTOs";
+import { IAddTestCaseRequestDTO, IBulkUploadTestCaseRequestDTO } from "../problem/testCaseRequestDTOs";
 
 export class ProblemMapper {
     
@@ -76,6 +76,15 @@ export class ProblemMapper {
             _id : body.Id,
             testCaseCollectionType : this._mapGrpcTestCaseCollectionTypeEnum(body.testCaseCollectionType),
             testCase : this._mapGrpcTestCase(body.testcase as IGrpcTestCase) 
+        }
+    }
+
+    static toBulkUploadTestCaseService (body : IBulkUploadTestCaseInputDTO ) : IBulkUploadTestCaseRequestDTO {
+        if(!body.testcase) throw new Error('No Testcase found in IAddTestCaseInputDTO')
+        return {
+            _id : body.Id,
+            testCaseCollectionType : this._mapGrpcTestCaseCollectionTypeEnum(body.testCaseCollectionType),
+            testCase : body.testcase.map(this._mapGrpcTestCase)
         }
     }
 
@@ -173,4 +182,10 @@ export interface IAddTestCaseInputDTO {
     Id : string;
     testCaseCollectionType : GrpcTestCaseCollectionTypeEnum;
     testcase? : IGrpcTestCase;
+}
+
+export interface IBulkUploadTestCaseInputDTO {
+    Id : string;
+    testCaseCollectionType : GrpcTestCaseCollectionTypeEnum;
+    testcase? : IGrpcTestCase[];
 }

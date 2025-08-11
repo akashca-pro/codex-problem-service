@@ -1,5 +1,5 @@
 import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
-import { IBulkUploadTestCase } from "./interfaces/bulkUploadTestCase.service.interface";
+import { IBulkUploadTestCaseService } from "./interfaces/bulkUploadTestCase.service.interface";
 import { inject, injectable } from "inversify";
 import TYPES from "@/config/inversify/types";
 import { IBulkUploadTestCaseRequestDTO } from "@/dtos/problem/testCaseRequestDTOs";
@@ -10,10 +10,10 @@ import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
  * Implementaion of bulk upload test case service.
  * 
  * @class
- * @implements {IBulkUploadTestCase}
+ * @implements {IBulkUploadTestCaseService}
  */
 @injectable()
-export class BulkUploadTestCase implements IBulkUploadTestCase {
+export class BulkUploadTestCaseService implements IBulkUploadTestCaseService {
 
     #_problemRepo : IProblemRepository
 

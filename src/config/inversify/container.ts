@@ -22,8 +22,8 @@ import { IListProblemService } from '@/services/problem/interfaces/ListProblem.s
 import { ListProblemService } from '@/services/problem/ListProblem.service';
 import { IAddTestCaseService } from '@/services/problem/interfaces/addTestCase.service.interface';
 import { AddTestCaseService } from '@/services/problem/addTestCase.service';
-import { IBulkUploadTestCase } from '@/services/problem/interfaces/bulkUploadTestCase.service.interface';
-import { BulkUploadTestCase } from '@/services/problem/bulkUploadTestCase.service';
+import { IBulkUploadTestCaseService } from '@/services/problem/interfaces/bulkUploadTestCase.service.interface';
+import { BulkUploadTestCaseService } from '@/services/problem/bulkUploadTestCase.service';
 import { IRemoveTestCaseService } from '@/services/problem/interfaces/removeTestCase.service.interface';
 import { RemoveTestCaseService } from '@/services/problem/removeTestCase.service';
 import { IAddSolutionCodeService } from '@/services/problem/interfaces/addSolutionCode.service.interface';
@@ -39,6 +39,9 @@ import { ICreateSubmissionService } from '@/services/submission/interfaces/creat
 import { CreateSubmissionService } from '@/services/submission/createSubmission.service';
 import { IUpdateSubmissionService } from '@/services/submission/interfaces/updateSubmission.service.interface';
 import { UpdateSubmissionService } from '@/services/submission/updateSubmission.service';
+
+// Grpc handlers
+
 import { GrpcCreateProblemHandler } from '@/transport/grpc/handlers/problem/CreateProblemHandler';
 import { IGetSubmissionsService } from '@/services/submission/interfaces/getSubmissions.service.interface';
 import { GetSubmissionsService } from '@/services/submission/getSubmission.service';
@@ -46,6 +49,7 @@ import { GrpcGetProblemHandler } from '@/transport/grpc/handlers/problem/GetProb
 import { GrpcListProblemHandler } from '@/transport/grpc/handlers/problem/ListProblemHandler';
 import { GrpcUpdateBasicProblemDetailsHandler } from '@/transport/grpc/handlers/problem/UpdateProblemHandler';
 import { GrpcAddTestCaseHandler } from '@/transport/grpc/handlers/problem/AddTestCaseHandler';
+import { GrpcBulkUploadTestCaseHandler } from '@/transport/grpc/handlers/problem/bulkUploadTestCaseHandler';
 
 // Submission Services
 
@@ -81,8 +85,8 @@ container
     .bind<IAddTestCaseService>(TYPES.IAddTestCaseService)
     .to(AddTestCaseService);
 container
-    .bind<IBulkUploadTestCase>(TYPES.IBulkUploadTestCaseService)
-    .to(BulkUploadTestCase);
+    .bind<IBulkUploadTestCaseService>(TYPES.IBulkUploadTestCaseService)
+    .to(BulkUploadTestCaseService);
 container
     .bind<IRemoveTestCaseService>(TYPES.IRemoveTestCaseService)
     .to(RemoveTestCaseService);
@@ -128,6 +132,9 @@ container
 container
     .bind<GrpcAddTestCaseHandler>(TYPES.GrpcAddTestCaseHandler)
     .to(GrpcAddTestCaseHandler);
+container
+    .bind<GrpcBulkUploadTestCaseHandler>(TYPES.GrpcBulkUploadTestCaseHandler)
+    .to(GrpcBulkUploadTestCaseHandler);
 
 
 export default container

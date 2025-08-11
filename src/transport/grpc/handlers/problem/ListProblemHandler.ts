@@ -60,7 +60,7 @@ export class GrpcListProblemHandler {
      * Returns the bound handler method for the gRPC service.
      *
      * @remarks
-     * This method ensures that the `createProblem` handler maintains the correct `this` context
+     * This method ensures that the `listProblems` handler maintains the correct `this` context
      * when passed to the gRPC server. This is especially important since gRPC handlers
      * are called with a different execution context.
      *

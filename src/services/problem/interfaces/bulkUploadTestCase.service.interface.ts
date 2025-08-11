@@ -6,7 +6,7 @@ import { ResponseDTO } from "@/dtos/ResponseDTO";
  * 
  * @interface
  */
-export interface IBulkUploadTestCase {
+export interface IBulkUploadTestCaseService {
 
     /**
      * Executes the bulk upload test case service.
