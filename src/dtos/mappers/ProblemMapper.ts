@@ -12,7 +12,7 @@ import {
 from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { Language } from "@/enums/language.enum";
 import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
-import { IAddTestCaseRequestDTO, IBulkUploadTestCaseRequestDTO } from "../problem/testCaseRequestDTOs";
+import { IAddTestCaseRequestDTO, IBulkUploadTestCaseRequestDTO, IRemoveTestCaseRequestDTO } from "../problem/testCaseRequestDTOs";
 
 export class ProblemMapper {
     
@@ -85,6 +85,14 @@ export class ProblemMapper {
             _id : body.Id,
             testCaseCollectionType : this._mapGrpcTestCaseCollectionTypeEnum(body.testCaseCollectionType),
             testCase : body.testcase.map(this._mapGrpcTestCase)
+        }
+    }
+
+    static toRemoveTestCaseService (body : IRemoveTestCaseInputDTO) : IRemoveTestCaseRequestDTO {
+        return {
+            _id : body.Id,
+            testCaseId : body.testCaseId,
+            testCaseCollectionType : this._mapGrpcTestCaseCollectionTypeEnum(body.testCaseCollectionType)
         }
     }
 
@@ -188,4 +196,10 @@ export interface IBulkUploadTestCaseInputDTO {
     Id : string;
     testCaseCollectionType : GrpcTestCaseCollectionTypeEnum;
     testcase? : IGrpcTestCase[];
+}
+
+export interface IRemoveTestCaseInputDTO {
+    Id : string;
+    testCaseId : string;
+    testCaseCollectionType : GrpcTestCaseCollectionTypeEnum;
 }
