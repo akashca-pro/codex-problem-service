@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import logger from '@akashcapro/codex-shared-utils/utils/logger';
+import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
 
 export const globalErrorHandler = (
     err: Error,

@@ -1,5 +1,5 @@
 import express from 'express';
-import logger from '@akashcapro/codex-shared-utils/utils/logger';
+import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
 import { globalErrorHandler } from '@/utils/errorHandler';
 import { config } from '@/config';
 import { startMetricsServer } from '@/config/metrics/metrics-server';

@@ -1,13 +1,13 @@
 import TYPES from "@/config/inversify/types";
-import { ProblemMapper } from "@/dtos/mappers/ProblemMapper";
 import { SystemErrorType } from "@/enums/ErrorTypes/SystemErrorType.enum";
-import { ICreateProblemService, } from "@/services/problem/interfaces/createProblem.service.interface";
+import { IGetProblemService } from "@/services/problem/interfaces/getProblem.service.interface";
 import { mapMessageToGrpcStatus } from "@/utils/mapMessageToGrpcCode";
-import { CreateProblemRequest, Problem } from '@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem'
+import { GetProblemRequest, Problem } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
 import { sendUnaryData, ServerUnaryCall } from "@grpc/grpc-js";
 import { Status } from "@grpc/grpc-js/build/src/constants";
 import { inject, injectable } from "inversify";
+
 
 /**
  * Class for handling creation of problem document.
@@ -15,39 +15,40 @@ import { inject, injectable } from "inversify";
  * @class
  */
 @injectable()
-export class GrpcCreateProblemHandler {
+export class GrpcGetProblemHandler {
 
-    #_createProblemService : ICreateProblemService
+    #_getProblemService : IGetProblemService
 
-    /**
-     * @param createProblemService - The service for creating a new problem.
-     * @constructor
-     */
     constructor(
-        @inject(TYPES.ICreateProblemService)
-        createProblemService : ICreateProblemService
+        @inject(TYPES.IGetProblemService)
+        getProblemService : IGetProblemService
     ){
-        this.#_createProblemService = createProblemService
+        this.#_getProblemService = getProblemService
     }
 
-    createProblem = async (
-        call : ServerUnaryCall<CreateProblemRequest,Problem>,
+    getProblem = async (
+        call : ServerUnaryCall<GetProblemRequest,Problem>,
         callback : sendUnaryData<Problem>
-    ) : Promise<void> => {
+    ) => {
 
         try {
+            
             const req = call.request;
-            const problemData = ProblemMapper.toCreateProblemService(req)
-            const result = await this.#_createProblemService.execute(problemData);
+
+            const result = await this.#_getProblemService.execute({
+                _id : req.Id,
+                questionId : req.questionId,
+                title : req.title
+            })
 
             if(!result.success){
                 callback({
                     code : mapMessageToGrpcStatus(result.errorMessage as string),
                     message : result.errorMessage
-                },null)
+                },null);
             }
 
-            return callback(null,result.data);
+            callback(null,result.data);
 
         } catch (error) {
             logger.error(SystemErrorType.InternalServerError,error);
@@ -70,7 +71,7 @@ export class GrpcCreateProblemHandler {
      */
     getServiceHandler() : object {
         return {
-            createProblem : this.createProblem.bind(this)
+            getProblem : this.getProblem.bind(this)
         }
     }
 }

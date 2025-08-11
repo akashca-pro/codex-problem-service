@@ -4,7 +4,7 @@ import TYPES from "@/config/inversify/types";
 import { Server, ServerCredentials } from "@grpc/grpc-js";
 import { ProblemServiceService } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { config } from "@/config";
-import logger from "@akashcapro/codex-shared-utils/utils/logger";
+import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
 
 // problem 
 const createProblem = container.get<GrpcCreateProblemHandler>(TYPES.GrpcCreateProblemHandler)

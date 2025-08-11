@@ -42,6 +42,7 @@ import { UpdateSubmissionService } from '@/services/submission/updateSubmission.
 import { GrpcCreateProblemHandler } from '@/transport/grpc/handlers/problem/CreateProblemHandler';
 import { IGetSubmissionsService } from '@/services/submission/interfaces/getSubmissions.service.interface';
 import { GetSubmissionsService } from '@/services/submission/getSubmission.service';
+import { GrpcGetProblemHandler } from '@/transport/grpc/handlers/problem/GetProblemHandler';
 
 // Submission Services
 
@@ -112,6 +113,9 @@ container
 container
     .bind<GrpcCreateProblemHandler>(TYPES.GrpcCreateProblemHandler)
     .to(GrpcCreateProblemHandler);
+container
+    .bind<GrpcGetProblemHandler>(TYPES.GrpcGetProblemHandler)
+    .to(GrpcGetProblemHandler);
 
 
 export default container
