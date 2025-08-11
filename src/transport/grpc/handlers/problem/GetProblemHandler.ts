@@ -10,7 +10,7 @@ import { inject, injectable } from "inversify";
 
 
 /**
- * Class for handling creation of problem document.
+ * Class for handling get problem document.
  * 
  * @class
  */
@@ -19,6 +19,11 @@ export class GrpcGetProblemHandler {
 
     #_getProblemService : IGetProblemService
 
+    /**
+     * 
+     * @param getProblemService - The problem service.
+     * @constructor
+     */
     constructor(
         @inject(TYPES.IGetProblemService)
         getProblemService : IGetProblemService

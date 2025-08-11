@@ -49,7 +49,7 @@ export class ListProblemService implements IListProblemService {
         const totalPages = Math.ceil(totalItems/ data.limit);
 
         return {
-            body : problems,
+            body : problems || [],
             currentPage : data.page,
             totalItems,
             totalPages

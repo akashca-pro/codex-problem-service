@@ -5,12 +5,18 @@ import { Server, ServerCredentials } from "@grpc/grpc-js";
 import { ProblemServiceService } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { config } from "@/config";
 import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
+import { GrpcGetProblemHandler } from "./handlers/problem/GetProblemHandler";
+import { GrpcListProblemHandler } from "./handlers/problem/ListProblemHandler";
 
 // problem 
-const createProblem = container.get<GrpcCreateProblemHandler>(TYPES.GrpcCreateProblemHandler)
+const createProblem = container.get<GrpcCreateProblemHandler>(TYPES.GrpcCreateProblemHandler);
+const getProblem = container.get<GrpcGetProblemHandler>(TYPES.GrpcGetProblemHandler);
+const listProblem = container.get<GrpcListProblemHandler>(TYPES.GrpcListProblemHandler);
 
 const problemHandler = {
     ...createProblem.getServiceHandler(),
+    ...getProblem.getServiceHandler(),
+    ...listProblem.getServiceHandler(),
 }
 
 export const startGrpcServer = () => {

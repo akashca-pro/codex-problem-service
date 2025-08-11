@@ -1,21 +1,24 @@
 import { Difficulty } from "@/enums/difficulty.enum";
 import { ICreateProblemRequestDTO } from "../problem/CreateProblemRequestDTO";
+import { IListProblemsRequestDTO } from "../problem/listProblemsRequestDTO";
 
+export const gRPCDifficultyFieldMapper = (difficulty : number) : Difficulty => {
+
+        if (difficulty === 1) {
+            return Difficulty.EASY;
+        } else if (difficulty === 2) {
+            return Difficulty.MEDIUM;
+        } else if (difficulty === 3) {
+            return Difficulty.HARD;
+        } else {
+            throw new Error('Invalid difficulty value');
+        }   
+}
 
 export class ProblemMapper {
     
     static toCreateProblemService(body : ICreateProblemInput) : ICreateProblemRequestDTO {
-        let difficulty: Difficulty;
-
-        if (body.difficulty === 1) {
-            difficulty = Difficulty.EASY;
-        } else if (body.difficulty === 2) {
-            difficulty = Difficulty.MEDIUM;
-        } else if (body.difficulty === 3) {
-            difficulty = Difficulty.HARD;
-        } else {
-            throw new Error('Invalid difficulty value');
-  }
+        const difficulty = gRPCDifficultyFieldMapper(body.difficulty);
 
         return {
             title : body.title,
@@ -26,6 +29,24 @@ export class ProblemMapper {
         }
     }
 
+    static toListProblemService(body : IListProblemInput) : IListProblemsRequestDTO {
+
+        let difficulty : Difficulty | undefined 
+
+        if(body.difficulty){
+            difficulty = gRPCDifficultyFieldMapper(body.difficulty);
+        }
+
+        return {
+            limit : body.limit,
+            page : body.page,
+            active : body.active,
+            difficulty : difficulty,
+            questionId : body.questionId,
+            search : body.search,
+            tag : body.tag
+        }
+    }
 }
 
 export interface ICreateProblemInput {
@@ -34,4 +55,14 @@ export interface ICreateProblemInput {
     description : string;
     difficulty : number;
     tags : string[];
+}
+
+export interface IListProblemInput {
+    page : number;
+    limit : number;
+    difficulty? : number;
+    tag? : string;
+    active? : boolean;
+    search? : string;
+    questionId? : string 
 }

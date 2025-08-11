@@ -28,6 +28,7 @@ const TYPES = {
 
     GrpcCreateProblemHandler : Symbol.for("GrpcCreateProblemHandler"),
     GrpcGetProblemHandler : Symbol.for("GrpcGetProblemHandler"),
+    GrpcListProblemHandler : Symbol.for("GrpcListProblemHandler"),
     
 
 }

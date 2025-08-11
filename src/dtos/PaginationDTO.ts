@@ -7,7 +7,7 @@ export interface PaginationDTO {
   /**
    * The body of the response, representing the paginated data.
    */
-  body: unknown[]
+  body: any[]
 
   /**
    * The total number of pages.
