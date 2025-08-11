@@ -35,6 +35,7 @@ const TYPES = {
     GrpcRemoveTestCaseHandler : Symbol.for("GrpcRemoveTestCaseHandler"),
     GrpcAddSolutionCodeHandler : Symbol.for("GrpcAddSolutionCodeHandler"),
     GrpcUpdateSolutionCodeHandler : Symbol.for("GrpcUpdateSolutionCodeHandler"),
+    GrpcRemoveSolutionCodeHandler : Symbol.for("GrpcRemoveSolutionCodeHandler"),
 
 
 }

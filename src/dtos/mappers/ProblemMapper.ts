@@ -15,7 +15,7 @@ import {
 import { Language } from "@/enums/language.enum";
 import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
 import { IAddTestCaseRequestDTO, IBulkUploadTestCaseRequestDTO, IRemoveTestCaseRequestDTO } from "../problem/testCaseRequestDTOs";
-import { IAddSolutionCodeRequestDTO, IUpdateSolutionCodeRequestDTO } from "../problem/solutionCodeRequestDTOs";
+import { IAddSolutionCodeRequestDTO, IRemoveSolutionCodeRequestDTO, IUpdateSolutionCodeRequestDTO } from "../problem/solutionCodeRequestDTOs";
 
 export class ProblemMapper {
     
@@ -116,6 +116,13 @@ export class ProblemMapper {
         }
     }
 
+    static toRemoveSolutionCodeService (body : IRemoveSolutionCodeInputDTO ) : IRemoveSolutionCodeRequestDTO {
+        return {
+            _id : body.Id,
+            solutionCodeId : body.solutionCodeId
+        }
+    }
+
     private static _mapGrpcExample(e : IGrpcExample) : IExample {
         return {
             _id : e.Id,
@@ -163,7 +170,7 @@ export class ProblemMapper {
         }   
     }
 
-    private static _mapGrpcLanguageEnum(language : number) : Language {
+    private static _mapGrpcLanguageEnum(language : GrpcLanguageEnum) : Language {
         if(language === 1){
             return Language.JAVASCRIPT;
         } else if (language === 2){
@@ -243,4 +250,9 @@ export interface IUpdateSolutionCodeInputDTO {
     Id : string;
     solutionCodeId : string;
     solutionCode? : IGrpcSolutionCode
+}
+
+export interface IRemoveSolutionCodeInputDTO {
+    Id : string;
+    solutionCodeId : string
 }
