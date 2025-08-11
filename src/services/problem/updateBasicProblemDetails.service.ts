@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import TYPES from "@/config/inversify/types";
-import { IUpdateBasicProblemDetailsService } from "./interfaces/updateProblem.service.interface";
+import { IUpdateBasicProblemDetailsService } from "./interfaces/updateBasicProblemDetails.service.interface";
 import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
 import { IUpdateBasicProblemRequestDTO } from "@/dtos/problem/updateProblemRequestDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";

@@ -13,9 +13,9 @@ import { SubmissionRepository } from '@/infra/repos/submission.repository';
 // Problem Services
 
 import { ICreateProblemService } from '@/services/problem/interfaces/createProblem.service.interface';
-import { IUpdateBasicProblemDetailsService } from '@/services/problem/interfaces/updateProblem.service.interface';
+import { IUpdateBasicProblemDetailsService } from '@/services/problem/interfaces/updateBasicProblemDetails.service.interface';
 import { CreateProblemService } from '@/services/problem/createProblem.service';
-import { UpdateProblemService } from '@/services/problem/updateProblem.service';
+import { UpdateProblemService } from '@/services/problem/updateBasicProblemDetails.service';
 import { IGetProblemService } from '@/services/problem/interfaces/getProblem.service.interface';
 import { GetProblemService } from '@/services/problem/getProblem.service';
 import { IListProblemService } from '@/services/problem/interfaces/ListProblem.service.interface';
@@ -44,6 +44,7 @@ import { IGetSubmissionsService } from '@/services/submission/interfaces/getSubm
 import { GetSubmissionsService } from '@/services/submission/getSubmission.service';
 import { GrpcGetProblemHandler } from '@/transport/grpc/handlers/problem/GetProblemHandler';
 import { GrpcListProblemHandler } from '@/transport/grpc/handlers/problem/ListProblemHandler';
+import { GrpcUpdateBasicProblemDetailsHandler } from '@/transport/grpc/handlers/problem/UpdateProblemHandler';
 
 // Submission Services
 
@@ -120,6 +121,9 @@ container
 container
     .bind<GrpcListProblemHandler>(TYPES.GrpcListProblemHandler)
     .to(GrpcListProblemHandler);
+container
+    .bind<GrpcUpdateBasicProblemDetailsHandler>(TYPES.GrpcUpdateBasicProblemDetailsHandler)
+    .to(GrpcUpdateBasicProblemDetailsHandler);
 
 
 export default container
