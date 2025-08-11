@@ -1,18 +1,21 @@
 import { Difficulty } from "@/enums/difficulty.enum";
 import { ICreateProblemRequestDTO } from "../problem/CreateProblemRequestDTO";
 import { IListProblemsRequestDTO } from "../problem/listProblemsRequestDTO";
-import { IExample, IStarterCode, ITestCase } from "@/infra/db/interface/problem.interface";
+import { IExample, ISolutionCode, IStarterCode, ITestCase } from "@/infra/db/interface/problem.interface";
 import { IUpdateBasicProblemRequestDTO } from "../problem/updateProblemRequestDTO";
 import { 
     Example as IGrpcExample,
     StarterCode as IGrpcStarterCode, 
+    TestCase as IGrpcTestCase,
+    SolutionCode as IGrpcSolutionCode,
     TestCaseCollectionType as GrpcTestCaseCollectionTypeEnum, 
     Difficulty as GrpcDifficultyEnum,
-    TestCase as IGrpcTestCase } 
-from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+    Language as GrpcLanguageEnum,
+} from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { Language } from "@/enums/language.enum";
 import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
 import { IAddTestCaseRequestDTO, IBulkUploadTestCaseRequestDTO, IRemoveTestCaseRequestDTO } from "../problem/testCaseRequestDTOs";
+import { IAddSolutionCodeRequestDTO } from "../problem/solutionCodeRequestDTOs";
 
 export class ProblemMapper {
     
@@ -96,6 +99,14 @@ export class ProblemMapper {
         }
     }
 
+    static toAddSolutionCodeService (body : IAddSolutionCodeInputDTO ) : IAddSolutionCodeRequestDTO {
+        if(!body.solutionCode) throw new Error('No Solution code found in IAddSolutionCodeInputDTO')
+        return {
+            _id : body.Id,
+            solutionCode : this._mapGrpcSolutionCode(body.solutionCode)
+        }
+    }
+
     private static _mapGrpcExample(e : IGrpcExample) : IExample {
         return {
             _id : e.Id,
@@ -118,6 +129,16 @@ export class ProblemMapper {
             _id : t.Id,
             input : t.input,
             output : t.output
+        }
+    }
+
+    private static _mapGrpcSolutionCode(s : IGrpcSolutionCode ) : ISolutionCode {
+        return {
+            _id : s.Id,
+            code : s.code,
+            language : this._mapGrpcLanguageEnum(s.language),
+            executionTime : s.executionTime,
+            memoryTaken : s.memoryTaken
         }
     }
 
@@ -202,4 +223,9 @@ export interface IRemoveTestCaseInputDTO {
     Id : string;
     testCaseId : string;
     testCaseCollectionType : GrpcTestCaseCollectionTypeEnum;
+}
+
+export interface IAddSolutionCodeInputDTO {
+    Id : string;
+    solutionCode? : IGrpcSolutionCode
 }
