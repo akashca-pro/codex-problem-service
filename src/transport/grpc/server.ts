@@ -7,16 +7,22 @@ import { config } from "@/config";
 import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
 import { GrpcGetProblemHandler } from "./handlers/problem/GetProblemHandler";
 import { GrpcListProblemHandler } from "./handlers/problem/ListProblemHandler";
+import { GrpcUpdateBasicProblemDetailsHandler } from "./handlers/problem/UpdateProblemHandler";
+import { GrpcAddTestCaseHandler } from "./handlers/problem/AddTestCaseHandler";
 
 // problem 
 const createProblem = container.get<GrpcCreateProblemHandler>(TYPES.GrpcCreateProblemHandler);
 const getProblem = container.get<GrpcGetProblemHandler>(TYPES.GrpcGetProblemHandler);
 const listProblem = container.get<GrpcListProblemHandler>(TYPES.GrpcListProblemHandler);
+const updateBasicProblemDetails = container.get<GrpcUpdateBasicProblemDetailsHandler>(TYPES.GrpcUpdateBasicProblemDetailsHandler);
+const addTestCase = container.get<GrpcAddTestCaseHandler>(TYPES.GrpcAddTestCaseHandler);
 
 const problemHandler = {
     ...createProblem.getServiceHandler(),
     ...getProblem.getServiceHandler(),
     ...listProblem.getServiceHandler(),
+    ...updateBasicProblemDetails.getServiceHandler(),
+    ...addTestCase.getServiceHandler(),
 }
 
 export const startGrpcServer = () => {

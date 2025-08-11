@@ -47,13 +47,13 @@ export class GrpcGetProblemHandler {
             })
 
             if(!result.success){
-                callback({
+                return callback({
                     code : mapMessageToGrpcStatus(result.errorMessage as string),
                     message : result.errorMessage
                 },null);
             }
 
-            callback(null,result.data);
+            return callback(null,result.data);
 
         } catch (error) {
             logger.error(SystemErrorType.InternalServerError,error);

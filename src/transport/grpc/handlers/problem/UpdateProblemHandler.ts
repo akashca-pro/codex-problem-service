@@ -46,13 +46,13 @@ export class GrpcUpdateBasicProblemDetailsHandler {
             const result = await this.#_updateBasicProblemDetailsService.execute(req.Id,dto);
 
             if(!result.success){
-                callback({
+                return callback({
                     code : mapMessageToGrpcStatus(result.errorMessage as string),
                     message : result.errorMessage
                 },null)
             }
 
-            callback(null,{});
+            return callback(null,{});
 
         } catch (error) {
             logger.error(SystemErrorType.InternalServerError,error);

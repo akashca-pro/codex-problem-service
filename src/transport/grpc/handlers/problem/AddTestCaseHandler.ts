@@ -1,52 +1,54 @@
 import TYPES from "@/config/inversify/types";
 import { ProblemMapper } from "@/dtos/mappers/ProblemMapper";
 import { SystemErrorType } from "@/enums/ErrorTypes/SystemErrorType.enum";
-import { IProblem } from "@/infra/db/interface/problem.interface";
-import { IListProblemService } from "@/services/problem/interfaces/ListProblem.service.interface";
-import { ListProblemRequest, ListProblemResponse } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import { IAddTestCaseService } from "@/services/problem/interfaces/addTestCase.service.interface";
+import { mapMessageToGrpcStatus } from "@/utils/mapMessageToGrpcCode";
+import { AddTestCaseRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import { Empty } from "@akashcapro/codex-shared-utils/dist/proto/compiled/google/protobuf/empty";
 import logger from "@akashcapro/codex-shared-utils/dist/utils/logger";
 import { sendUnaryData, ServerUnaryCall } from "@grpc/grpc-js";
 import { Status } from "@grpc/grpc-js/build/src/constants";
 import { inject, injectable } from "inversify";
 
+
 /**
- * Class for handling list paginated problem documents.
+ * Class for handling adding test case to a problem document.
  * 
  * @class
  */
 @injectable()
-export class GrpcListProblemHandler {
+export class GrpcAddTestCaseHandler {
 
-    #_listProblemService : IListProblemService
+    #_addTestCaseService : IAddTestCaseService
 
-    /**
-     * 
-     * @param listProblemService - The service for listing paginated problem documents.
-     */
     constructor(
-        @inject(TYPES.IListProblemService)
-        listProblemService : IListProblemService
+        @inject(TYPES.IAddTestCaseService)
+        addTestCaseService : IAddTestCaseService
     ){
-        this.#_listProblemService = listProblemService
+        this.#_addTestCaseService = addTestCaseService
     }
 
-    listProblems = async(
-        call : ServerUnaryCall<ListProblemRequest,ListProblemResponse>,
-        callback : sendUnaryData<ListProblemResponse>
+    addTestCase = async (
+        call : ServerUnaryCall<AddTestCaseRequest,Empty>,
+        callback : sendUnaryData<Empty>
     ) => {
 
         try {
             
             const req = call.request;
 
-            const result = await this.#_listProblemService.execute(ProblemMapper.toListProblemService(req));
-            
-            return callback(null,{
-                currentPage : result.currentPage,
-                problems : result.body ,
-                totalItems : result.totalItems,
-                totalPage : result.totalPages
-            })
+            const dto = ProblemMapper.toAddTestCaseService(req)
+
+            const result = await this.#_addTestCaseService.execute(dto);
+
+            if(!result.success){
+                return callback({
+                    code : mapMessageToGrpcStatus(result.errorMessage as string),
+                    message : result.errorMessage
+                },null)
+            }
+
+            return callback(null,{});
 
         } catch (error) {
             logger.error(SystemErrorType.InternalServerError,error);
@@ -68,7 +70,7 @@ export class GrpcListProblemHandler {
      */
     getServiceHandler() : object {
         return {
-            listProblems : this.listProblems.bind(this)
+            addTestCase : this.addTestCase.bind(this)
         }
     }
 }

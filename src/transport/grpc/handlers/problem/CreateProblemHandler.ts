@@ -41,7 +41,7 @@ export class GrpcCreateProblemHandler {
             const result = await this.#_createProblemService.execute(problemData);
 
             if(!result.success){
-                callback({
+                return callback({
                     code : mapMessageToGrpcStatus(result.errorMessage as string),
                     message : result.errorMessage
                 },null)
