@@ -24,7 +24,7 @@ const TYPES = {
     IUpdateSubmissionService : Symbol.for("IUpdateSubmissionService"),
     IGetSubmissionsService : Symbol.for("IGetSubmissionsService"),
     
-    // Grpc Handlers
+    // Grpc Handlers for problems
 
     GrpcCreateProblemHandler : Symbol.for("GrpcCreateProblemHandler"),
     GrpcGetProblemHandler : Symbol.for("GrpcGetProblemHandler"),
@@ -36,7 +36,10 @@ const TYPES = {
     GrpcAddSolutionCodeHandler : Symbol.for("GrpcAddSolutionCodeHandler"),
     GrpcUpdateSolutionCodeHandler : Symbol.for("GrpcUpdateSolutionCodeHandler"),
     GrpcRemoveSolutionCodeHandler : Symbol.for("GrpcRemoveSolutionCodeHandler"),
+    
+    // Grpc Handlers for submissions
 
+    GrpcCreateSubmissionhandler : Symbol.for("GrpcCreateSubmissionhandler"),
 
 }
 

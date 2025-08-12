@@ -10,8 +10,8 @@ export interface ICreateSubmissionRequestDTO {
 
     problemId : string;
     userId : string;
-    battleId? : string;
-    country? : string;
+    battleId : string | null;
+    country : string | null;
     title : string;
     language : Language;
     userCode : string;

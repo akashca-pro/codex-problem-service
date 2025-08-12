@@ -2,9 +2,10 @@ import container from "@/config/inversify/container";
 import { GrpcCreateProblemHandler } from "./handlers/problem/CreateProblemHandler";
 import TYPES from "@/config/inversify/types";
 import { Server, ServerCredentials } from "@grpc/grpc-js";
-import { ProblemServiceService } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import { ProblemServiceService, SubmissionServiceService } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { config } from "@/config";
 import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
+
 import { GrpcGetProblemHandler } from "./handlers/problem/GetProblemHandler";
 import { GrpcListProblemHandler } from "./handlers/problem/ListProblemHandler";
 import { GrpcUpdateBasicProblemDetailsHandler } from "./handlers/problem/UpdateProblemHandler";
@@ -14,6 +15,7 @@ import { GrpcRemoveTestCaseHandler } from "./handlers/problem/RemoveTestCaseHand
 import { GrpcAddSolutionCodeHandler } from "./handlers/problem/AddSolutionCodeHandler";
 import { GrpcUpdateSolutionCodeHandler } from "./handlers/problem/UpdateSolutionCodeHandler";
 import { GrpcRemoveSolutionCodeHandler } from "./handlers/problem/RemoveSolutionCodeHandler";
+import { GrpcCreateSubmissionhandler } from "./handlers/submission/CreateSubmissionHandler";
 
 // problem 
 const createProblem = container.get<GrpcCreateProblemHandler>(TYPES.GrpcCreateProblemHandler);
@@ -41,12 +43,23 @@ const problemHandler = {
 
 }
 
+// Submission
+const createSubmission = container.get<GrpcCreateSubmissionhandler>(TYPES.GrpcCreateSubmissionhandler);
+
+const submissionHandler = {
+    ...createSubmission.getServiceHandler(),
+}
+
 export const startGrpcServer = () => {
 
     const server = new Server();
 
     server.addService(
-        ProblemServiceService,problemHandler
+        ProblemServiceService, problemHandler
+    )
+
+    server.addService(
+        SubmissionServiceService, submissionHandler
     )
 
     server.bindAsync(
