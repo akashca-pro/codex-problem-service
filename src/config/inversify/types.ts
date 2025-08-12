@@ -41,6 +41,7 @@ const TYPES = {
 
     GrpcCreateSubmissionhandler : Symbol.for("GrpcCreateSubmissionhandler"),
     GrpcUpdateSubmissionHandler : Symbol.for("GrpcUpdateSubmissionHandler"),
+    GrpcGetSubmissionsHandler : Symbol.for("GrpcGetSubmissionsHandler"),
 
 }
 

@@ -56,6 +56,7 @@ import { GrpcUpdateSolutionCodeHandler } from '@/transport/grpc/handlers/problem
 import { GrpcRemoveSolutionCodeHandler } from '@/transport/grpc/handlers/problem/RemoveSolutionCodeHandler';
 import { GrpcCreateSubmissionhandler } from '@/transport/grpc/handlers/submission/CreateSubmissionHandler';
 import { GrpcUpdateSubmissionHandler } from '@/transport/grpc/handlers/submission/UpdateSubmissionHandler';
+import { GrpcGetSubmissionsHandler } from '@/transport/grpc/handlers/submission/GetSubmissionHandler';
 
 // Submission Services
 
@@ -163,5 +164,8 @@ container
 container
     .bind<GrpcUpdateSubmissionHandler>(TYPES.GrpcUpdateSubmissionHandler)
     .to(GrpcUpdateSubmissionHandler)
+container
+    .bind<GrpcGetSubmissionsHandler>(TYPES.GrpcGetSubmissionsHandler)
+    .to(GrpcGetSubmissionsHandler)
 
 export default container

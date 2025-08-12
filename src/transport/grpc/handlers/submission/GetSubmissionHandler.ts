@@ -1,49 +1,49 @@
 import TYPES from "@/config/inversify/types";
-import { ProblemMapper } from "@/dtos/mappers/ProblemMapper";
+import { SubmissionMapper } from "@/dtos/mappers/SubmissionMapper";
 import { SystemErrorType } from "@/enums/ErrorTypes/SystemErrorType.enum";
-import { IProblem } from "@/infra/db/interface/problem.interface";
-import { IListProblemService } from "@/services/problem/interfaces/ListProblem.service.interface";
-import { ListProblemRequest, ListProblemResponse } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import { IGetSubmissionsService } from "@/services/submission/interfaces/getSubmissions.service.interface";
+import { GetSubmissionsRequest, GetSubmissionsResponse } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import logger from "@akashcapro/codex-shared-utils/dist/utils/logger";
 import { sendUnaryData, ServerUnaryCall } from "@grpc/grpc-js";
 import { Status } from "@grpc/grpc-js/build/src/constants";
 import { inject, injectable } from "inversify";
 
 /**
- * Class for handling list paginated problem documents.
+ * Class for handling retrieving submission detail.
  * 
  * @class
  */
 @injectable()
-export class GrpcListProblemHandler {
+export class GrpcGetSubmissionsHandler {
 
-    #_listProblemService : IListProblemService
+    #_getSubmissionService : IGetSubmissionsService
 
     /**
      * 
-     * @param listProblemService - The service for listing paginated problem documents.
+     * @param getSubmissionService - The service for retrieving submission document.
+     * @constructor
      */
     constructor(
-        @inject(TYPES.IListProblemService)
-        listProblemService : IListProblemService
+        @inject(TYPES.IGetSubmissionsService)
+        getSubmissionService : IGetSubmissionsService
     ){
-        this.#_listProblemService = listProblemService
+        this.#_getSubmissionService = getSubmissionService
     }
 
-    listProblems = async(
-        call : ServerUnaryCall<ListProblemRequest,ListProblemResponse>,
-        callback : sendUnaryData<ListProblemResponse>
+    getSubmissions = async (
+        call : ServerUnaryCall<GetSubmissionsRequest,GetSubmissionsResponse>,
+        callback : sendUnaryData<GetSubmissionsResponse>
     ) => {
 
         try {
             
             const req = call.request;
-            
-            const result = await this.#_listProblemService.execute(ProblemMapper.toListProblemService(req));
-            
+            const dto = SubmissionMapper.toGetSubmissionsService(req);
+            const result = await this.#_getSubmissionService.execute(dto);
+
             return callback(null,{
+                submissions : result.body,
                 currentPage : result.currentPage,
-                problems : result.body ,
                 totalItems : result.totalItems,
                 totalPage : result.totalPages
             })
@@ -60,7 +60,7 @@ export class GrpcListProblemHandler {
      * Returns the bound handler method for the gRPC service.
      *
      * @remarks
-     * This method ensures that the `listProblems` handler maintains the correct `this` context
+     * This method ensures that the `getSubmissions` handler maintains the correct `this` context
      * when passed to the gRPC server. This is especially important since gRPC handlers
      * are called with a different execution context.
      *
@@ -68,7 +68,7 @@ export class GrpcListProblemHandler {
      */
     getServiceHandler() : object {
         return {
-            listProblems : this.listProblems.bind(this)
+            getSubmissions : this.getSubmissions.bind(this)
         }
     }
 }

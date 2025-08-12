@@ -9,6 +9,7 @@ import { Difficulty } from "@/enums/difficulty.enum";
 import { Language } from "@/enums/language.enum";
 import { IUpdateSubmissionRequestDTO } from "../submission/UpdateSubmissionRequestDTO";
 import { IExecutionResult, IFailedTestCase, IStats } from "@/infra/db/interface/submission.interface";
+import { IGetSubmissionRequestDTO } from "../submission/getSubmissionRequestDTO";
 
 export class SubmissionMapper {
 
@@ -33,6 +34,19 @@ export class SubmissionMapper {
              executionTime : body.executionTime,
              memoryUsage : body.memoryUsage
         }
+    }
+
+    static toGetSubmissionsService(body : IGetSubmissionInputDTO) : IGetSubmissionRequestDTO {
+        if(!body.battleId && !body.problemId && !body.userId){
+            throw new Error('Atleast one id is required to retrieve submissions');
+        }
+        return {
+            page : body.page,
+            limit : body.limit,
+            battleId : body.battleId,
+            problemId : body.problemId,
+            userId : body.userId
+        }   
     }
 
     private static _mapGrpcDifficultyEnum(difficulty : GrpcDifficultyEnum) : Difficulty {
@@ -99,4 +113,12 @@ interface IUpdateSubmissionInputDTO {
     executionResult? : IGrpcExecutionResult;
     executionTime : number;
     memoryUsage : number;
+}
+
+interface IGetSubmissionInputDTO {
+    page : number;
+    limit : number;
+    problemId? : string;
+    battleId? : string;
+    userId? : string;
 }
