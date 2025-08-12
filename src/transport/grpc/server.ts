@@ -16,6 +16,7 @@ import { GrpcAddSolutionCodeHandler } from "./handlers/problem/AddSolutionCodeHa
 import { GrpcUpdateSolutionCodeHandler } from "./handlers/problem/UpdateSolutionCodeHandler";
 import { GrpcRemoveSolutionCodeHandler } from "./handlers/problem/RemoveSolutionCodeHandler";
 import { GrpcCreateSubmissionhandler } from "./handlers/submission/CreateSubmissionHandler";
+import { GrpcUpdateSubmissionHandler } from "./handlers/submission/UpdateSubmissionHandler";
 
 // problem 
 const createProblem = container.get<GrpcCreateProblemHandler>(TYPES.GrpcCreateProblemHandler);
@@ -45,9 +46,11 @@ const problemHandler = {
 
 // Submission
 const createSubmission = container.get<GrpcCreateSubmissionhandler>(TYPES.GrpcCreateSubmissionhandler);
+const updateSubmission = container.get<GrpcUpdateSubmissionHandler>(TYPES.GrpcUpdateSubmissionHandler);
 
 const submissionHandler = {
     ...createSubmission.getServiceHandler(),
+    ...updateSubmission.getServiceHandler(),
 }
 
 export const startGrpcServer = () => {
