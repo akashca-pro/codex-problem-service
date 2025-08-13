@@ -56,5 +56,7 @@ export interface ISubmission extends Document {
     memoryUsage : number | null;
     difficulty : Difficulty;
     isFirst : boolean;
+    createdAt : Date;
+    updatedAt : Date;
 }
 

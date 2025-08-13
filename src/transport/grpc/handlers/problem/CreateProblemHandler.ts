@@ -37,8 +37,8 @@ export class GrpcCreateProblemHandler {
 
         try {
             const req = call.request;
-            const problemData = ProblemMapper.toCreateProblemService(req)
-            const result = await this.#_createProblemService.execute(problemData);
+            const inDTO = ProblemMapper.toCreateProblemService(req)
+            const result = await this.#_createProblemService.execute(inDTO);
 
             if(!result.success){
                 return callback({
@@ -47,7 +47,9 @@ export class GrpcCreateProblemHandler {
                 },null)
             }
 
-            return callback(null,result.data);
+            const outDTO = ProblemMapper.toOutDTO(result.data);
+
+            return callback(null,outDTO);
 
         } catch (error) {
             logger.error(SystemErrorType.InternalServerError,error);

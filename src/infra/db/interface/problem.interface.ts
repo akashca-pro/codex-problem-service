@@ -76,4 +76,6 @@ export interface IProblem extends Document {
     examples : IExample[];
     active : boolean;
     solutionCodes : ISolutionCode[] | null;
+    createdAt : Date;
+    updatedAt : Date;
 }

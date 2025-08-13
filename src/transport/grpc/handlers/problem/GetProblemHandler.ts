@@ -1,4 +1,5 @@
 import TYPES from "@/config/inversify/types";
+import { ProblemMapper } from "@/dtos/mappers/ProblemMapper";
 import { SystemErrorType } from "@/enums/ErrorTypes/SystemErrorType.enum";
 import { IGetProblemService } from "@/services/problem/interfaces/getProblem.service.interface";
 import { mapMessageToGrpcStatus } from "@/utils/mapMessageToGrpcCode";
@@ -53,7 +54,9 @@ export class GrpcGetProblemHandler {
                 },null);
             }
 
-            return callback(null,result.data);
+            const outDTO = ProblemMapper.toOutDTO(result.data);
+
+            return callback(null,outDTO);
 
         } catch (error) {
             logger.error(SystemErrorType.InternalServerError,error);

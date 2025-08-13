@@ -41,8 +41,10 @@ export class GrpcGetSubmissionsHandler {
             const dto = SubmissionMapper.toGetSubmissionsService(req);
             const result = await this.#_getSubmissionService.execute(dto);
 
+            const outDTO = result.body.map(SubmissionMapper.toOutDTO);
+
             return callback(null,{
-                submissions : result.body,
+                submissions : outDTO,
                 currentPage : result.currentPage,
                 totalItems : result.totalItems,
                 totalPage : result.totalPages

@@ -1,7 +1,6 @@
 import TYPES from "@/config/inversify/types";
 import { ProblemMapper } from "@/dtos/mappers/ProblemMapper";
 import { SystemErrorType } from "@/enums/ErrorTypes/SystemErrorType.enum";
-import { IProblem } from "@/infra/db/interface/problem.interface";
 import { IListProblemService } from "@/services/problem/interfaces/ListProblem.service.interface";
 import { ListProblemRequest, ListProblemResponse } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import logger from "@akashcapro/codex-shared-utils/dist/utils/logger";
@@ -38,12 +37,14 @@ export class GrpcListProblemHandler {
         try {
             
             const req = call.request;
-            
+
             const result = await this.#_listProblemService.execute(ProblemMapper.toListProblemService(req));
-            
+
+            const outDTO = result.body.map(ProblemMapper.toOutDTO); 
+
             return callback(null,{
                 currentPage : result.currentPage,
-                problems : result.body ,
+                problems : outDTO,
                 totalItems : result.totalItems,
                 totalPage : result.totalPages
             })

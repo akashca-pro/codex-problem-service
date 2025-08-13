@@ -49,7 +49,9 @@ export class GrpcCreateSubmissionhandler {
                 },null)
             };
 
-            return callback(null,result.data);
+            const outDTO = SubmissionMapper.toOutDTO(result.data);
+
+            return callback(null,outDTO);
             
         } catch (error) {
             logger.error(SystemErrorType.InternalServerError,error);

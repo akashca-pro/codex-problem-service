@@ -1,7 +1,7 @@
 import { Difficulty } from "@/enums/difficulty.enum";
 import { ICreateProblemRequestDTO } from "../problem/CreateProblemRequestDTO";
 import { IListProblemsRequestDTO } from "../problem/listProblemsRequestDTO";
-import { IExample, ISolutionCode, IStarterCode, ITestCase } from "@/infra/db/interface/problem.interface";
+import { IExample, IProblem, ISolutionCode, IStarterCode, ITestCase } from "@/infra/db/interface/problem.interface";
 import { IUpdateBasicProblemRequestDTO } from "../problem/updateProblemRequestDTO";
 import { 
     Example as IGrpcExample,
@@ -11,6 +11,7 @@ import {
     TestCaseCollectionType as GrpcTestCaseCollectionTypeEnum, 
     Difficulty as GrpcDifficultyEnum,
     Language as GrpcLanguageEnum,
+    Problem as GrpcProblem,
 } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { Language } from "@/enums/language.enum";
 import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
@@ -123,12 +124,47 @@ export class ProblemMapper {
         }
     }
 
+    static toOutDTO(body : IProblem ) : GrpcProblem {
+
+            return {
+                Id : body._id as string,
+                questionId : body.questionId,
+                title : body.title,
+                decription : body.description,
+                difficulty : this._mapServiceDifficulyEnum(body.difficulty),
+                tags : body.tags,
+                constraints : body.constraints,
+                starterCodes: body.starterCodes.map(this._mapServiceStarterCode),
+                testcaseCollection : {
+                    run : body.testcaseCollection.run.map(this._mapServiceTestCase),
+                    submit : body.testcaseCollection.submit.map(this._mapServiceTestCase)
+                },
+                examples : body.examples.map(this._mapServiceExample),
+                active : body.active,
+                solutionCodes : body.solutionCodes?.map(this._mapServiceSolutionCode) ?? [],
+                updatedAt : body.updatedAt.toISOString(),
+                createdAt : body.createdAt.toISOString()
+            }
+
+    }
+
+    // mappers (Grpc to and from Service)
+
     private static _mapGrpcExample(e : IGrpcExample) : IExample {
         return {
             _id : e.Id,
             input : e.input,
             output : e.output,
-            explanation : e.expanation
+            explanation : e.explanation
+        }
+    }
+
+    private static _mapServiceExample(e : IExample) : IGrpcExample {
+        return {
+            Id : e._id,
+            input : e.input,
+            output : e.output,
+            explanation : e.explanation   
         }
     }
 
@@ -140,9 +176,25 @@ export class ProblemMapper {
         }
     }
 
+    private static _mapServiceStarterCode(s : IStarterCode) : IGrpcStarterCode {
+        return {
+            Id : s._id,
+            code : s.code,
+            language : this._mapServiceLanguageEnum(s.language)
+        }
+    }
+
     private static _mapGrpcTestCase(t : IGrpcTestCase) : ITestCase {
         return {
             _id : t.Id,
+            input : t.input,
+            output : t.output
+        }
+    }
+
+    private static _mapServiceTestCase(t : ITestCase) : IGrpcTestCase {
+        return {
+            Id : t._id,
             input : t.input,
             output : t.output
         }
@@ -158,6 +210,16 @@ export class ProblemMapper {
         }
     }
 
+    private static _mapServiceSolutionCode(s : ISolutionCode) : IGrpcSolutionCode {
+        return {
+            Id : s._id,
+            code : s.code,
+            executionTime : s.executionTime ?? 0,
+            memoryTaken : s.memoryTaken ?? 0,
+            language : this._mapServiceLanguageEnum(s.language)
+        }
+    }
+
     private static _mapGrpcDifficultyEnum(difficulty : GrpcDifficultyEnum) : Difficulty {
         if (difficulty === 1) {
             return Difficulty.EASY;
@@ -166,17 +228,39 @@ export class ProblemMapper {
         } else if (difficulty === 3) {
             return Difficulty.HARD;
         } else {
-            throw new Error('Invalid difficulty value');
+            throw new Error('Invalid difficulty value mapping from grpc');
         }   
     }
 
+    private static _mapServiceDifficulyEnum(difficulty : Difficulty) : GrpcDifficultyEnum {
+        if (difficulty === Difficulty.EASY) {
+            return 1;
+        } else if (difficulty === Difficulty.MEDIUM) {
+            return 2;
+        } else if (difficulty === Difficulty.HARD) {
+            return 3;
+        } else {
+            throw new Error('Invalid difficulty value mapping from service');
+        }   
+    }
+ 
     private static _mapGrpcLanguageEnum(language : GrpcLanguageEnum) : Language {
         if(language === 1){
             return Language.JAVASCRIPT;
         } else if (language === 2){
             return Language.PYTHON
         } else {
-            throw new Error('Invalid choosen language')
+            throw new Error('Invalid choosen language mapping from grpc')
+        }
+    }
+
+    private static _mapServiceLanguageEnum(language : Language) : GrpcLanguageEnum {
+        if(language === Language.JAVASCRIPT){
+            return 1;
+        } else if (language === Language.PYTHON){
+            return 2;
+        } else {
+            throw new Error('Invalid choosen language mapping from service');
         }
     }
 
@@ -187,7 +271,7 @@ export class ProblemMapper {
         } else if (testCaseCollectionType === 2){
             return TestCaseCollectionType.SUBMIT
         } else {
-            throw new Error('Invalid testcase collection type')
+            throw new Error('Invalid testcase collection type mapping from grpc')
         }
     }
 }
