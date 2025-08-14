@@ -11,10 +11,17 @@ import { Language } from "@/enums/language.enum";
 import { IUpdateSubmissionRequestDTO } from "../submission/UpdateSubmissionRequestDTO";
 import { IExecutionResult, IFailedTestCase, IStats, ISubmission } from "@/infra/db/interface/submission.interface";
 import { IGetSubmissionRequestDTO } from "../submission/getSubmissionRequestDTO";
+import { isValidCountry } from "@/utils/countryCheck";
+import { SubmissionErrorType } from "@/enums/ErrorTypes/submissionErrorType.enum";
 
 export class SubmissionMapper {
 
     static toCreateSubmissionService(body :ICreateSubmissionInputDTO) : ICreateSubmissionRequestDTO {
+
+        if(body.country && !isValidCountry(body.country)){
+            throw new Error(SubmissionErrorType.InvalidCountryCode)
+        }
+
         return {
             problemId : body.problemId,
             userId : body.userId,

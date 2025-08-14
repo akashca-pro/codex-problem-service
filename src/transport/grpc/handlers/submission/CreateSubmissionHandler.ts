@@ -1,5 +1,6 @@
 import TYPES from "@/config/inversify/types";
 import { SubmissionMapper } from "@/dtos/mappers/SubmissionMapper";
+import { SubmissionErrorType } from "@/enums/ErrorTypes/submissionErrorType.enum";
 import { SystemErrorType } from "@/enums/ErrorTypes/SystemErrorType.enum";
 import { ICreateSubmissionService } from "@/services/submission/interfaces/createSubmission.service.interface";
 import { mapMessageToGrpcStatus } from "@/utils/mapMessageToGrpcCode";
@@ -53,8 +54,14 @@ export class GrpcCreateSubmissionhandler {
 
             return callback(null,outDTO);
             
-        } catch (error) {
+        } catch (error : any) {
             logger.error(SystemErrorType.InternalServerError,error);
+            if(error?.message === SubmissionErrorType.InvalidCountryCode){
+                return callback({
+                    code : mapMessageToGrpcStatus(error.message),
+                    message : error.message
+                })
+            }
             return callback({
                 code : Status.INTERNAL,
                 message : SystemErrorType.InternalServerError

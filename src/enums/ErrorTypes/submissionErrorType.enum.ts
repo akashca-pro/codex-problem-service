@@ -8,6 +8,8 @@ export enum SubmissionErrorType {
     
     SubmissionNotFound = 'Submission not found',
 
-    SubmissionAlreadyExist = 'Submission already exists'
+    SubmissionAlreadyExist = 'Submission already exists',
+
+    InvalidCountryCode = 'Invalid country code'
 
 }
