@@ -55,6 +55,7 @@ export class GrpcUpdateBasicProblemDetailsHandler {
             return callback(null,{});
 
         } catch (error) {
+
             logger.error(SystemErrorType.InternalServerError,error);
             return callback({
                 code : Status.INTERNAL,

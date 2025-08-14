@@ -8,7 +8,7 @@ import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
 
 import { GrpcGetProblemHandler } from "./handlers/problem/GetProblemHandler";
 import { GrpcListProblemHandler } from "./handlers/problem/ListProblemHandler";
-import { GrpcUpdateBasicProblemDetailsHandler } from "./handlers/problem/UpdateProblemHandler";
+import { GrpcUpdateBasicProblemDetailsHandler } from "./handlers/problem/UpdateProblemBasicDetailsHandler";
 import { GrpcAddTestCaseHandler } from "./handlers/problem/AddTestCaseHandler";
 import { GrpcBulkUploadTestCaseHandler } from "./handlers/problem/bulkUploadTestCaseHandler";
 import { GrpcRemoveTestCaseHandler } from "./handlers/problem/RemoveTestCaseHandler";

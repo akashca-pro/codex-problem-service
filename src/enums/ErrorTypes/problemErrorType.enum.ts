@@ -8,5 +8,7 @@ export enum ProblemErrorType {
 
     ProblemNotFound = 'Problem not found',
 
-    ProblemAlreadyExists = 'Problem already exists'
+    ProblemAlreadyExists = 'Problem already exists',
+
+    ProblemFieldAlreadyExist = 'already exist',
 }

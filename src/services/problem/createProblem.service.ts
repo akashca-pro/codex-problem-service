@@ -5,6 +5,7 @@ import TYPES from "@/config/inversify/types";
 import { ICreateProblemRequestDTO } from "@/dtos/problem/CreateProblemRequestDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
+import { extractDup, isDupKeyError } from "@/utils/mongoError";
 
 /**
  * Implementaion of Create problem service.
@@ -48,11 +49,24 @@ export class CreateProblemService implements ICreateProblemService {
             }
         }
 
-        const result = await this.#_problemRepo.create(data);
+        try {
+            const result = await this.#_problemRepo.create(data);
 
-        return {
-            data : result,
-            success : true
+            return {
+                data : result,
+                success : true
+            }
+
+        } catch (error) {
+            if(isDupKeyError(error)){
+                const { field } = extractDup(error as any);
+                return {
+                    data : null,
+                    success : false,
+                    errorMessage : ` ${field} ${ProblemErrorType.ProblemFieldAlreadyExist}`
+                }
+            }
+            throw error;
         }
     }
 }

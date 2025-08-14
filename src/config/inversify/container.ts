@@ -47,7 +47,7 @@ import { IGetSubmissionsService } from '@/services/submission/interfaces/getSubm
 import { GetSubmissionsService } from '@/services/submission/getSubmission.service';
 import { GrpcGetProblemHandler } from '@/transport/grpc/handlers/problem/GetProblemHandler';
 import { GrpcListProblemHandler } from '@/transport/grpc/handlers/problem/ListProblemHandler';
-import { GrpcUpdateBasicProblemDetailsHandler } from '@/transport/grpc/handlers/problem/UpdateProblemHandler';
+import { GrpcUpdateBasicProblemDetailsHandler } from '@/transport/grpc/handlers/problem/UpdateProblemBasicDetailsHandler';
 import { GrpcAddTestCaseHandler } from '@/transport/grpc/handlers/problem/AddTestCaseHandler';
 import { GrpcBulkUploadTestCaseHandler } from '@/transport/grpc/handlers/problem/bulkUploadTestCaseHandler';
 import { GrpcRemoveTestCaseHandler } from '@/transport/grpc/handlers/problem/RemoveTestCaseHandler';

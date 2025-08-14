@@ -5,6 +5,7 @@ import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.
 import { IUpdateBasicProblemRequestDTO } from "@/dtos/problem/updateProblemRequestDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
+import { extractDup, isDupKeyError } from "@/utils/mongoError";
 
 /**
  * The implementation of the update problem service.
@@ -57,13 +58,26 @@ export class UpdateProblemService implements IUpdateBasicProblemDetailsService {
         if(updatedData.starterCodes) updatedQuery.starterCodes = updatedData.starterCodes;
         if(updatedData.active) updatedQuery.active = updatedData.active;
 
-        const updatedProblem = await this.#_problemRepo.update(problemId,updatedQuery);
+        try {
+            const updatedProblem = await this.#_problemRepo.update(problemId,updatedQuery);
 
-        if(!updatedProblem){
-            return {
-                data : null,
-                success : false
+            if(!updatedProblem){
+                return {
+                    data : null,
+                    success : false
+                }
             }
+        } catch (error : unknown) {
+
+            if(isDupKeyError(error)){
+                const { field } = extractDup(error as any);
+                return {
+                    data : null,
+                    success : false,
+                    errorMessage : `${field} ${ProblemErrorType.ProblemFieldAlreadyExist}`
+                }
+            }
+            throw error;
         }
 
         return {

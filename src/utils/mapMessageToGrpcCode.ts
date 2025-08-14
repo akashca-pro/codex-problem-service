@@ -9,14 +9,15 @@ import { status } from "@grpc/grpc-js";
  * @returns {status} gRPC status code
  */
 export const mapMessageToGrpcStatus = (message : string) : status => {
-    switch(message){
+    switch(true){
 
-        case ProblemErrorType.ProblemNotFound:
-        case SubmissionErrorType.SubmissionNotFound:
+        case message === ProblemErrorType.ProblemNotFound:
+        case message === SubmissionErrorType.SubmissionNotFound:
             return status.INVALID_ARGUMENT;
         
-        case ProblemErrorType.ProblemAlreadyExists:
-        case SubmissionErrorType.SubmissionAlreadyExist:
+        case message === ProblemErrorType.ProblemAlreadyExists:
+        case message.endsWith(ProblemErrorType.ProblemFieldAlreadyExist):
+        case message === SubmissionErrorType.SubmissionAlreadyExist:
             return status.ALREADY_EXISTS
 
         default:
