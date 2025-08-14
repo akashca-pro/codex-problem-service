@@ -52,9 +52,7 @@ export class GrpcGetProblemHandler {
                 },null);
             }
 
-            const outDTO = ProblemMapper.toOutDTO(result.data);
-
-            return callback(null,outDTO);
+            return callback(null,result.data);
 
         } catch (error) {
             logger.error(SystemErrorType.InternalServerError,error);

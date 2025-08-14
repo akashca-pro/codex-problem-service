@@ -18,6 +18,7 @@ import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
 import { IAddTestCaseRequestDTO, IBulkUploadTestCaseRequestDTO, IRemoveTestCaseRequestDTO } from "../problem/testCaseRequestDTOs";
 import { IAddSolutionCodeRequestDTO, IRemoveSolutionCodeRequestDTO, IUpdateSolutionCodeRequestDTO } from "../problem/solutionCodeRequestDTOs";
 import { IGetProblemRequestDTO } from "../problem/getProblemRequestDTO";
+import { LeanDocument } from "mongoose";
 
 export class ProblemMapper {
     
@@ -133,7 +134,7 @@ export class ProblemMapper {
         }
     }
 
-    static toOutDTO(body : IProblem ) : GrpcProblem {
+    static toOutDTO(body : LeanDocument<IProblem> ) : GrpcProblem {
 
             return {
                 Id : body._id as string,

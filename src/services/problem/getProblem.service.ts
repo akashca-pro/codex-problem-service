@@ -7,6 +7,7 @@ import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
 import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
 import { config } from "@/config";
+import { ProblemMapper } from "@/dtos/mappers/ProblemMapper";
 
 /**
  * Implementaion of get problem service.
@@ -50,7 +51,7 @@ export class GetProblemService implements IGetProblemService {
             }
         }
     
-        const problem = await this.#_problemRepo.findByIdLean(data._id)
+        const problem = await this.#_problemRepo.findByIdLean(data._id);
 
         if(!problem){
             return {
@@ -60,9 +61,11 @@ export class GetProblemService implements IGetProblemService {
             }
         }
 
+        const outDTO = ProblemMapper.toOutDTO(problem)
+
         await this.#_cacheProvider.set(
             cacheKey,
-            problem,
+            outDTO,
             config.PROBLEM_DETAILS_CACHE_EXPIRY
         );
 
