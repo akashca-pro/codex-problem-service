@@ -43,7 +43,7 @@ export class ListProblemService implements IListProblemService {
 
         const [totalItems, problems] = await Promise.all([
             this.#_problemRepo.countDocuments(filter),
-            this.#_problemRepo.findPaginated(filter,skip,data.limit)
+            this.#_problemRepo.findPaginatedLean(filter,skip,data.limit)
         ])
 
         const totalPages = Math.ceil(totalItems/ data.limit);

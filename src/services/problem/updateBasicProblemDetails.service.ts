@@ -6,6 +6,7 @@ import { IUpdateBasicProblemRequestDTO } from "@/dtos/problem/updateProblemReque
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
 import { extractDup, isDupKeyError } from "@/utils/mongoError";
+import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
 
 /**
  * The implementation of the update problem service.
@@ -17,6 +18,7 @@ import { extractDup, isDupKeyError } from "@/utils/mongoError";
 export class UpdateProblemService implements IUpdateBasicProblemDetailsService {
 
     #_problemRepo : IProblemRepository
+    #_cacheProvider : ICacheProvider
 
     /**
      * Creates an instance of the update problem service.
@@ -26,9 +28,13 @@ export class UpdateProblemService implements IUpdateBasicProblemDetailsService {
      */
     constructor(
         @inject(TYPES.IProblemRepository)
-        problemRepo : IProblemRepository
+        problemRepo : IProblemRepository,
+
+        @inject(TYPES.ICacheProvider)
+        cacheProvider : ICacheProvider
     ){
         this.#_problemRepo = problemRepo
+        this.#_cacheProvider = cacheProvider
     }
 
     async execute(
@@ -67,6 +73,15 @@ export class UpdateProblemService implements IUpdateBasicProblemDetailsService {
                     success : false
                 }
             }
+
+            const cacheKey = `problem:details:${updatedProblem._id}`;
+            await this.#_cacheProvider.del(cacheKey);
+
+            return {
+                data : null,
+                success : true,
+            }
+
         } catch (error : unknown) {
 
             if(isDupKeyError(error)){
@@ -78,11 +93,6 @@ export class UpdateProblemService implements IUpdateBasicProblemDetailsService {
                 }
             }
             throw error;
-        }
-
-        return {
-            data : null,
-            success : true,
         }
     }
 }

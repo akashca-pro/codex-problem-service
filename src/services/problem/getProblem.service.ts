@@ -50,7 +50,7 @@ export class GetProblemService implements IGetProblemService {
             }
         }
     
-        const problem = await this.#_problemRepo.findById(data._id)
+        const problem = await this.#_problemRepo.findByIdLean(data._id)
 
         if(!problem){
             return {
@@ -65,7 +65,6 @@ export class GetProblemService implements IGetProblemService {
             problem,
             config.PROBLEM_DETAILS_CACHE_EXPIRY
         );
-
 
         return {
             data : problem,
