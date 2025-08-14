@@ -5,7 +5,7 @@
  * @interface
  */
 export interface IGetProblemRequestDTO {
-    _id? : string;
+    _id : string;
     title? : string;
     questionId? : string;
 }

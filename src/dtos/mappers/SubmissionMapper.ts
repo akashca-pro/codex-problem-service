@@ -12,10 +12,6 @@ import { IUpdateSubmissionRequestDTO } from "../submission/UpdateSubmissionReque
 import { IExecutionResult, IFailedTestCase, IStats, ISubmission } from "@/infra/db/interface/submission.interface";
 import { IGetSubmissionRequestDTO } from "../submission/getSubmissionRequestDTO";
 
-type SubmissinOut = Omit<Submission, "country"> & {
-    country? : string
-}
-
 export class SubmissionMapper {
 
     static toCreateSubmissionService(body :ICreateSubmissionInputDTO) : ICreateSubmissionRequestDTO {

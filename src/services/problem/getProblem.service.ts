@@ -4,7 +4,6 @@ import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.
 import TYPES from "@/config/inversify/types";
 import { IGetProblemRequestDTO } from "@/dtos/problem/getProblemRequestDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
-import { IProblem } from "@/infra/db/interface/problem.interface";
 import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
 
 /**
@@ -32,16 +31,8 @@ export class GetProblemService implements IGetProblemService {
     }
 
     async execute(data: IGetProblemRequestDTO): Promise<ResponseDTO> {
-        
-        let problem : IProblem | null = null;
-
-        if(data._id){
-            problem = await this.#_problemRepo.findById(data._id);
-        }else if(data.questionId){
-            problem = await this.#_problemRepo.findOne({ questionId : data.questionId });
-        }else if(data.title){
-            problem = await this.#_problemRepo.findByTitle(data.title);
-        }
+    
+        const problem = await this.#_problemRepo.findById(data._id!);
 
         if(!problem){
             return {

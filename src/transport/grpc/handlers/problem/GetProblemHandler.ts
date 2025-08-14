@@ -41,11 +41,9 @@ export class GrpcGetProblemHandler {
             
             const req = call.request;
 
-            const result = await this.#_getProblemService.execute({
-                _id : req.Id,
-                questionId : req.questionId,
-                title : req.title
-            })
+            const dto = ProblemMapper.toGetProblemDetails(req);
+
+            const result = await this.#_getProblemService.execute(dto);
 
             if(!result.success){
                 return callback({

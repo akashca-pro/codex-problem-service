@@ -17,6 +17,7 @@ import { Language } from "@/enums/language.enum";
 import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
 import { IAddTestCaseRequestDTO, IBulkUploadTestCaseRequestDTO, IRemoveTestCaseRequestDTO } from "../problem/testCaseRequestDTOs";
 import { IAddSolutionCodeRequestDTO, IRemoveSolutionCodeRequestDTO, IUpdateSolutionCodeRequestDTO } from "../problem/solutionCodeRequestDTOs";
+import { IGetProblemRequestDTO } from "../problem/getProblemRequestDTO";
 
 export class ProblemMapper {
     
@@ -29,6 +30,14 @@ export class ProblemMapper {
             difficulty : difficulty,
             questionId : body.questionId,
             tags : body.tags,
+        }
+    }
+
+    static toGetProblemDetails(body : IGetProblemInputDTO)  : IGetProblemRequestDTO {
+        return {
+            _id : body.Id,
+            questionId : body?.questionId,
+            title : body?.title
         }
     }
 
@@ -339,4 +348,10 @@ export interface IUpdateSolutionCodeInputDTO {
 export interface IRemoveSolutionCodeInputDTO {
     Id : string;
     solutionCodeId : string
+}
+
+export interface IGetProblemInputDTO {
+    Id : string;
+    title? : string;
+    questionId? : string;
 }
