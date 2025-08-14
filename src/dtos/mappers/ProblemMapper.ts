@@ -12,6 +12,7 @@ import {
     Difficulty as GrpcDifficultyEnum,
     Language as GrpcLanguageEnum,
     Problem as GrpcProblem,
+    ListProblemDetails as GrpcListProblemDetails
 } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { Language } from "@/enums/language.enum";
 import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
@@ -156,6 +157,19 @@ export class ProblemMapper {
                 createdAt : body.createdAt.toISOString()
             }
 
+    }
+
+    static toOutListDTO(body : LeanDocument<IListProblemOutputDTO>) : GrpcListProblemDetails {
+        return {
+            Id : body._id,
+            title : body.title,
+            questionId : body.questionId,
+            difficulty : this._mapServiceDifficulyEnum(body.difficulty),
+            tags : body.tags,
+            active : body.active,
+            updatedAt : body.updatedAt.toISOString(),
+            createdAt : body.createdAt.toISOString()
+        }
     }
 
     // mappers (Grpc to and from Service)
@@ -355,4 +369,15 @@ export interface IGetProblemInputDTO {
     Id : string;
     title? : string;
     questionId? : string;
+}
+
+export interface IListProblemOutputDTO {
+    _id : string;
+    title : string;
+    questionId : string;
+    difficulty : Difficulty;
+    tags : string[];
+    active : boolean;
+    updatedAt : Date;
+    createdAt : Date;
 }

@@ -41,9 +41,11 @@ export class ListProblemService implements IListProblemService {
 
         const skip = (data.page - 1) * data.limit;
 
+        const select = ['title','questionId','difficulty','tags','active','createdAt','updatedAt'];
+
         const [totalItems, problems] = await Promise.all([
             this.#_problemRepo.countDocuments(filter),
-            this.#_problemRepo.findPaginatedLean(filter,skip,data.limit)
+            this.#_problemRepo.findPaginatedLean(filter,skip,data.limit,select)
         ])
 
         const totalPages = Math.ceil(totalItems/ data.limit);

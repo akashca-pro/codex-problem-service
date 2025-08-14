@@ -40,7 +40,7 @@ export class GrpcListProblemHandler {
 
             const result = await this.#_listProblemService.execute(ProblemMapper.toListProblemService(req));
 
-            const outDTO = result.body.map(ProblemMapper.toOutDTO); 
+            const outDTO = result.body.map(p=>ProblemMapper.toOutListDTO(p)); 
 
             return callback(null,{
                 currentPage : result.currentPage,

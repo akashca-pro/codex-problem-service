@@ -108,9 +108,10 @@ export abstract class BaseRepository <T extends Document> {
         filter: FilterQuery<T>,
         skip: number,
         limit: number,
-        sort: Record<string, 1 | -1> = { createdAt: -1 }
+        select? : string[],
+        sort: Record<string, 1 | -1> = { createdAt: -1 },
     ): Promise<LeanDocument<T>[]> {
-        return this._model.find(filter).skip(skip).limit(limit).sort(sort).lean();
+        return this._model.find(filter).select(select?.join(" ")).skip(skip).limit(limit).sort(sort).lean();
     }
 
     /**

@@ -70,7 +70,7 @@ export class GetProblemService implements IGetProblemService {
         );
 
         return {
-            data : problem,
+            data : outDTO,
             success : true
         }
     }
