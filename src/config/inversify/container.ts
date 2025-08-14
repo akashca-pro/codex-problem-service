@@ -57,6 +57,8 @@ import { GrpcRemoveSolutionCodeHandler } from '@/transport/grpc/handlers/problem
 import { GrpcCreateSubmissionhandler } from '@/transport/grpc/handlers/submission/CreateSubmissionHandler';
 import { GrpcUpdateSubmissionHandler } from '@/transport/grpc/handlers/submission/UpdateSubmissionHandler';
 import { GrpcGetSubmissionsHandler } from '@/transport/grpc/handlers/submission/GetSubmissionHandler';
+import { ICacheProvider } from '@/libs/cache/ICacheProvider.interface';
+import { RedisCacheProvider } from '@/libs/cache/CacheProvider';
 
 // Submission Services
 
@@ -64,7 +66,14 @@ import { GrpcGetSubmissionsHandler } from '@/transport/grpc/handlers/submission/
 const container = new Container();
 
 /**
- * Adapters
+ * Providers
+ */
+container
+    .bind<ICacheProvider>(TYPES.ICacheProvider)
+    .to(RedisCacheProvider);
+
+/**
+ * Repos
  */
 container
     .bind<IProblemRepository>(TYPES.IProblemRepository)

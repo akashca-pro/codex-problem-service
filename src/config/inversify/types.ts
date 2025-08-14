@@ -1,5 +1,8 @@
 const TYPES = {
 
+    // Providers
+    ICacheProvider : Symbol.for("ICacheProvider"),
+
     // Repos
 
     IProblemRepository : Symbol.for("IProblemRepository"),

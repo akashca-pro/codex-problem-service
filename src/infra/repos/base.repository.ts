@@ -1,4 +1,4 @@
-import { Model, Document, FilterQuery, UpdateQuery } from 'mongoose';
+import { Model, Document, FilterQuery, UpdateQuery, LeanDocument } from 'mongoose';
 import { IProblem } from '../db/interface/problem.interface';
 
 /**
@@ -30,7 +30,16 @@ export abstract class BaseRepository <T extends Document> {
      * @returns The found document or null.
      */
     async findById(documentId : string) : Promise<T | null> {
-        return this._model.findById(documentId);
+        return this._model.findById(documentId)
+    }
+
+    /**
+     * Finds a document by its ID and returns it as a plain object (lean).
+     * @param documentId - The ID of the document.
+     * @returns The found lean document or null.
+     */
+    async findByIdLean(documentId: string): Promise<LeanDocument<T> | null> {
+        return this._model.findById(documentId).lean();
     }
     
     /**
@@ -43,12 +52,30 @@ export abstract class BaseRepository <T extends Document> {
     }
 
     /**
+     * Finds a single document matching the filter and returns it as a plain object (lean).
+     * @param filter - The MongoDB filter query.
+     * @returns The found lean document or null.
+     */
+    async findOneLean(filter: FilterQuery<T>): Promise<LeanDocument<T> | null> {
+        return this._model.findOne(filter).lean();
+    }
+
+    /**
      * Finds all documents that match the query.
      * @param filter - The filter query.
      * @returns An array of found documents.
      */
     async find(filter : FilterQuery<T>) : Promise<T[]> {
         return this._model.find(filter)
+    }
+
+    /**
+     * Finds all documents matching the filter and returns them as plain objects (lean).
+     * @param filter - The MongoDB filter query.
+     * @returns An array of lean documents.
+     */
+    async findLean(filter: FilterQuery<T>): Promise<LeanDocument<T>[]> {
+        return this._model.find(filter).lean();
     }
 
     /**
@@ -66,11 +93,24 @@ export abstract class BaseRepository <T extends Document> {
         limit : number,
         sort : Record<string, 1 | -1 > = { createdAt : -1 }
     ) : Promise<T[]> {
-        return this._model.find(filter)
-        .skip(skip)
-        .limit(limit)
-        .sort(sort)
-        .exec();
+        return this._model.find(filter).skip(skip).limit(limit).sort(sort).exec();
+    }
+
+    /**
+     * Retrieves paginated documents as plain objects (lean).
+     * @param filter - The MongoDB filter query.
+     * @param skip - Number of documents to skip (pagination).
+     * @param limit - Max number of documents to return.
+     * @param sort - Sort order for results (default: descending by createdAt).
+     * @returns An array of lean documents.
+     */
+    async findPaginatedLean(
+        filter: FilterQuery<T>,
+        skip: number,
+        limit: number,
+        sort: Record<string, 1 | -1> = { createdAt: -1 }
+    ): Promise<LeanDocument<T>[]> {
+        return this._model.find(filter).skip(skip).limit(limit).sort(sort).lean();
     }
 
     /**

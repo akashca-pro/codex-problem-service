@@ -5,6 +5,8 @@ import TYPES from "@/config/inversify/types";
 import { IGetProblemRequestDTO } from "@/dtos/problem/getProblemRequestDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
+import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
+import { config } from "@/config";
 
 /**
  * Implementaion of get problem service.
@@ -16,6 +18,7 @@ import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
 export class GetProblemService implements IGetProblemService {
 
     #_problemRepo : IProblemRepository
+    #_cacheProvider : ICacheProvider
 
     /**
      * Creates an instance of GetProblemService.
@@ -25,14 +28,29 @@ export class GetProblemService implements IGetProblemService {
      */
     constructor(
         @inject(TYPES.IProblemRepository)
-        problemRepo : IProblemRepository
+        problemRepo : IProblemRepository,
+
+        @inject(TYPES.ICacheProvider)
+        cacheProvider : ICacheProvider
     ){
         this.#_problemRepo = problemRepo
+        this.#_cacheProvider = cacheProvider
     }
 
     async execute(data: IGetProblemRequestDTO): Promise<ResponseDTO> {
+
+        const cacheKey = `problem:details:${data._id}`;
+
+        const cached = await this.#_cacheProvider.get(cacheKey);
+
+        if(cached){
+            return {
+                data : cached,
+                success : true
+            }
+        }
     
-        const problem = await this.#_problemRepo.findById(data._id!);
+        const problem = await this.#_problemRepo.findById(data._id)
 
         if(!problem){
             return {
@@ -41,6 +59,13 @@ export class GetProblemService implements IGetProblemService {
                 errorMessage : ProblemErrorType.ProblemNotFound
             }
         }
+
+        await this.#_cacheProvider.set(
+            cacheKey,
+            problem,
+            config.PROBLEM_DETAILS_CACHE_EXPIRY
+        );
+
 
         return {
             data : problem,
