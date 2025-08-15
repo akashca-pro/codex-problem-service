@@ -42,6 +42,8 @@ export class AddTestCaseService implements IAddTestCaseService {
             }
         }
 
+        console.log(data);
+
         await this.#_problemRepo.addTestCase(data._id,data.testCaseCollectionType,data.testCase);
 
         return {

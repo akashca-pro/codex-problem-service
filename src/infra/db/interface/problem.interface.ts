@@ -8,7 +8,7 @@ import { Document } from "mongoose";
  * @interface
  */
 export interface ITestCase {
-    _id : string;
+    _id? : string;
     input : string;
     output : string;
 }
