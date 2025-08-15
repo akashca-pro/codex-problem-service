@@ -42,10 +42,18 @@ export class RemoveSolutionCodeService implements IRemoveSolutionCodeService {
             }
         }
 
-        await this.#_problemRepo.removeSolutionCode(
+        const removed = await this.#_problemRepo.removeSolutionCode(
             data._id,
             data.solutionCodeId
         );
+
+        if(!removed){
+             return {
+                data : null,
+                success : false,
+                errorMessage : ProblemErrorType.SolutionCodeNotFound
+            }
+        }
 
         return {
             data : null,

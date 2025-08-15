@@ -99,6 +99,6 @@ export interface IProblemRepository extends BaseRepository <IProblem>{
     removeSolutionCode(
         problemId : string,
         solutionCodeId : string
-    ) : Promise<void>
+    ) : Promise<boolean>
 
 }

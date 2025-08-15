@@ -87,11 +87,12 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
     async removeSolutionCode(
         problemId: string, 
         solutionCodeId: string
-    ): Promise<void> {
-        await this.update(problemId,{
-            $pull : {
-                solutionCodes : { _id : solutionCodeId }
-            }
+    ): Promise<boolean> {
+        const result = await this._model.updateOne({ _id : problemId , 
+            "solutionCodes._id" : solutionCodeId } ,
+        {
+            $pull : { solutionCodes : { _id : solutionCodeId } }
         })
+        return result.modifiedCount > 0
     }
 }
