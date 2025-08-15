@@ -8,6 +8,7 @@ import {
     StarterCode as IGrpcStarterCode, 
     TestCase as IGrpcTestCase,
     SolutionCode as IGrpcSolutionCode,
+    UpdateSolutionCode as IGrpcUpdateSolutionCode,
     TestCaseCollectionType as GrpcTestCaseCollectionTypeEnum, 
     Difficulty as GrpcDifficultyEnum,
     Language as GrpcLanguageEnum,
@@ -120,11 +121,19 @@ export class ProblemMapper {
     }
 
     static toUpdateSolutionCodeService (body : IUpdateSolutionCodeInputDTO) : IUpdateSolutionCodeRequestDTO {
-        if(!body.solutionCode) throw new Error('No Solution code found in IAddSolutionCodeInputDTO');
+        if(!body.solutionCode) throw new Error('No Solution code found in IUpdateSolutionCodeInputDTO');
+        const language = body.solutionCode.language 
+                        ? this._mapGrpcLanguageEnum(body.solutionCode.language)
+                        : undefined;
         return {
             _id : body.Id,
             solutionCodeId : body.solutionCodeId,
-            solutionCode : this._mapGrpcSolutionCode(body.solutionCode)
+            solutionCode : {
+                code : body.solutionCode?.code,
+                executionTime : body.solutionCode?.executionTime,
+                language : language,
+                memoryTaken : body.solutionCode?.memoryTaken
+            }
         }
     }
 
@@ -226,7 +235,7 @@ export class ProblemMapper {
 
     private static _mapGrpcSolutionCode(s : IGrpcSolutionCode ) : ISolutionCode {
         return {
-            _id : s.Id,
+            _id : s.Id === '' || s.Id === undefined ? undefined : s.Id,
             code : s.code,
             language : this._mapGrpcLanguageEnum(s.language),
             executionTime : s.executionTime,
@@ -236,7 +245,7 @@ export class ProblemMapper {
 
     private static _mapServiceSolutionCode(s : ISolutionCode) : IGrpcSolutionCode {
         return {
-            Id : s._id,
+            Id : s._id!,
             code : s.code,
             executionTime : s.executionTime ?? 0,
             memoryTaken : s.memoryTaken ?? 0,
@@ -357,7 +366,7 @@ export interface IAddSolutionCodeInputDTO {
 export interface IUpdateSolutionCodeInputDTO {
     Id : string;
     solutionCodeId : string;
-    solutionCode? : IGrpcSolutionCode
+    solutionCode? : IGrpcUpdateSolutionCode
 }
 
 export interface IRemoveSolutionCodeInputDTO {

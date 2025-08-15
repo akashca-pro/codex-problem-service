@@ -52,7 +52,7 @@ export interface IStarterCode {
  * @interface
  */
 export interface ISolutionCode {
-    _id : string;
+    _id? : string;
     language : Language;
     code : string;
     executionTime? : number;

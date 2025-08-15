@@ -3,6 +3,7 @@ import { IExample, IProblem, ISolutionCode, IStarterCode, ITestCase } from "../d
 import { BaseRepository } from "./base.repository";
 import { IProblemRepository } from "./interfaces/problem.repository.interface";
 import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
+import { IUpdateSolutionCodeDTO } from "@/dtos/problem/solutionCodeRequestDTOs";
 
 /**
  * This class implements the problem repository.
@@ -70,18 +71,16 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
     async updateSolutionCode(
         problemId: string, 
         solutionCodeId: string, 
-        solutionCode: ISolutionCode
+        updateSolutionCode: IUpdateSolutionCodeDTO
     ): Promise<void> {
+        const set: Record<string, unknown> = {};
+        if (updateSolutionCode.code !== undefined) set["solutionCodes.$.code"] = updateSolutionCode.code;
+        if (updateSolutionCode.language !== undefined) set["solutionCodes.$.language"] = updateSolutionCode.language;
+        if (updateSolutionCode.executionTime !== undefined) set["solutionCodes.$.executionTime"] = updateSolutionCode.executionTime;
+        if (updateSolutionCode.memoryTaken !== undefined) set["solutionCodes.$.memoryTaken"] = updateSolutionCode.memoryTaken;
         await this._model.updateOne(
             { _id : problemId, "solutionCodes._id" : solutionCodeId },
-            {
-                $set : {
-                    "solutionCodes.$.language" : solutionCode.language,
-                    "solutionCodes.$.code" : solutionCode.code,
-                    "solutionCodes.$.executionTime" : solutionCode.executionTime,
-                    "solutionCodes.$.memoryTaken" : solutionCode.memoryTaken,
-                }
-            }
+            { $set : set }
         );
     }
 

@@ -2,7 +2,7 @@ import { inject, injectable } from "inversify";
 import { IUpdateSolutionCodeService } from "./interfaces/updateSolutionCode.service.interface";
 import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
 import TYPES from "@/config/inversify/types";
-import { IUpdateSolutionCodeRequestDTO } from "@/dtos/problem/solutionCodeRequestDTOs";
+import { IUpdateSolutionCodeDTO, IUpdateSolutionCodeRequestDTO } from "@/dtos/problem/solutionCodeRequestDTOs";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
 
@@ -42,11 +42,28 @@ export class UpdateSolutionCodeService implements IUpdateSolutionCodeService {
             }
         }
 
+        const solutionCode = await this.#_problemRepo.findOne({ _id : data._id,
+            solutionCodes : { $elemMatch : { _id : data.solutionCodeId } }
+         })
+
+        if(!solutionCode){
+            return {
+                data : null,
+                success : false,
+                errorMessage : ProblemErrorType.SolutionCodeNotFound
+            }
+        }
+
+        const updatedQuery : IUpdateSolutionCodeDTO = {}
+        if(data.solutionCode.code) updatedQuery.code = data.solutionCode.code;
+        if(data.solutionCode.language) updatedQuery.language = data.solutionCode.language;
+        if(data.solutionCode.executionTime) updatedQuery.executionTime = data.solutionCode.executionTime;
+        if(data.solutionCode.memoryTaken) updatedQuery.memoryTaken = data.solutionCode.memoryTaken;
+        
         await this.#_problemRepo.updateSolutionCode(
             data._id,
             data.solutionCodeId,
-            data.solutionCode
-        );
+            updatedQuery);
 
         return {
             data : null,

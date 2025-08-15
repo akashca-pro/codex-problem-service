@@ -2,6 +2,7 @@ import { IExample, IProblem, ISolutionCode, IStarterCode, ITestCase } from "@/in
 import { BaseRepository } from "../base.repository";
 import { FilterQuery } from "mongoose";
 import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
+import { IUpdateSolutionCodeDTO } from "@/dtos/problem/solutionCodeRequestDTOs";
 
 /**
  * The interface representing the structure of problem repository.
@@ -85,7 +86,7 @@ export interface IProblemRepository extends BaseRepository <IProblem>{
     updateSolutionCode(
         problemId : string,
         solutionCodeId : string,
-        solutionCode : ISolutionCode
+        updatedSolutionCode : IUpdateSolutionCodeDTO
     ) : Promise<void>
 
     /**

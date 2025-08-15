@@ -1,3 +1,4 @@
+import { Language } from "@/enums/language.enum";
 import { ISolutionCode } from "@/infra/db/interface/problem.interface";
 
 /**
@@ -21,7 +22,7 @@ export interface IUpdateSolutionCodeRequestDTO {
 
     _id : string;
     solutionCodeId : string;
-    solutionCode : ISolutionCode;
+    solutionCode : IUpdateSolutionCodeDTO;
 }
 
 /**
@@ -34,4 +35,16 @@ export interface IRemoveSolutionCodeRequestDTO {
     _id : string;
     solutionCodeId : string;
 
+}
+
+/**
+ * DTO (Data Tranfer Object) representing the data to be updated to solution code.
+ * 
+ * @interface
+ */
+export interface IUpdateSolutionCodeDTO {
+    language? : Language,
+    code? : string;
+    executionTime? : number;
+    memoryTaken? : number;
 }

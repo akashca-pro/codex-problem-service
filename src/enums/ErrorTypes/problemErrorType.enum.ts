@@ -12,5 +12,7 @@ export enum ProblemErrorType {
 
     ProblemFieldAlreadyExist = 'already exist',
 
-    TestCaseNotFound = 'Testcase not found.'
+    TestCaseNotFound = 'Testcase not found.',
+
+    SolutionCodeNotFound = 'Solution code not found',
 }
