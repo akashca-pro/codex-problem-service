@@ -38,17 +38,17 @@ export class GrpcRemoveTestCaseHandler {
     ) => {
 
         try {
-
             const req = call.request;
             const dto = ProblemMapper.toRemoveTestCaseService(req);
             const result = await this.#_removeTestCaseService.execute(dto);
-
             if(!result.success){
                 return callback({
                     code : mapMessageToGrpcStatus(result.errorMessage as string),
                     message : result.errorMessage
                 },null)
             }
+
+            return callback(null,{});
             
         } catch (error) {
             logger.error(SystemErrorType.InternalServerError,error);

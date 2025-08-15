@@ -95,11 +95,11 @@ export class ProblemMapper {
     }
 
     static toBulkUploadTestCaseService (body : IBulkUploadTestCaseInputDTO ) : IBulkUploadTestCaseRequestDTO {
-        if(!body.testcase) throw new Error('No Testcase found in IAddTestCaseInputDTO')
+        if(!body.testCase) throw new Error('No Testcase found in IAddTestCaseInputDTO')
         return {
             _id : body.Id,
             testCaseCollectionType : this._mapGrpcTestCaseCollectionTypeEnum(body.testCaseCollectionType),
-            testCase : body.testcase.map(this._mapGrpcTestCase)
+            testCase : body.testCase.map(this._mapGrpcTestCase)
         }
     }
 
@@ -218,7 +218,7 @@ export class ProblemMapper {
 
     private static _mapServiceTestCase(t : ITestCase) : IGrpcTestCase {
         return {
-            Id : t._id,
+            Id : t._id!,
             input : t.input,
             output : t.output
         }
@@ -340,7 +340,7 @@ export interface IAddTestCaseInputDTO {
 export interface IBulkUploadTestCaseInputDTO {
     Id : string;
     testCaseCollectionType : GrpcTestCaseCollectionTypeEnum;
-    testcase? : IGrpcTestCase[];
+    testCase? : IGrpcTestCase[];
 }
 
 export interface IRemoveTestCaseInputDTO {

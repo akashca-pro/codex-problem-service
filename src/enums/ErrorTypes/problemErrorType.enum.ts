@@ -11,4 +11,6 @@ export enum ProblemErrorType {
     ProblemAlreadyExists = 'Problem already exists',
 
     ProblemFieldAlreadyExist = 'already exist',
+
+    TestCaseNotFound = 'Testcase not found.'
 }

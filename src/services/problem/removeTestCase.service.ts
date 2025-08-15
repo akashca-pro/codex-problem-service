@@ -43,6 +43,21 @@ export class RemoveTestCaseService implements IRemoveTestCaseService  {
             }
         }
 
+        console.log(data);
+
+        const testCase = await this.#_problemRepo.findOne({ _id : data._id, 
+            'testcaseCollection.run' : { $elemMatch : { _id : data.testCaseId } } });
+
+        console.log(testCase)
+
+        if(!testCase){
+            return {
+                data : null,
+                success : false,
+                errorMessage : ProblemErrorType.TestCaseNotFound
+            }
+        }
+
         await this.#_problemRepo.removeTestCase(
             data._id,
             data.testCaseId,
