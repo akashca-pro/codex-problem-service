@@ -35,9 +35,14 @@ export class ListProblemService implements IListProblemService {
 
         if(data.difficulty) filter.difficulty = data.difficulty;
         if(data.questionId) filter.questionId = data.questionId;
-        if(data.tag) filter.tags = data.tag;
-        if(data.active) filter.active = data.active;
-        if (data.search) filter.$text = { $search: data.search };
+        if(data.tags?.length) filter.tags = { $in : data.tags };
+        if (data.search) {
+        filter.$or = [
+            { title: { $regex: `^${data.search}`, $options: "i" } },
+            { questionId: { $regex: `^${data.search}`, $options: "i" } },
+            { tags: { $regex: `^${data.search}`, $options: "i" } }
+        ];
+        }
 
         const skip = (data.page - 1) * data.limit;
 
@@ -45,7 +50,7 @@ export class ListProblemService implements IListProblemService {
 
         const [totalItems, problems] = await Promise.all([
             this.#_problemRepo.countDocuments(filter),
-            this.#_problemRepo.findPaginatedLean(filter,skip,data.limit,select)
+            this.#_problemRepo.findPaginatedLean(filter,skip,data.limit,select,{ questionId : 1 })
         ])
 
         const totalPages = Math.ceil(totalItems/ data.limit);

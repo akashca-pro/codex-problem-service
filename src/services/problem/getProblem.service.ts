@@ -8,6 +8,7 @@ import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
 import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
 import { config } from "@/config";
 import { ProblemMapper } from "@/dtos/mappers/ProblemMapper";
+import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
 
 /**
  * Implementaion of get problem service.
@@ -40,7 +41,7 @@ export class GetProblemService implements IGetProblemService {
 
     async execute(data: IGetProblemRequestDTO): Promise<ResponseDTO> {
 
-        const cacheKey = `problem:details:${data._id}`;
+        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${data._id}`;
 
         const cached = await this.#_cacheProvider.get(cacheKey);
 

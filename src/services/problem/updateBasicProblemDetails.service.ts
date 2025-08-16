@@ -7,6 +7,7 @@ import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
 import { extractDup, isDupKeyError } from "@/utils/mongoError";
 import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
+import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
 
 /**
  * The implementation of the update problem service.
@@ -74,7 +75,7 @@ export class UpdateProblemService implements IUpdateBasicProblemDetailsService {
                 }
             }
 
-            const cacheKey = `problem:details:${updatedProblem._id}`;
+          const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${updatedProblem._id}`;
             await this.#_cacheProvider.del(cacheKey);
 
             return {

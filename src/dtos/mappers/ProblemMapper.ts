@@ -58,7 +58,7 @@ export class ProblemMapper {
             difficulty : difficulty,
             questionId : body.questionId,
             search : body.search,
-            tag : body.tag
+            tags : body.tags
         }
     }
 
@@ -161,8 +161,8 @@ export class ProblemMapper {
                 examples : body.examples.map(this._mapServiceExample),
                 active : body.active,
                 solutionCodes : body.solutionCodes?.map(this._mapServiceSolutionCode) ?? [],
-                updatedAt : body.updatedAt.toISOString(),
-                createdAt : body.createdAt.toISOString()
+                updatedAt : typeof body.updatedAt === 'string' ? body.updatedAt : body.updatedAt.toISOString(),
+                createdAt : typeof body.createdAt === 'string' ? body.createdAt : body.createdAt.toISOString()
             }
 
     }
@@ -179,8 +179,8 @@ export class ProblemMapper {
             run : body.testcaseCollection.run.map(this._mapServiceTestCase),
             examples : body.examples.map(this._mapServiceExample),
             starterCodes : body.starterCodes.map(this._mapServiceStarterCode),
-            updatedAt : body.updatedAt.toISOString(),
-            createdAt : body.createdAt.toISOString()
+            updatedAt : typeof body.updatedAt === 'string' ? body.updatedAt : body.updatedAt.toISOString(),
+            createdAt : typeof body.createdAt === 'string' ? body.createdAt : body.createdAt.toISOString()
         }
     }
 
@@ -192,8 +192,8 @@ export class ProblemMapper {
             difficulty : this._mapServiceDifficulyEnum(body.difficulty),
             tags : body.tags,
             active : body.active,
-            updatedAt : body.updatedAt.toISOString(),
-            createdAt : body.createdAt.toISOString()
+            updatedAt : typeof body.updatedAt === 'string' ? body.updatedAt : body.updatedAt.toISOString(),
+            createdAt : typeof body.createdAt === 'string' ? body.createdAt : body.createdAt.toISOString()
         }
     }
 
@@ -337,7 +337,7 @@ export interface IListProblemInputDTO {
     page : number;
     limit : number;
     difficulty? : GrpcDifficultyEnum;
-    tag? : string;
+    tags? : string[];
     active? : boolean;
     search? : string;
     questionId? : string 

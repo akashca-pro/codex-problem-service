@@ -10,7 +10,7 @@ export interface IListProblemsRequestDTO {
     page : number;
     limit : number;
     difficulty? : Difficulty;
-    tag? : string;
+    tags? : string[];
     active? : boolean;
     search? : string;
     questionId? : string 
