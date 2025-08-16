@@ -38,8 +38,8 @@ export abstract class BaseRepository <T extends Document> {
      * @param documentId - The ID of the document.
      * @returns The found lean document or null.
      */
-    async findByIdLean(documentId: string): Promise<LeanDocument<T> | null> {
-        return this._model.findById(documentId).lean();
+    async findByIdLean(documentId: string,select? : string[]): Promise<LeanDocument<T> | null> {
+        return this._model.findById(documentId).select(select?.join(" ")).lean();
     }
     
     /**

@@ -59,6 +59,9 @@ import { GrpcUpdateSubmissionHandler } from '@/transport/grpc/handlers/submissio
 import { GrpcGetSubmissionsHandler } from '@/transport/grpc/handlers/submission/GetSubmissionHandler';
 import { ICacheProvider } from '@/libs/cache/ICacheProvider.interface';
 import { RedisCacheProvider } from '@/libs/cache/CacheProvider';
+import { IGetProblemPublicService } from '@/services/problem/interfaces/getProblemPublic.service.interface';
+import { GetProblemPublicService } from '@/services/problem/getProblemPublic.service';
+import { GrpcGetProblemPublicHandler } from '@/transport/grpc/handlers/problem/GetProblemPublicHandler';
 
 // Submission Services
 
@@ -115,6 +118,9 @@ container
 container
     .bind<IRemoveSolutionCodeService>(TYPES.IRemoveSolutionCodeService)
     .to(RemoveSolutionCodeService);
+container
+    .bind<IGetProblemPublicService>(TYPES.IGetProblemPublicService)
+    .to(GetProblemPublicService);
 
 /**
  * Submission Services
@@ -163,6 +169,9 @@ container
 container
     .bind<GrpcRemoveSolutionCodeHandler>(TYPES.GrpcRemoveSolutionCodeHandler)
     .to(GrpcRemoveSolutionCodeHandler);
+container
+    .bind<GrpcGetProblemPublicHandler>(TYPES.GrpcGetProblemPublicHandler)
+    .to(GrpcGetProblemPublicHandler);
 
 /**
  * Grpc handlers for submission.

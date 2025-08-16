@@ -18,10 +18,12 @@ import { GrpcRemoveSolutionCodeHandler } from "./handlers/problem/RemoveSolution
 import { GrpcCreateSubmissionhandler } from "./handlers/submission/CreateSubmissionHandler";
 import { GrpcUpdateSubmissionHandler } from "./handlers/submission/UpdateSubmissionHandler";
 import { GrpcGetSubmissionsHandler } from "./handlers/submission/GetSubmissionHandler";
+import { GrpcGetProblemPublicHandler } from "./handlers/problem/GetProblemPublicHandler";
 
 // problem 
 const createProblem = container.get<GrpcCreateProblemHandler>(TYPES.GrpcCreateProblemHandler);
 const getProblem = container.get<GrpcGetProblemHandler>(TYPES.GrpcGetProblemHandler);
+const getProblemPublic = container.get<GrpcGetProblemPublicHandler>(TYPES.GrpcGetProblemPublicHandler);
 const listProblem = container.get<GrpcListProblemHandler>(TYPES.GrpcListProblemHandler);
 const updateBasicProblemDetails = container.get<GrpcUpdateBasicProblemDetailsHandler>(TYPES.GrpcUpdateBasicProblemDetailsHandler);
 const addTestCase = container.get<GrpcAddTestCaseHandler>(TYPES.GrpcAddTestCaseHandler);
@@ -42,6 +44,7 @@ const problemHandler = {
     ...addSolutionCode.getServiceHandler(),
     ...updateSolutionCode.getServiceHandler(),
     ...removeSolutionCode.getServiceHandler(),
+    ...getProblemPublic.getServiceHandler(),
 
 }
 

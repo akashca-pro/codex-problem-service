@@ -1,7 +1,7 @@
 import { Difficulty } from "@/enums/difficulty.enum";
 import { ICreateProblemRequestDTO } from "../problem/CreateProblemRequestDTO";
 import { IListProblemsRequestDTO } from "../problem/listProblemsRequestDTO";
-import { IExample, IProblem, ISolutionCode, IStarterCode, ITestCase } from "@/infra/db/interface/problem.interface";
+import { IExample, IProblem, ISolutionCode, IStarterCode, ITestCase, ITestCaseCollection } from "@/infra/db/interface/problem.interface";
 import { IUpdateBasicProblemRequestDTO } from "../problem/updateProblemRequestDTO";
 import { 
     Example as IGrpcExample,
@@ -13,7 +13,8 @@ import {
     Difficulty as GrpcDifficultyEnum,
     Language as GrpcLanguageEnum,
     Problem as GrpcProblem,
-    ListProblemDetails as GrpcListProblemDetails
+    ListProblemDetails as GrpcListProblemDetails,
+    GetProblemPublicResponse as GrpcGetProblemPublicResponse
 } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { Language } from "@/enums/language.enum";
 import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
@@ -39,8 +40,6 @@ export class ProblemMapper {
     static toGetProblemDetails(body : IGetProblemInputDTO)  : IGetProblemRequestDTO {
         return {
             _id : body.Id,
-            questionId : body?.questionId,
-            title : body?.title
         }
     }
 
@@ -166,6 +165,23 @@ export class ProblemMapper {
                 createdAt : body.createdAt.toISOString()
             }
 
+    }
+
+    static toOutPublicDTO(body : LeanDocument<IGetProblemPublicInputDTO>) : GrpcGetProblemPublicResponse {
+        return {
+            Id : body._id!,
+            questionId : body.questionId,
+            title : body.title,
+            description : body.description,
+            difficulty : this._mapServiceDifficulyEnum(body.difficulty),
+            constraints : body.constraints,
+            tags : body.tags,
+            run : body.testcaseCollection.run.map(this._mapServiceTestCase),
+            examples : body.examples.map(this._mapServiceExample),
+            starterCodes : body.starterCodes.map(this._mapServiceStarterCode),
+            updatedAt : body.updatedAt.toISOString(),
+            createdAt : body.createdAt.toISOString()
+        }
     }
 
     static toOutListDTO(body : LeanDocument<IListProblemOutputDTO>) : GrpcListProblemDetails {
@@ -376,8 +392,6 @@ export interface IRemoveSolutionCodeInputDTO {
 
 export interface IGetProblemInputDTO {
     Id : string;
-    title? : string;
-    questionId? : string;
 }
 
 export interface IListProblemOutputDTO {
@@ -389,4 +403,19 @@ export interface IListProblemOutputDTO {
     active : boolean;
     updatedAt : Date;
     createdAt : Date;
+}
+
+export interface IGetProblemPublicInputDTO {
+    _id? : string;
+    questionId : string;
+    title : string;
+    description : string;
+    difficulty : Difficulty
+    tags : string[];
+    constraints : string[];
+    starterCodes : IStarterCode[];
+    testcaseCollection : ITestCaseCollection;
+    examples : IExample[];
+    createdAt : Date;
+    updatedAt : Date;
 }
