@@ -32,18 +32,19 @@ export class ListProblemService implements IListProblemService {
     async execute(data: IListProblemsRequestDTO): Promise<PaginationDTO> {
         
         const filter : Record<string, any> = {};
-
         if(data.difficulty) filter.difficulty = data.difficulty;
         if(data.questionId) filter.questionId = data.questionId;
         if(data.tags?.length) filter.tags = { $in : data.tags };
+
+        if(data?.active !== null) data.active ? filter.active = true : filter.active = false;
+
         if (data.search) {
         filter.$or = [
-            { title: { $regex: `^${data.search}`, $options: "i" } },
+            { title: { $regex: `^${data.search}`, $options: "i" } }, 
             { questionId: { $regex: `^${data.search}`, $options: "i" } },
             { tags: { $regex: `^${data.search}`, $options: "i" } }
         ];
         }
-
         const skip = (data.page - 1) * data.limit;
 
         const select = ['title','questionId','difficulty','tags','active','createdAt','updatedAt'];
