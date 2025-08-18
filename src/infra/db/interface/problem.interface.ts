@@ -29,7 +29,7 @@ export interface ITestCaseCollection {
  * @interface
  */
 export interface IExample {
-    _id : string;
+    _id? : string;
     input : string;
     output : string;
     explanation : string;
@@ -41,7 +41,7 @@ export interface IExample {
  * @interface
  */
 export interface IStarterCode {
-    _id : string;
+    _id? : string;
     language : Language;
     code : string;
 }

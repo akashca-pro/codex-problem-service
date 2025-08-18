@@ -59,11 +59,12 @@ export class UpdateProblemService implements IUpdateBasicProblemDetailsService {
         if(updatedData.description) updatedQuery.description = updatedData.description;
         if(updatedData.difficulty) updatedQuery.difficulty = updatedData.difficulty;
         if(updatedData.tags) updatedQuery.tags = updatedData.tags;
-        if(updatedData.constraints) updatedQuery.constraints = updatedData.constraints;
+        if(updatedData.constraints?.length !== 0) updatedQuery.constraints = updatedData.constraints;
         if(updatedData.questionId) updatedQuery.questionId = updatedData.questionId;
-        if(updatedData.examples) updatedQuery.examples = updatedData.examples;
-        if(updatedData.starterCodes) updatedQuery.starterCodes = updatedData.starterCodes;
-        if(updatedData.active) updatedQuery.active = updatedData.active;
+        if(updatedData.examples?.length !== 0) updatedQuery.examples = updatedData.examples;
+        if(updatedData.starterCodes?.length !== 0) updatedQuery.starterCodes = updatedData.starterCodes;
+        if(updatedData.active) updatedQuery.active = true;
+        else updatedQuery.active = false;
 
         try {
             const updatedProblem = await this.#_problemRepo.update(problemId,updatedQuery);

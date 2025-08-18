@@ -80,7 +80,7 @@ export class ProblemMapper {
             description : body.description,
             difficulty,
             examples : body.examples?.map(this._mapGrpcExample),
-            starterCodes : body.starterCodes?.map(this._mapGrpcStarterCode),
+            starterCodes : body.starterCodes?.map(this._mapGrpcStarterCode.bind(this)),
             tags : body.tags,
         }
     }
@@ -144,23 +144,22 @@ export class ProblemMapper {
     }
 
     static toOutDTO(body : LeanDocument<IProblem> ) : GrpcProblem {
-
             return {
                 Id : body._id as string,
                 questionId : body.questionId,
                 title : body.title,
-                decription : body.description,
+                description : body.description,
                 difficulty : this._mapServiceDifficulyEnum(body.difficulty),
                 tags : body.tags,
                 constraints : body.constraints,
-                starterCodes: body.starterCodes.map(this._mapServiceStarterCode),
+                starterCodes: body.starterCodes.map(this._mapServiceStarterCode.bind(this)),
                 testcaseCollection : {
-                    run : body.testcaseCollection.run.map(this._mapServiceTestCase),
-                    submit : body.testcaseCollection.submit.map(this._mapServiceTestCase)
+                    run : body.testcaseCollection.run.map(this._mapServiceTestCase.bind(this)),
+                    submit : body.testcaseCollection.submit.map(this._mapServiceTestCase.bind(this))
                 },
-                examples : body.examples.map(this._mapServiceExample),
+                examples : body.examples.map(this._mapServiceExample.bind(this)),
                 active : body.active,
-                solutionCodes : body.solutionCodes?.map(this._mapServiceSolutionCode) ?? [],
+                solutionCodes : body.solutionCodes?.map(this._mapServiceSolutionCode.bind(this)) ?? [],
                 updatedAt : typeof body.updatedAt === 'string' ? body.updatedAt : body.updatedAt.toISOString(),
                 createdAt : typeof body.createdAt === 'string' ? body.createdAt : body.createdAt.toISOString()
             }
@@ -201,7 +200,7 @@ export class ProblemMapper {
 
     private static _mapGrpcExample(e : IGrpcExample) : IExample {
         return {
-            _id : e.Id,
+            _id : e.Id === '' ? undefined : e.Id,
             input : e.input,
             output : e.output,
             explanation : e.explanation
@@ -210,7 +209,7 @@ export class ProblemMapper {
 
     private static _mapServiceExample(e : IExample) : IGrpcExample {
         return {
-            Id : e._id,
+            Id : e._id!,
             input : e.input,
             output : e.output,
             explanation : e.explanation   
@@ -219,7 +218,7 @@ export class ProblemMapper {
 
     private static _mapGrpcStarterCode(s : IGrpcStarterCode) : IStarterCode {
         return {
-            _id : s.Id,
+            _id : s.Id === '' ? undefined : s.Id,
             code : s.code,
             language : this._mapGrpcLanguageEnum(s.language)
         }
@@ -227,7 +226,7 @@ export class ProblemMapper {
 
     private static _mapServiceStarterCode(s : IStarterCode) : IGrpcStarterCode {
         return {
-            Id : s._id,
+            Id : s._id!,
             code : s.code,
             language : this._mapServiceLanguageEnum(s.language)
         }
