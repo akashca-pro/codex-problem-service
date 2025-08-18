@@ -5,6 +5,8 @@ import TYPES from "@/config/inversify/types";
 import { IUpdateSolutionCodeDTO, IUpdateSolutionCodeRequestDTO } from "@/dtos/problem/solutionCodeRequestDTOs";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
+import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
+import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
 
 /**
  * Implementaion of update solutioncode service.
@@ -16,18 +18,24 @@ import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
 export class UpdateSolutionCodeService implements IUpdateSolutionCodeService {
 
     #_problemRepo : IProblemRepository
+    #_cacheProvider : ICacheProvider
 
     /**
      * Creates an instance of the UpdateSolutionCodeService.
      * 
      * @param problemRepo - The problem repository.
+     * @param cacheProvider - The cache provider.
      * @constructor
      */
     constructor(
         @inject(TYPES.IProblemRepository)
-        problemRepo : IProblemRepository
+        problemRepo : IProblemRepository,
+
+        @inject(TYPES.ICacheProvider)
+        cacheProvider : ICacheProvider
     ){
-        this.#_problemRepo = problemRepo
+        this.#_problemRepo = problemRepo;
+        this.#_cacheProvider = cacheProvider;
     }
 
     async execute(data: IUpdateSolutionCodeRequestDTO): Promise<ResponseDTO> {
@@ -64,6 +72,9 @@ export class UpdateSolutionCodeService implements IUpdateSolutionCodeService {
             data._id,
             data.solutionCodeId,
             updatedQuery);
+
+        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${data._id}`;
+        await this.#_cacheProvider.del(cacheKey);
 
         return {
             data : null,

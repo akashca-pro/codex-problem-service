@@ -5,6 +5,8 @@ import TYPES from "@/config/inversify/types";
 import { IRemoveSolutionCodeRequestDTO } from "@/dtos/problem/solutionCodeRequestDTOs";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
+import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
+import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
 
 /**
  * Implementaion of remove solution code service.
@@ -16,18 +18,24 @@ import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
 export class RemoveSolutionCodeService implements IRemoveSolutionCodeService {
 
     #_problemRepo : IProblemRepository
+    #_cacheProvider : ICacheProvider
 
     /**
      * Creates an instance of RemoveSolutionCodeService.
      * 
      * @param problemRepo - The problem repository.
+     * @param cacheProvider - The cache provider.
      * @constructor
      */
     constructor(
         @inject(TYPES.IProblemRepository)
-        problemRepo  : IProblemRepository
+        problemRepo : IProblemRepository,
+
+        @inject(TYPES.ICacheProvider)
+        cacheProvider : ICacheProvider
     ){
-        this.#_problemRepo = problemRepo
+        this.#_problemRepo = problemRepo;
+        this.#_cacheProvider = cacheProvider;
     }
 
     async execute(data: IRemoveSolutionCodeRequestDTO): Promise<ResponseDTO> {
@@ -54,6 +62,9 @@ export class RemoveSolutionCodeService implements IRemoveSolutionCodeService {
                 errorMessage : ProblemErrorType.SolutionCodeNotFound
             }
         }
+
+        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${data._id}`;
+        await this.#_cacheProvider.del(cacheKey);
 
         return {
             data : null,

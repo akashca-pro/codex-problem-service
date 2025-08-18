@@ -26,6 +26,7 @@ export class GetProblemPublicService implements IGetProblemPublicService {
      * Creates an instance of GetProblemPublicService.
      * 
      * @param problemRepo - The problem repository.
+     * @param cacheProvider - The cache provider.
      * @constructor
      */
     constructor(

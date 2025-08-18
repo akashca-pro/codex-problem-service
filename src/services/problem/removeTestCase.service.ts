@@ -5,6 +5,8 @@ import TYPES from "@/config/inversify/types";
 import { IRemoveTestCaseRequestDTO } from "@/dtos/problem/testCaseRequestDTOs";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
+import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
+import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
 
 /**
  * Implementation of the remove test case service.
@@ -17,18 +19,24 @@ import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
 export class RemoveTestCaseService implements IRemoveTestCaseService  {
 
     #_problemRepo : IProblemRepository
+    #_cacheProvider : ICacheProvider
 
     /**
      * Creates an instance of RemoveTestCaseService.
      * 
      * @param problemRepo - The problem repository.
+     * @param cacheProvider - The cache provider.
      * @constructor
      */
     constructor(
         @inject(TYPES.IProblemRepository)
-        problemRepo  : IProblemRepository
+        problemRepo : IProblemRepository,
+
+        @inject(TYPES.ICacheProvider)
+        cacheProvider : ICacheProvider
     ){
-        this.#_problemRepo = problemRepo
+        this.#_problemRepo = problemRepo;
+        this.#_cacheProvider = cacheProvider;
     }
 
     async execute(data: IRemoveTestCaseRequestDTO): Promise<ResponseDTO> {
@@ -59,6 +67,9 @@ export class RemoveTestCaseService implements IRemoveTestCaseService  {
             data._id,
             data.testCaseId,
             data.testCaseCollectionType);
+
+        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${data._id}`;
+        await this.#_cacheProvider.del(cacheKey);
 
         return {
             data : null,
