@@ -50,7 +50,7 @@ export class CreateProblemService implements ICreateProblemService {
         }
 
         try {
-            const result = await this.#_problemRepo.create(data);
+            const result = await this.#_problemRepo.create({...data, active : false});
 
             return {
                 data : result,
