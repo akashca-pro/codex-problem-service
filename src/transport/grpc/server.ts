@@ -20,6 +20,7 @@ import { GrpcUpdateSubmissionHandler } from "./handlers/submission/UpdateSubmiss
 import { GrpcGetSubmissionsHandler } from "./handlers/submission/GetSubmissionHandler";
 import { GrpcGetProblemPublicHandler } from "./handlers/problem/GetProblemPublicHandler";
 import { grpcMetricsCollector } from "@/config/metrics/grpcMetricsMiddleware";
+import { GrpcCheckQuestionIdAvailabilityHandler } from "./handlers/problem/CheckQuestionIdHandler";
 
 // problem 
 const createProblem = container.get<GrpcCreateProblemHandler>(TYPES.GrpcCreateProblemHandler);
@@ -33,6 +34,7 @@ const removeTestCase = container.get<GrpcRemoveTestCaseHandler>(TYPES.GrpcRemove
 const addSolutionCode = container.get<GrpcAddSolutionCodeHandler>(TYPES.GrpcAddSolutionCodeHandler);
 const updateSolutionCode = container.get<GrpcUpdateSolutionCodeHandler>(TYPES.GrpcUpdateSolutionCodeHandler);
 const removeSolutionCode = container.get<GrpcRemoveSolutionCodeHandler>(TYPES.GrpcRemoveSolutionCodeHandler);
+const checkQuestionIdAvailability = container.get<GrpcCheckQuestionIdAvailabilityHandler>(TYPES.GrpcCheckQuestionIdAvailabilityHandler);
 
 // function to wrap all service handler with grpcMetricsCollector function.
 function wrapAll(serviceObj : Record<string,Function>) {
@@ -56,6 +58,7 @@ const problemHandler = wrapAll({
     ...updateSolutionCode.getServiceHandler(),
     ...removeSolutionCode.getServiceHandler(),
     ...getProblemPublic.getServiceHandler(),
+    ...checkQuestionIdAvailability.getServiceHandler(),
 
 })
 

@@ -62,6 +62,9 @@ import { RedisCacheProvider } from '@/libs/cache/CacheProvider';
 import { IGetProblemPublicService } from '@/services/problem/interfaces/getProblemPublic.service.interface';
 import { GetProblemPublicService } from '@/services/problem/getProblemPublic.service';
 import { GrpcGetProblemPublicHandler } from '@/transport/grpc/handlers/problem/GetProblemPublicHandler';
+import { ICheckQuestionIdAvailablityService } from '@/services/problem/interfaces/checkQuestionId.service.interface';
+import { CheckQuestionIdAvailabiliyService } from '@/services/problem/checkQuestionIdAvailability.service';
+import { GrpcCheckQuestionIdAvailabilityHandler } from '@/transport/grpc/handlers/problem/CheckQuestionIdHandler';
 
 // Submission Services
 
@@ -121,6 +124,9 @@ container
 container
     .bind<IGetProblemPublicService>(TYPES.IGetProblemPublicService)
     .to(GetProblemPublicService);
+container
+    .bind<ICheckQuestionIdAvailablityService>(TYPES.ICheckQuestionIdAvailability)
+    .to(CheckQuestionIdAvailabiliyService);
 
 /**
  * Submission Services
@@ -172,6 +178,9 @@ container
 container
     .bind<GrpcGetProblemPublicHandler>(TYPES.GrpcGetProblemPublicHandler)
     .to(GrpcGetProblemPublicHandler);
+container
+    .bind<GrpcCheckQuestionIdAvailabilityHandler>(TYPES.GrpcCheckQuestionIdAvailabilityHandler)
+    .to(GrpcCheckQuestionIdAvailabilityHandler);
 
 /**
  * Grpc handlers for submission.
