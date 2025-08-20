@@ -22,6 +22,7 @@ const TYPES = {
     IRemoveSolutionCodeService : Symbol.for("IRemoveSolutionCodeService"),
     IGetProblemPublicService : Symbol.for("IGetProblemPublicService"),
     ICheckQuestionIdAvailability : Symbol.for("ICheckQuestionIdAvailability"),
+    ICheckProblemTitleAvailService : Symbol.for("ICheckProblemTitleAvailService"),
 
     // Submission Services
 
@@ -43,6 +44,7 @@ const TYPES = {
     GrpcRemoveSolutionCodeHandler : Symbol.for("GrpcRemoveSolutionCodeHandler"),
     GrpcGetProblemPublicHandler : Symbol.for("GrpcGetProblemPublicHandler"),
     GrpcCheckQuestionIdAvailabilityHandler : Symbol.for("GrpcCheckQuestionIdAvailabilityHandler"),
+    GrpcCheckProblemTitleAvailHandler : Symbol.for("GrpcCheckProblemTitleAvailHandler"),
     
     // Grpc Handlers for submissions
 

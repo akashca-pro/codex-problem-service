@@ -5,6 +5,7 @@ import { Server, ServerCredentials } from "@grpc/grpc-js";
 import { ProblemServiceService, SubmissionServiceService } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { config } from "@/config";
 import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
+import { grpcMetricsCollector } from "@/config/metrics/grpcMetricsMiddleware";
 
 import { GrpcGetProblemHandler } from "./handlers/problem/GetProblemHandler";
 import { GrpcListProblemHandler } from "./handlers/problem/ListProblemHandler";
@@ -19,8 +20,9 @@ import { GrpcCreateSubmissionhandler } from "./handlers/submission/CreateSubmiss
 import { GrpcUpdateSubmissionHandler } from "./handlers/submission/UpdateSubmissionHandler";
 import { GrpcGetSubmissionsHandler } from "./handlers/submission/GetSubmissionHandler";
 import { GrpcGetProblemPublicHandler } from "./handlers/problem/GetProblemPublicHandler";
-import { grpcMetricsCollector } from "@/config/metrics/grpcMetricsMiddleware";
 import { GrpcCheckQuestionIdAvailabilityHandler } from "./handlers/problem/CheckQuestionIdHandler";
+import { GrpcCheckProblemTitleAvailHandler } from "./handlers/problem/CheckProblemTitleHandler";
+
 
 // problem 
 const createProblem = container.get<GrpcCreateProblemHandler>(TYPES.GrpcCreateProblemHandler);
@@ -35,6 +37,7 @@ const addSolutionCode = container.get<GrpcAddSolutionCodeHandler>(TYPES.GrpcAddS
 const updateSolutionCode = container.get<GrpcUpdateSolutionCodeHandler>(TYPES.GrpcUpdateSolutionCodeHandler);
 const removeSolutionCode = container.get<GrpcRemoveSolutionCodeHandler>(TYPES.GrpcRemoveSolutionCodeHandler);
 const checkQuestionIdAvailability = container.get<GrpcCheckQuestionIdAvailabilityHandler>(TYPES.GrpcCheckQuestionIdAvailabilityHandler);
+const checkProblemTitleAvail = container.get<GrpcCheckProblemTitleAvailHandler>(TYPES.GrpcCheckProblemTitleAvailHandler);
 
 // function to wrap all service handler with grpcMetricsCollector function.
 function wrapAll(serviceObj : Record<string,Function>) {
@@ -59,6 +62,7 @@ const problemHandler = wrapAll({
     ...removeSolutionCode.getServiceHandler(),
     ...getProblemPublic.getServiceHandler(),
     ...checkQuestionIdAvailability.getServiceHandler(),
+    ...checkProblemTitleAvail.getServiceHandler(),
 
 })
 

@@ -65,6 +65,9 @@ import { GrpcGetProblemPublicHandler } from '@/transport/grpc/handlers/problem/G
 import { ICheckQuestionIdAvailablityService } from '@/services/problem/interfaces/checkQuestionId.service.interface';
 import { CheckQuestionIdAvailabiliyService } from '@/services/problem/checkQuestionIdAvailability.service';
 import { GrpcCheckQuestionIdAvailabilityHandler } from '@/transport/grpc/handlers/problem/CheckQuestionIdHandler';
+import { ICheckProblemTitleAvailService } from '@/services/problem/interfaces/checkProblemTitle.service.interface';
+import { CheckProblemTitleAvailService } from '@/services/problem/checkProblemTitleAvail.service';
+import { GrpcCheckProblemTitleAvailHandler } from '@/transport/grpc/handlers/problem/CheckProblemTitleHandler';
 
 // Submission Services
 
@@ -127,6 +130,9 @@ container
 container
     .bind<ICheckQuestionIdAvailablityService>(TYPES.ICheckQuestionIdAvailability)
     .to(CheckQuestionIdAvailabiliyService);
+container
+    .bind<ICheckProblemTitleAvailService>(TYPES.ICheckProblemTitleAvailService)
+    .to(CheckProblemTitleAvailService);
 
 /**
  * Submission Services
@@ -181,6 +187,9 @@ container
 container
     .bind<GrpcCheckQuestionIdAvailabilityHandler>(TYPES.GrpcCheckQuestionIdAvailabilityHandler)
     .to(GrpcCheckQuestionIdAvailabilityHandler);
+container
+    .bind<GrpcCheckProblemTitleAvailHandler>(TYPES.GrpcCheckProblemTitleAvailHandler)
+    .to(GrpcCheckProblemTitleAvailHandler);
 
 /**
  * Grpc handlers for submission.
