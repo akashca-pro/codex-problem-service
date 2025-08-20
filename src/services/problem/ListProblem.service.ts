@@ -36,7 +36,7 @@ export class ListProblemService implements IListProblemService {
         if(data.questionId) filter.questionId = data.questionId;
         if(data.tags?.length) filter.tags = { $in : data.tags };
 
-        if(data?.active !== null) data.active ? filter.active = true : filter.active = false;
+        if(data?.active !== null) !data.active ? filter.active = false : filter.active = true;
 
         if (data.search) {
         filter.$or = [

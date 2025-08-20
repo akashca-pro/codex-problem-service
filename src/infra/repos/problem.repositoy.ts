@@ -36,13 +36,13 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         problemId: string, 
         testCaseId: string, 
         testCaseCollectionType: TestCaseCollectionType
-    ): Promise<void> {
-        await this.update(problemId, {
+    ): Promise<boolean> {
+        const result = await this._model.updateOne({ _id : problemId }, {
             $pull : {
                 [`testcaseCollection.${testCaseCollectionType}`]: { _id: testCaseId }
             }
         })
-
+        return result.modifiedCount > 0
     }
 
     async bulkUploadTestCase(

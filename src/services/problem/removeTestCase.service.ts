@@ -50,23 +50,19 @@ export class RemoveTestCaseService implements IRemoveTestCaseService  {
                 errorMessage : ProblemErrorType.ProblemNotFound
             }
         }
+        
+        const removed = await this.#_problemRepo.removeTestCase(
+            data._id,
+            data.testCaseId,
+            data.testCaseCollectionType);
 
-        const testCase = await this.#_problemRepo.findOne({ _id : data._id, 
-            'testcaseCollection.run' : { $elemMatch : { _id : data.testCaseId } } });
-
-
-        if(!testCase){
+        if(!removed){
             return {
                 data : null,
                 success : false,
                 errorMessage : ProblemErrorType.TestCaseNotFound
             }
         }
-
-        await this.#_problemRepo.removeTestCase(
-            data._id,
-            data.testCaseId,
-            data.testCaseCollectionType);
 
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${data._id}`;
         await this.#_cacheProvider.del(cacheKey);

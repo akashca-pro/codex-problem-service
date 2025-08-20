@@ -19,6 +19,7 @@ import { GrpcCreateSubmissionhandler } from "./handlers/submission/CreateSubmiss
 import { GrpcUpdateSubmissionHandler } from "./handlers/submission/UpdateSubmissionHandler";
 import { GrpcGetSubmissionsHandler } from "./handlers/submission/GetSubmissionHandler";
 import { GrpcGetProblemPublicHandler } from "./handlers/problem/GetProblemPublicHandler";
+import { grpcMetricsCollector } from "@/config/metrics/grpcMetricsMiddleware";
 
 // problem 
 const createProblem = container.get<GrpcCreateProblemHandler>(TYPES.GrpcCreateProblemHandler);
@@ -33,7 +34,17 @@ const addSolutionCode = container.get<GrpcAddSolutionCodeHandler>(TYPES.GrpcAddS
 const updateSolutionCode = container.get<GrpcUpdateSolutionCodeHandler>(TYPES.GrpcUpdateSolutionCodeHandler);
 const removeSolutionCode = container.get<GrpcRemoveSolutionCodeHandler>(TYPES.GrpcRemoveSolutionCodeHandler);
 
-const problemHandler = {
+// function to wrap all service handler with grpcMetricsCollector function.
+function wrapAll(serviceObj : Record<string,Function>) {
+    return Object.fromEntries(
+        Object.entries(serviceObj).map(([name, fn])=> [
+            name,
+            grpcMetricsCollector(name, fn)
+        ])
+    )
+}
+
+const problemHandler = wrapAll({
     ...createProblem.getServiceHandler(),
     ...getProblem.getServiceHandler(),
     ...listProblem.getServiceHandler(),
@@ -46,18 +57,18 @@ const problemHandler = {
     ...removeSolutionCode.getServiceHandler(),
     ...getProblemPublic.getServiceHandler(),
 
-}
+})
 
 // Submission
 const createSubmission = container.get<GrpcCreateSubmissionhandler>(TYPES.GrpcCreateSubmissionhandler);
 const updateSubmission = container.get<GrpcUpdateSubmissionHandler>(TYPES.GrpcUpdateSubmissionHandler);
 const getSubmissions = container.get<GrpcGetSubmissionsHandler>(TYPES.GrpcGetSubmissionsHandler);
 
-const submissionHandler = {
+const submissionHandler = wrapAll({
     ...createSubmission.getServiceHandler(),
     ...updateSubmission.getServiceHandler(),
     ...getSubmissions.getServiceHandler()
-}
+})
 
 export const startGrpcServer = () => {
 

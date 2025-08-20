@@ -47,7 +47,7 @@ export interface IProblemRepository extends BaseRepository <IProblem>{
         problemId : string,
         testCaseId : string,
         testCaseCollectionType : TestCaseCollectionType,
-    ) : Promise<void>
+    ) : Promise<boolean>
 
     /**
      * Bulk uploads multiple testcases to the specified collection type.
