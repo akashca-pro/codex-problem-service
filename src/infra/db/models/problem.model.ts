@@ -66,7 +66,7 @@ const ProblemSchema = new Schema<IProblem>(
     { timestamps : true }
 )
 
-ProblemSchema.index({ difficulty: 1, questionId: 1 });
+ProblemSchema.index({ difficulty: 1, createdAt: 1 });
 ProblemSchema.index({ title: 1 });
 ProblemSchema.index({ tags : 1 });
 ProblemSchema.index({ questionId : 1 });

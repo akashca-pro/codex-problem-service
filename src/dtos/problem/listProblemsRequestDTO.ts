@@ -13,5 +13,6 @@ export interface IListProblemsRequestDTO {
     tags? : string[];
     active? : boolean;
     search? : string;
-    questionId? : string 
+    questionId? : string;
+    sort?: string; 
 }

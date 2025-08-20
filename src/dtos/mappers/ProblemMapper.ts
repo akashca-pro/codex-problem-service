@@ -58,7 +58,8 @@ export class ProblemMapper {
             difficulty : difficulty,
             questionId : body.questionId,
             search : body.search,
-            tags : body.tags
+            tags : body.tags,
+            sort : body.sort
         }
     }
 
@@ -339,7 +340,8 @@ export interface IListProblemInputDTO {
     tags? : string[];
     active? : boolean;
     search? : string;
-    questionId? : string 
+    questionId? : string;
+    sort? : string; 
 }
 
 export interface IUpdateBasicProblemDetailsInputDTO {

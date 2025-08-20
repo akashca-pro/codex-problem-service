@@ -31,6 +31,7 @@ export class ListProblemService implements IListProblemService {
 
     async execute(data: IListProblemsRequestDTO): Promise<PaginationDTO> {
         
+        const sort : Record<string,1|-1> = {};
         const filter : Record<string, any> = {};
         if(data.difficulty) filter.difficulty = data.difficulty;
         if(data.questionId) filter.questionId = data.questionId;
@@ -45,13 +46,20 @@ export class ListProblemService implements IListProblemService {
             { tags: { $regex: `^${data.search}`, $options: "i" } }
         ];
         }
+
+        if(data.sort === 'oldest'){
+            sort.createdAt = 1
+        }else{
+            sort.createdAt = -1
+        }
+
         const skip = (data.page - 1) * data.limit;
 
         const select = ['title','questionId','difficulty','tags','active','createdAt','updatedAt'];
 
         const [totalItems, problems] = await Promise.all([
             this.#_problemRepo.countDocuments(filter),
-            this.#_problemRepo.findPaginatedLean(filter,skip,data.limit,select,{ questionId : 1 })
+            this.#_problemRepo.findPaginatedLean(filter,skip,data.limit,select,sort)
         ])
 
         const totalPages = Math.ceil(totalItems/ data.limit);
