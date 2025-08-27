@@ -8,21 +8,8 @@ const TYPES = {
     IProblemRepository : Symbol.for("IProblemRepository"),
     ISubmissionRepository : Symbol.for("ISubmissionRepository"),
 
-    // Problem services
-
-    ICreateProblemService : Symbol.for("ICreateProblemService"),
-    IUpdateBasicProblemDetailsService : Symbol.for("IUpdateBasicProblemDetailsService"),
-    IGetProblemService : Symbol.for("IGetProblemService"),
-    IListProblemService : Symbol.for("IListProblemService"),
-    IAddTestCaseService : Symbol.for("IAddTestCaseService"),
-    IBulkUploadTestCaseService : Symbol.for("IBulkUploadTestCaseService"),
-    IRemoveTestCaseService : Symbol.for("IRemoveTestCaseService"),
-    IAddSolutionCodeService : Symbol.for("IAddSolutionCodeService"),
-    IUpdateSolutionCodeService : Symbol.for("IUpdateSolutionCodeService"),
-    IRemoveSolutionCodeService : Symbol.for("IRemoveSolutionCodeService"),
-    IGetProblemPublicService : Symbol.for("IGetProblemPublicService"),
-    ICheckQuestionIdAvailability : Symbol.for("ICheckQuestionIdAvailability"),
-    ICheckProblemTitleAvailService : Symbol.for("ICheckProblemTitleAvailService"),
+    // services
+    IProblemService : Symbol.for("IProblemService"),
 
     // Submission Services
 
@@ -30,22 +17,9 @@ const TYPES = {
     IUpdateSubmissionService : Symbol.for("IUpdateSubmissionService"),
     IGetSubmissionsService : Symbol.for("IGetSubmissionsService"),
     
-    // Grpc Handlers for problems
+    // Grpc Handlers
+    ProblemHandler : Symbol.for("ProblemHandler"),
 
-    GrpcCreateProblemHandler : Symbol.for("GrpcCreateProblemHandler"),
-    GrpcGetProblemHandler : Symbol.for("GrpcGetProblemHandler"),
-    GrpcListProblemHandler : Symbol.for("GrpcListProblemHandler"),
-    GrpcUpdateBasicProblemDetailsHandler : Symbol.for("GrpcUpdateBasicProblemDetailsHandler"),
-    GrpcAddTestCaseHandler : Symbol.for("GrpcAddTestCaseHandler"),
-    GrpcBulkUploadTestCaseHandler : Symbol.for("GrpcBulkUploadTestCaseHandler"),
-    GrpcRemoveTestCaseHandler : Symbol.for("GrpcRemoveTestCaseHandler"),
-    GrpcAddSolutionCodeHandler : Symbol.for("GrpcAddSolutionCodeHandler"),
-    GrpcUpdateSolutionCodeHandler : Symbol.for("GrpcUpdateSolutionCodeHandler"),
-    GrpcRemoveSolutionCodeHandler : Symbol.for("GrpcRemoveSolutionCodeHandler"),
-    GrpcGetProblemPublicHandler : Symbol.for("GrpcGetProblemPublicHandler"),
-    GrpcCheckQuestionIdAvailabilityHandler : Symbol.for("GrpcCheckQuestionIdAvailabilityHandler"),
-    GrpcCheckProblemTitleAvailHandler : Symbol.for("GrpcCheckProblemTitleAvailHandler"),
-    
     // Grpc Handlers for submissions
 
     GrpcCreateSubmissionhandler : Symbol.for("GrpcCreateSubmissionhandler"),

@@ -82,6 +82,7 @@ export class SubmissionMapper {
             ...(body.executionTime ? { executionTime : body.executionTime} : {}),
             ...(body.memoryUsage ? { memoryUsage : body.memoryUsage } : {}),
             isFirst : body.isFirst,
+            status : body.status,
             updatedAt : body.updatedAt.toISOString(),
             createdAt : body.createdAt.toISOString()
         }

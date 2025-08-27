@@ -26,305 +26,254 @@ import { LeanDocument } from "mongoose";
 export class ProblemMapper {
     
     static toCreateProblemService(body : ICreateProblemInputDTO) : ICreateProblemRequestDTO {
-        const difficulty = this._mapGrpcDifficultyEnum(body.difficulty);
+        const difficulty = ProblemMapper._mapGrpcDifficultyEnum(body.difficulty);
 
         return {
             title : body.title,
             description : body.description,
-            difficulty : difficulty,
+            difficulty,
             questionId : body.questionId,
-            tags : body.tags,
+            tags : body.tags ?? [],
         }
     }
 
     static toGetProblemDetails(body : IGetProblemInputDTO)  : IGetProblemRequestDTO {
-        return {
-            _id : body.Id,
-        }
+        return { _id : body.Id };
     }
 
     static toListProblemService(body : IListProblemInputDTO) : IListProblemsRequestDTO {
-
-        let difficulty : Difficulty | undefined 
-
-        if(body.difficulty){
-            difficulty = this._mapGrpcDifficultyEnum(body.difficulty);
-        }
+        const difficulty = body.difficulty 
+            ? ProblemMapper._mapGrpcDifficultyEnum(body.difficulty)
+            : undefined;
 
         return {
             limit : body.limit,
             page : body.page,
             active : body.active,
-            difficulty : difficulty,
+            difficulty,
             questionId : body.questionId,
             search : body.search,
-            tags : body.tags,
+            tags : body.tags ?? [],
             sort : body.sort
         }
     }
 
-    static toUpdateBasicProblemDetailsServive (
+    static toUpdateBasicProblemDetailsServive(
         body : IUpdateBasicProblemDetailsInputDTO
     ) : IUpdateBasicProblemRequestDTO {
-
-        let difficulty : Difficulty | undefined 
-
-        if(body.difficulty){
-            difficulty = this._mapGrpcDifficultyEnum(body.difficulty);
-        }
+        const difficulty = body.difficulty 
+            ? ProblemMapper._mapGrpcDifficultyEnum(body.difficulty)
+            : undefined;
 
         return {
             questionId : body.questionId,
             title : body.title,
             active : body.active,
-            constraints : body.constraints,
+            constraints : body.constraints ?? [],
             description : body.description,
             difficulty,
-            examples : body.examples?.map(this._mapGrpcExample),
-            starterCodes : body.starterCodes?.map(this._mapGrpcStarterCode.bind(this)),
-            tags : body.tags,
+            examples : body.examples?.map(ProblemMapper._mapGrpcExample) ?? [],
+            starterCodes : body.starterCodes?.map(ProblemMapper._mapGrpcStarterCode) ?? [],
+            tags : body.tags ?? [],
         }
     }
 
-    static toAddTestCaseService (body : IAddTestCaseInputDTO) : IAddTestCaseRequestDTO {
-        if(!body.testCase) throw new Error('No Testcase found in IAddTestCaseInputDTO')
+    static toAddTestCaseService(body : IAddTestCaseInputDTO) : IAddTestCaseRequestDTO {
+        if(!body.testCase) throw new Error("No Testcase found in IAddTestCaseInputDTO");
         return {
             _id : body.Id,
-            testCaseCollectionType : this._mapGrpcTestCaseCollectionTypeEnum(body.testCaseCollectionType),
-            testCase : this._mapGrpcTestCase(body.testCase as IGrpcTestCase) 
+            testCaseCollectionType : ProblemMapper._mapGrpcTestCaseCollectionTypeEnum(body.testCaseCollectionType),
+            testCase : ProblemMapper._mapGrpcTestCase(body.testCase) 
         }
     }
 
-    static toBulkUploadTestCaseService (body : IBulkUploadTestCaseInputDTO ) : IBulkUploadTestCaseRequestDTO {
-        if(!body.testCase) throw new Error('No Testcase found in IAddTestCaseInputDTO')
+    static toBulkUploadTestCaseService(body : IBulkUploadTestCaseInputDTO ) : IBulkUploadTestCaseRequestDTO {
         return {
             _id : body.Id,
-            testCaseCollectionType : this._mapGrpcTestCaseCollectionTypeEnum(body.testCaseCollectionType),
-            testCase : body.testCase.map(this._mapGrpcTestCase)
+            testCaseCollectionType : ProblemMapper._mapGrpcTestCaseCollectionTypeEnum(body.testCaseCollectionType),
+            testCase : body.testCase?.map(ProblemMapper._mapGrpcTestCase) ?? []
         }
     }
 
-    static toRemoveTestCaseService (body : IRemoveTestCaseInputDTO) : IRemoveTestCaseRequestDTO {
+    static toRemoveTestCaseService(body : IRemoveTestCaseInputDTO) : IRemoveTestCaseRequestDTO {
         return {
             _id : body.Id,
             testCaseId : body.testCaseId,
-            testCaseCollectionType : this._mapGrpcTestCaseCollectionTypeEnum(body.testCaseCollectionType)
+            testCaseCollectionType : ProblemMapper._mapGrpcTestCaseCollectionTypeEnum(body.testCaseCollectionType)
         }
     }
 
-    static toAddSolutionCodeService (body : IAddSolutionCodeInputDTO ) : IAddSolutionCodeRequestDTO {
-        if(!body.solutionCode) throw new Error('No Solution code found in IAddSolutionCodeInputDTO');
+    static toAddSolutionCodeService(body : IAddSolutionCodeInputDTO ) : IAddSolutionCodeRequestDTO {
+        if(!body.solutionCode) throw new Error("No Solution code found in IAddSolutionCodeInputDTO");
         return {
             _id : body.Id,
-            solutionCode : this._mapGrpcSolutionCode(body.solutionCode)
+            solutionCode : ProblemMapper._mapGrpcSolutionCode(body.solutionCode)
         }
     }
 
-    static toUpdateSolutionCodeService (body : IUpdateSolutionCodeInputDTO) : IUpdateSolutionCodeRequestDTO {
-        if(!body.solutionCode) throw new Error('No Solution code found in IUpdateSolutionCodeInputDTO');
+    static toUpdateSolutionCodeService(body : IUpdateSolutionCodeInputDTO) : IUpdateSolutionCodeRequestDTO {
+        if(!body.solutionCode) throw new Error("No Solution code found in IUpdateSolutionCodeInputDTO");
         const language = body.solutionCode.language 
-                        ? this._mapGrpcLanguageEnum(body.solutionCode.language)
-                        : undefined;
+            ? ProblemMapper._mapGrpcLanguageEnum(body.solutionCode.language)
+            : undefined;
         return {
             _id : body.Id,
             solutionCodeId : body.solutionCodeId,
             solutionCode : {
-                code : body.solutionCode?.code,
-                executionTime : body.solutionCode?.executionTime,
-                language : language,
-                memoryTaken : body.solutionCode?.memoryTaken
+                code : body.solutionCode.code,
+                executionTime : body.solutionCode.executionTime,
+                language,
+                memoryTaken : body.solutionCode.memoryTaken
             }
         }
     }
 
-    static toRemoveSolutionCodeService (body : IRemoveSolutionCodeInputDTO ) : IRemoveSolutionCodeRequestDTO {
-        return {
-            _id : body.Id,
-            solutionCodeId : body.solutionCodeId
-        }
+    static toRemoveSolutionCodeService(body : IRemoveSolutionCodeInputDTO ) : IRemoveSolutionCodeRequestDTO {
+        return { _id : body.Id, solutionCodeId : body.solutionCodeId }
     }
 
-    static toOutDTO(body : LeanDocument<IProblem> ) : GrpcProblem {
-            return {
-                Id : body._id as string,
-                questionId : body.questionId,
-                title : body.title,
-                description : body.description,
-                difficulty : this._mapServiceDifficulyEnum(body.difficulty),
-                tags : body.tags,
-                constraints : body.constraints,
-                starterCodes: body.starterCodes.map(this._mapServiceStarterCode.bind(this)),
-                testcaseCollection : {
-                    run : body.testcaseCollection.run.map(this._mapServiceTestCase.bind(this)),
-                    submit : body.testcaseCollection.submit.map(this._mapServiceTestCase.bind(this))
-                },
-                examples : body.examples.map(this._mapServiceExample.bind(this)),
-                active : body.active,
-                solutionCodes : body.solutionCodes?.map(this._mapServiceSolutionCode.bind(this)) ?? [],
-                updatedAt : typeof body.updatedAt === 'string' ? body.updatedAt : body.updatedAt.toISOString(),
-                createdAt : typeof body.createdAt === 'string' ? body.createdAt : body.createdAt.toISOString()
-            }
-
+    // ------------------ OUTPUT MAPPERS ------------------ //
+    static toOutDTO(body: LeanDocument<IProblem>): GrpcProblem {
+        return {
+            Id: body._id as string,
+            questionId: body.questionId,
+            title: body.title,
+            description: body.description,
+            difficulty: ProblemMapper._mapServiceDifficulyEnum(body.difficulty),
+            tags: body.tags ?? [],
+            constraints: body.constraints ?? [],
+            starterCodes: body.starterCodes?.map(ProblemMapper._mapServiceStarterCode) ?? [],
+            testcaseCollection: {
+                run: body.testcaseCollection?.run?.map(ProblemMapper._mapServiceTestCase) ?? [],
+                submit: body.testcaseCollection?.submit?.map(ProblemMapper._mapServiceTestCase) ?? []
+            },
+            examples: body.examples?.map(ProblemMapper._mapServiceExample) ?? [],
+            active: body.active ?? false,
+            solutionCodes: body.solutionCodes?.map(ProblemMapper._mapServiceSolutionCode) ?? [],
+            updatedAt: body.updatedAt instanceof Date ? body.updatedAt.toISOString() : body.updatedAt,
+            createdAt: body.createdAt instanceof Date ? body.createdAt.toISOString() : body.createdAt
+        };
     }
 
-    static toOutPublicDTO(body : LeanDocument<IGetProblemPublicInputDTO>) : GrpcGetProblemPublicResponse {
+    static toOutPublicDTO(body: LeanDocument<IGetProblemPublicInputDTO>): GrpcGetProblemPublicResponse {
         return {
-            Id : body._id!,
-            questionId : body.questionId,
-            title : body.title,
-            description : body.description,
-            difficulty : this._mapServiceDifficulyEnum(body.difficulty),
-            constraints : body.constraints,
-            tags : body.tags,
-            run : body.testcaseCollection.run.map(this._mapServiceTestCase),
-            examples : body.examples.map(this._mapServiceExample),
-            starterCodes : body.starterCodes.map(this._mapServiceStarterCode),
-            updatedAt : typeof body.updatedAt === 'string' ? body.updatedAt : body.updatedAt.toISOString(),
-            createdAt : typeof body.createdAt === 'string' ? body.createdAt : body.createdAt.toISOString()
-        }
+            Id: body._id!,
+            questionId: body.questionId,
+            title: body.title,
+            description: body.description,
+            difficulty: ProblemMapper._mapServiceDifficulyEnum(body.difficulty),
+            constraints: body.constraints ?? [],
+            tags: body.tags ?? [],
+            run: body.testcaseCollection?.run?.map(ProblemMapper._mapServiceTestCase) ?? [],
+            examples: body.examples?.map(ProblemMapper._mapServiceExample) ?? [],
+            starterCodes: body.starterCodes?.map(ProblemMapper._mapServiceStarterCode) ?? [],
+            updatedAt: body.updatedAt instanceof Date ? body.updatedAt.toISOString() : body.updatedAt,
+            createdAt: body.createdAt instanceof Date ? body.createdAt.toISOString() : body.createdAt
+        };
     }
 
-    static toOutListDTO(body : LeanDocument<IListProblemOutputDTO>) : GrpcListProblemDetails {
+    static toOutListDTO(body: LeanDocument<IListProblemOutputDTO>): GrpcListProblemDetails {
         return {
-            Id : body._id,
-            title : body.title,
-            questionId : body.questionId,
-            difficulty : this._mapServiceDifficulyEnum(body.difficulty),
-            tags : body.tags,
-            active : body.active,
-            updatedAt : typeof body.updatedAt === 'string' ? body.updatedAt : body.updatedAt.toISOString(),
-            createdAt : typeof body.createdAt === 'string' ? body.createdAt : body.createdAt.toISOString()
-        }
+            Id: body._id,
+            title: body.title,
+            questionId: body.questionId,
+            difficulty: ProblemMapper._mapServiceDifficulyEnum(body.difficulty),
+            tags: body.tags ?? [],
+            active: body.active ?? false,
+            updatedAt: body.updatedAt instanceof Date ? body.updatedAt.toISOString() : body.updatedAt,
+            createdAt: body.createdAt instanceof Date ? body.createdAt.toISOString() : body.createdAt
+        };
     }
 
-    // mappers (Grpc to and from Service)
-
-    private static _mapGrpcExample(e : IGrpcExample) : IExample {
-        return {
-            _id : e.Id === '' ? undefined : e.Id,
-            input : e.input,
-            output : e.output,
-            explanation : e.explanation
-        }
+    // ------------------ BASIC MAPPERS ------------------ //
+    static _mapGrpcExample(e : IGrpcExample) : IExample {
+        return { _id : e.Id || undefined, input : e.input, output : e.output, explanation : e.explanation }
     }
 
-    private static _mapServiceExample(e : IExample) : IGrpcExample {
-        return {
-            Id : e._id!,
-            input : e.input,
-            output : e.output,
-            explanation : e.explanation   
-        }
+    static _mapServiceExample(e : IExample) : IGrpcExample {
+        return { Id : e._id!, input : e.input, output : e.output, explanation : e.explanation }
     }
 
-    private static _mapGrpcStarterCode(s : IGrpcStarterCode) : IStarterCode {
+    static _mapGrpcStarterCode(s : IGrpcStarterCode) : IStarterCode {
+        return { _id : s.Id || undefined, code : s.code, language : ProblemMapper._mapGrpcLanguageEnum(s.language) }
+    }
+
+    static _mapServiceStarterCode(s : IStarterCode) : IGrpcStarterCode {
+        return { Id : s._id!, code : s.code, language : s.language ? ProblemMapper._mapServiceLanguageEnum(s.language) : 1 }
+    }
+
+    static _mapGrpcTestCase(t : IGrpcTestCase) : ITestCase {
+        return { _id : t.Id || undefined, input : t.input, output : t.output }
+    }
+
+    static _mapServiceTestCase(t : ITestCase) : IGrpcTestCase {
+        return { Id : t._id!, input : t.input, output : t.output }
+    }
+
+    static _mapGrpcSolutionCode(s : IGrpcSolutionCode ) : ISolutionCode {
         return {
-            _id : s.Id === '' ? undefined : s.Id,
+            _id : s.Id || undefined,
             code : s.code,
-            language : this._mapGrpcLanguageEnum(s.language)
-        }
-    }
-
-    private static _mapServiceStarterCode(s : IStarterCode) : IGrpcStarterCode {
-        return {
-            Id : s._id!,
-            code : s.code,
-            language : this._mapServiceLanguageEnum(s.language)
-        }
-    }
-
-    private static _mapGrpcTestCase(t : IGrpcTestCase) : ITestCase {
-        return {
-            _id : t.Id === '' ? undefined : t.Id,
-            input : t.input,
-            output : t.output
-        }
-    }
-
-    private static _mapServiceTestCase(t : ITestCase) : IGrpcTestCase {
-        return {
-            Id : t._id!,
-            input : t.input,
-            output : t.output
-        }
-    }
-
-    private static _mapGrpcSolutionCode(s : IGrpcSolutionCode ) : ISolutionCode {
-        return {
-            _id : s.Id === '' || s.Id === undefined ? undefined : s.Id,
-            code : s.code,
-            language : this._mapGrpcLanguageEnum(s.language),
+            language : ProblemMapper._mapGrpcLanguageEnum(s.language),
             executionTime : s.executionTime,
             memoryTaken : s.memoryTaken
         }
     }
 
-    private static _mapServiceSolutionCode(s : ISolutionCode) : IGrpcSolutionCode {
+    static _mapServiceSolutionCode(s : ISolutionCode) : IGrpcSolutionCode {
         return {
             Id : s._id!,
             code : s.code,
             executionTime : s.executionTime ?? 0,
             memoryTaken : s.memoryTaken ?? 0,
-            language : this._mapServiceLanguageEnum(s.language)
+            language : s.language ? ProblemMapper._mapServiceLanguageEnum(s.language) : 1
         }
     }
 
-    private static _mapGrpcDifficultyEnum(difficulty : GrpcDifficultyEnum) : Difficulty {
-        if (difficulty === 1) {
-            return Difficulty.EASY;
-        } else if (difficulty === 2) {
-            return Difficulty.MEDIUM;
-        } else if (difficulty === 3) {
-            return Difficulty.HARD;
-        } else {
-            throw new Error('Invalid difficulty value mapping from grpc');
-        }   
+    static _mapGrpcDifficultyEnum(difficulty : GrpcDifficultyEnum) : Difficulty {
+        switch(difficulty) {
+            case 1: return Difficulty.EASY;
+            case 2: return Difficulty.MEDIUM;
+            case 3: return Difficulty.HARD;
+            default: throw new Error("Invalid difficulty value mapping from grpc");
+        }
     }
 
-    private static _mapServiceDifficulyEnum(difficulty : Difficulty) : GrpcDifficultyEnum {
-        if (difficulty === Difficulty.EASY) {
-            return 1;
-        } else if (difficulty === Difficulty.MEDIUM) {
-            return 2;
-        } else if (difficulty === Difficulty.HARD) {
-            return 3;
-        } else {
-            throw new Error('Invalid difficulty value mapping from service');
-        }   
+    static _mapServiceDifficulyEnum(difficulty : Difficulty) : GrpcDifficultyEnum {
+        switch(difficulty) {
+            case Difficulty.EASY: return 1;
+            case Difficulty.MEDIUM: return 2;
+            case Difficulty.HARD: return 3;
+            default: throw new Error("Invalid difficulty value mapping from service");
+        }
     }
  
-    private static _mapGrpcLanguageEnum(language : GrpcLanguageEnum) : Language {
-        if(language === 1){
-            return Language.JAVASCRIPT;
-        } else if (language === 2){
-            return Language.PYTHON
-        } else {
-            throw new Error('Invalid choosen language mapping from grpc')
+    static _mapGrpcLanguageEnum(language : GrpcLanguageEnum) : Language {
+        switch(language) {
+            case 1: return Language.JAVASCRIPT;
+            case 2: return Language.PYTHON;
+            default: throw new Error("Invalid language mapping from grpc");
         }
     }
 
-    private static _mapServiceLanguageEnum(language : Language) : GrpcLanguageEnum {
-        if(language === Language.JAVASCRIPT){
-            return 1;
-        } else if (language === Language.PYTHON){
-            return 2;
-        } else {
-            throw new Error('Invalid choosen language mapping from service');
+    static _mapServiceLanguageEnum(language : Language) : GrpcLanguageEnum {
+        switch(language) {
+            case Language.JAVASCRIPT: return 1;
+            case Language.PYTHON: return 2;
+            default: throw new Error("Invalid language mapping from service");
         }
     }
 
-    private static _mapGrpcTestCaseCollectionTypeEnum(
-        testCaseCollectionType : GrpcTestCaseCollectionTypeEnum) : TestCaseCollectionType {
-        if(testCaseCollectionType === 1){
-            return TestCaseCollectionType.RUN
-        } else if (testCaseCollectionType === 2){
-            return TestCaseCollectionType.SUBMIT
-        } else {
-            throw new Error('Invalid testcase collection type mapping from grpc')
+    static _mapGrpcTestCaseCollectionTypeEnum(t : GrpcTestCaseCollectionTypeEnum) : TestCaseCollectionType {
+        switch(t) {
+            case 1: return TestCaseCollectionType.RUN;
+            case 2: return TestCaseCollectionType.SUBMIT;
+            default: throw new Error("Invalid testcase collection type mapping from grpc");
         }
     }
 }
 
+// ------------------ INTERFACES ------------------ //
 export interface ICreateProblemInputDTO {
     questionId : string;
     title : string;
