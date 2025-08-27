@@ -16,10 +16,22 @@ export function withGrpcErrorHandler<Req, Res>(
             await handler(call, callback);
         } catch (error) {
             logger.error(SystemErrorType.InternalServerError, error);
+            if (error instanceof GrpcError) {
+                return callback({ code: error.code, message: error.message }, null);
+            }
             callback({
                 code : Status.INTERNAL,
                 message : SystemErrorType.InternalServerError
             },null)
         }
     }
+}
+
+export class GrpcError extends Error {
+  code: number;
+  constructor(message: string, code: number) {
+    super(message);
+    this.code = code;
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
 }

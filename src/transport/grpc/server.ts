@@ -4,28 +4,18 @@ import { Server, ServerCredentials } from "@grpc/grpc-js";
 import { ProblemServiceService, SubmissionServiceService } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { config } from "@/config";
 import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
-
-import { GrpcCreateSubmissionhandler } from "./handlers/submission/CreateSubmissionHandler";
-import { GrpcUpdateSubmissionHandler } from "./handlers/submission/UpdateSubmissionHandler";
-import { GrpcGetSubmissionsHandler } from "./handlers/submission/GetSubmissionHandler";
-import { ProblemHandler } from "./handlers/problem.handler";
 import { wrapAll } from "@/utils/metricsMiddleware";
 
-// Problem handlers
+import { ProblemHandler } from "./handlers/problem.handler";
+import { SubmissionHandler } from "./handlers/submission.handler";
+
+// Grpc handlers
 const problemHandlerInstance = container.get<ProblemHandler>(TYPES.ProblemHandler);
+const submissionHandlerInstance = container.get<SubmissionHandler>(TYPES.SubmissionHandler);
 
+// Wrap all handlers with metrics middleware
 const problemHandlers = wrapAll(problemHandlerInstance.getServerHandlers());
-
-// Submission
-const createSubmission = container.get<GrpcCreateSubmissionhandler>(TYPES.GrpcCreateSubmissionhandler);
-const updateSubmission = container.get<GrpcUpdateSubmissionHandler>(TYPES.GrpcUpdateSubmissionHandler);
-const getSubmissions = container.get<GrpcGetSubmissionsHandler>(TYPES.GrpcGetSubmissionsHandler);
-
-const submissionHandler = wrapAll({
-    ...createSubmission.getServiceHandler(),
-    ...updateSubmission.getServiceHandler(),
-    ...getSubmissions.getServiceHandler()
-})
+const submissionHandlers = wrapAll(submissionHandlerInstance.getServiceHandler());
 
 export const startGrpcServer = () => {
 
@@ -36,7 +26,7 @@ export const startGrpcServer = () => {
     )
 
     server.addService(
-        SubmissionServiceService, submissionHandler
+        SubmissionServiceService, submissionHandlers
     )
 
     server.bindAsync(

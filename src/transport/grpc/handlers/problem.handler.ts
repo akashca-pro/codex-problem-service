@@ -1,6 +1,6 @@
 import TYPES from "@/config/inversify/types";
 import { ProblemMapper } from "@/dtos/mappers/ProblemMapper";
-import { IProblemService } from "@/services/problem/interfaces/problem.service.interface";
+import { IProblemService } from "@/services/interfaces/problem.service.interface";
 import { withGrpcErrorHandler } from "@/utils/errorHandler";
 import { mapMessageToGrpcStatus } from "@/utils/mapMessageToGrpcCode";
 import { AddTestCaseRequest, BulkUploadTestCasesRequest, CreateProblemRequest, 
@@ -281,7 +281,7 @@ export class ProblemHandler {
 
     /**
      * 
-     * @returns {Object} - An object containing the bound handler methods for the gRPC service.
+     * @returns {Record<string, Function>} - An object containing the bound handler methods for the gRPC service.
      */
     getServerHandlers() : Record<string,Function> {
         return {

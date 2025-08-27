@@ -13,13 +13,15 @@ import { IExecutionResult, IFailedTestCase, IStats, ISubmission } from "@/infra/
 import { IGetSubmissionRequestDTO } from "../submission/getSubmissionRequestDTO";
 import { isValidCountry } from "@/utils/countryCheck";
 import { SubmissionErrorType } from "@/enums/ErrorTypes/submissionErrorType.enum";
+import { GrpcError } from "@/utils/errorHandler";
+import { status } from "@grpc/grpc-js";
 
 export class SubmissionMapper {
 
     static toCreateSubmissionService(body :ICreateSubmissionInputDTO) : ICreateSubmissionRequestDTO {
 
         if(body.country && !isValidCountry(body.country)){
-            throw new Error(SubmissionErrorType.InvalidCountryCode)
+            throw new GrpcError(SubmissionErrorType.InvalidCountryCode,status.INVALID_ARGUMENT);
         }
 
         return {
@@ -37,7 +39,6 @@ export class SubmissionMapper {
     static toUpdateSubmissionService(body : IUpdateSubmissionInputDTO) : IUpdateSubmissionRequestDTO {
         if(!body.executionResult) throw new Error('Execution result is missing for updating submission.')
         return {
-             _id : body.Id,
              executionResult : this._mapGrpcExecutionResult(body.executionResult),
              executionTime : body.executionTime,
              memoryUsage : body.memoryUsage

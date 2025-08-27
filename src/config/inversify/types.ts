@@ -10,6 +10,7 @@ const TYPES = {
 
     // services
     IProblemService : Symbol.for("IProblemService"),
+    ISubmissionService : Symbol.for("ISubmissionService"),
 
     // Submission Services
 
@@ -19,6 +20,7 @@ const TYPES = {
     
     // Grpc Handlers
     ProblemHandler : Symbol.for("ProblemHandler"),
+    SubmissionHandler : Symbol.for("SubmissionHandler"),
 
     // Grpc Handlers for submissions
 
