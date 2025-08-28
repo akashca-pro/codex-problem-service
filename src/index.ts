@@ -1,14 +1,12 @@
 import express from 'express';
-import logger from '@akashcapro/codex-shared-utils/utils/logger';
-import { globalErrorHandler } from '@/utils/errorHandler';
+import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
 import { config } from '@/config';
 import { startMetricsServer } from '@/config/metrics/metrics-server';
 import { connectDB } from './config/db';
+import { startGrpcServer } from './transport/grpc/server';
 
 const app = express();
 
-// Global error handling.
-app.use(globalErrorHandler);
 
 const startServer = () => {
     try {
@@ -17,6 +15,9 @@ const startServer = () => {
 
         // Start prometheus metrics server.
         startMetricsServer(config.METRICS_PORT);
+
+        // start gRPC server.
+        startGrpcServer();
 
     } catch (error) {
         logger.error('Failed to start server : ',error);

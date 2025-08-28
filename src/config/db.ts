@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { config } from ".";
-import logger from "@akashcapro/codex-shared-utils/utils/logger";
+import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
 
 export const connectDB = () =>{
     mongoose.connect(config.DATABASE_URL)

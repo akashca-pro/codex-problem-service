@@ -4,7 +4,6 @@
  * @enum
  */
 export enum RedisEvents {
-
     READY = 'ready',
     ERROR = 'error',
     CLOSE = 'close',
