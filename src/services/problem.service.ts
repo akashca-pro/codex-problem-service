@@ -82,7 +82,7 @@ export class ProblemService implements IProblemService {
         id: string
     ): Promise<ResponseDTO> {
 
-        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${id}`;
+        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${id}`;
 
         const cached = await this.#_cacheProvider.get(cacheKey);
 
@@ -239,9 +239,12 @@ export class ProblemService implements IProblemService {
                     success : false
                 }
             }
-
-          const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${updatedProblem._id}`;
-            await this.#_cacheProvider.del(cacheKey);
+            const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${id}`;  
+            const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${updatedProblem._id}`;
+            await Promise.all([
+                await this.#_cacheProvider.del(cacheKey),
+                await this.#_cacheProvider.del(cacheKeyAdmin)
+            ])
 
             return {
                 data : null,
@@ -283,8 +286,12 @@ export class ProblemService implements IProblemService {
             testCaseCollectionType,
             testCase);
 
+        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${problemId}`;  
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${problemId}`;
-        await this.#_cacheProvider.del(cacheKey);
+        await Promise.all([
+            await this.#_cacheProvider.del(cacheKey),
+            await this.#_cacheProvider.del(cacheKeyAdmin)
+        ])
 
         return {
             data : null,
@@ -313,8 +320,12 @@ export class ProblemService implements IProblemService {
             testCaseCollectionType,
             testCases);
 
+        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${problemId}`;  
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${problemId}`;
-        await this.#_cacheProvider.del(cacheKey);
+        await Promise.all([
+            await this.#_cacheProvider.del(cacheKey),
+            await this.#_cacheProvider.del(cacheKeyAdmin)
+        ])
 
         return {
             data : null,
@@ -351,8 +362,12 @@ export class ProblemService implements IProblemService {
             }
         }
 
+        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${problemId}`;  
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${problemId}`;
-        await this.#_cacheProvider.del(cacheKey);
+        await Promise.all([
+            await this.#_cacheProvider.del(cacheKey),
+            await this.#_cacheProvider.del(cacheKeyAdmin)
+        ])
 
         return {
             data : null,
@@ -379,8 +394,12 @@ export class ProblemService implements IProblemService {
             problemId,
             solutionCode);
         
+        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${problemId}`;  
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${problemId}`;
-        await this.#_cacheProvider.del(cacheKey);
+        await Promise.all([
+            await this.#_cacheProvider.del(cacheKey),
+            await this.#_cacheProvider.del(cacheKeyAdmin)
+        ])
 
         return {
             data : null,
@@ -427,8 +446,12 @@ export class ProblemService implements IProblemService {
             solutionId,
             updatedQuery);
 
+        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${problemId}`;  
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${problemId}`;
-        await this.#_cacheProvider.del(cacheKey);
+        await Promise.all([
+            await this.#_cacheProvider.del(cacheKey),
+            await this.#_cacheProvider.del(cacheKeyAdmin)
+        ])
 
         return {
             data : null,
@@ -464,9 +487,13 @@ export class ProblemService implements IProblemService {
             }
         }
 
+        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${problemId}`;  
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${problemId}`;
-        await this.#_cacheProvider.del(cacheKey);
-
+        await Promise.all([
+            await this.#_cacheProvider.del(cacheKey),
+            await this.#_cacheProvider.del(cacheKeyAdmin)
+        ])
+        
         return {
             data : null,
             success : true
