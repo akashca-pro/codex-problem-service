@@ -1,4 +1,4 @@
-import { IExample, IProblem, ISolutionCode, IStarterCode, ITestCase } from "@/infra/db/interface/problem.interface";
+import { IExample, IProblem, ISolutionCode, IStarterCode, ITemplateCode, ITestCase } from "@/infra/db/interface/problem.interface";
 import { BaseRepository } from "../base.repository";
 import { FilterQuery } from "mongoose";
 import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
@@ -100,5 +100,43 @@ export interface IProblemRepository extends BaseRepository <IProblem>{
         problemId : string,
         solutionCodeId : string
     ) : Promise<boolean>
+
+    /**
+     * Add Template code.
+     * 
+     * @async
+     * @param problemId - The id of the document.
+     * @param templateCode - The template code data to be added.
+     */
+    addTemplateCode(
+        problemId : string,
+        templateCode : ITemplateCode,
+    ) : Promise<void>
+
+    /**
+     * Updates existing template code in problem document.
+     * 
+     * @async
+     * @param problemId - The id of the document.
+     * @param templateCodeId - The id of the template code.
+     * @param updatedTemplateCode - The updated template code.
+     */
+    updateTemplateCode(
+        problemId : string,
+        templateCodeId : string,
+        updatedTemplateCode : Partial<ITemplateCode>
+    ) : Promise<void>
+
+    /**
+     * Removes one template code from the array field
+     * 
+     * @async
+     * @param problemId - The id of the document.
+     * @param templateCodeId - The id of the template code.
+     */
+    removeTemplateCode(
+        problemId : string,
+        templateCodeId : string
+    ) : Promise<boolean> 
 
 }

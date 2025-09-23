@@ -15,6 +15,7 @@ export const mapMessageToGrpcStatus = (message : string) : status => {
         case message === SubmissionErrorType.SubmissionNotFound:
         case message === ProblemErrorType.TestCaseNotFound:
         case message === ProblemErrorType.SolutionCodeNotFound:
+        case message === ProblemErrorType.TemplateCodeNotFound:
             return status.NOT_FOUND
 
         case message === SubmissionErrorType.InvalidCountryCode:

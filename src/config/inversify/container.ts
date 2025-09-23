@@ -3,7 +3,7 @@ import { Container } from "inversify";
 import TYPES from './types'
 
 import { IProblemRepository } from '@/infra/repos/interfaces/problem.repository.interface';
-import { ProblemRepository } from '@/infra/repos/problem.repositoy';
+import { ProblemRepository } from '@/infra/repos/problem.repository';
 
 import { ISubmissionRepository } from '@/infra/repos/interfaces/submission.repository.interface';
 import { SubmissionRepository } from '@/infra/repos/submission.repository';

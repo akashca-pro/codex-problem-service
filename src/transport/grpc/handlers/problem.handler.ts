@@ -11,7 +11,10 @@ import { AddTestCaseRequest, BulkUploadTestCasesRequest, CreateProblemRequest,
     UpdateSolutionCodeRequest,
     RemoveSolutionCodeRequest,
     CheckQuestionIdRequest,
-    CheckProblemTitleRequest} from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+    CheckProblemTitleRequest,
+    AddTemplateCodeRequest,
+    UpdateTemplateCodeRequest,
+    RemoveTemplateCodeRequest} from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { Empty } from "@akashcapro/codex-shared-utils/dist/proto/compiled/google/protobuf/empty";
 import { inject, injectable } from "inversify";
 
@@ -39,64 +42,48 @@ export class ProblemHandler {
 
     createProblem = withGrpcErrorHandler<CreateProblemRequest, Problem>(
         async (call, callback) => {
-            const req = call.request;
-            const inDTO = ProblemMapper.toCreateProblemService(req)
-            const result = await this.#_problemService.createProblem(inDTO);
-
+            const result = await this.#_problemService.createProblem(call.request);
             if(!result.success){
                 return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage as string),
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
                     message : result.errorMessage
                 },null)
             }
-
-            const outDTO = ProblemMapper.toOutDTO(result.data);
-            return callback(null,outDTO);
+            return callback(null, result.data);
         }
     );
 
     getProblem = withGrpcErrorHandler<GetProblemRequest, Problem>(
-        async (call, callback) => {
-            const req = call.request;
-            const dto = ProblemMapper.toGetProblemDetails(req);
-            const result = await this.#_problemService.getProblem(dto._id);
-
+        async (call, callback) => {;
+            const result = await this.#_problemService.getProblem(call.request);
             if(!result.success){
                 return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage as string),
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
                     message : result.errorMessage
                 },null);
             }
-
             return callback(null,result.data);
     });
 
     getProblemForPublic = withGrpcErrorHandler<GetProblemRequest, GetProblemPublicResponse>(
         async (call, callback) => {
-            const req = call.request;
-            const result = await this.#_problemService.getProblemPublic(req.Id);
-
+            const result = await this.#_problemService.getProblemPublic(call.request);
             if(!result.success){
                 return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage as string),
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
                     message : result.errorMessage
                 },null);
             }
-
             return callback(null,result.data);
         }
     );
 
     listProblems = withGrpcErrorHandler<ListProblemRequest, ListProblemResponse>(
-        async (call, callback) => {
-            const req = call.request;
-            const dto = ProblemMapper.toListProblemService(req);
-            const result = await this.#_problemService.listProblems(dto);
-            const outDTO = result.body.map(p=>ProblemMapper.toOutListDTO(p)); 
-
+        async (call, callback) => {            
+            const result = await this.#_problemService.listProblems(call.request);
             return callback(null,{
                 currentPage : result.currentPage,
-                problems : outDTO,
+                problems : result.body,
                 totalItems : result.totalItems,
                 totalPage : result.totalPages
             })
@@ -105,142 +92,91 @@ export class ProblemHandler {
 
     updateBasicProblemDetails = withGrpcErrorHandler<UpdateBasicProblemDetailsRequest, Empty>(
         async (call, callback) => {
-            const req = call.request;
-            const dto = ProblemMapper.toUpdateBasicProblemDetailsServive(req);
-            const result = await this.#_problemService.updateBasicProblemDetails(req.Id,dto);
-
+            const result = await this.#_problemService.updateBasicProblemDetails(call.request);
             if(!result.success){
                 return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage as string),
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
                     message : result.errorMessage
                 },null)
             }
-
             return callback(null,{});
         }
     )
 
     addTestCase = withGrpcErrorHandler<AddTestCaseRequest, Empty>(
         async (call, callback) => {
-            const req = call.request;
-
-            const dto = ProblemMapper.toAddTestCaseService(req)
-
-            const result = await this.#_problemService.addTestCase(
-                dto._id,
-                dto.testCaseCollectionType,
-                dto.testCase
-            );
-
+            const result = await this.#_problemService.addTestCase(call.request);
             if(!result.success){
                 return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage as string),
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
                     message : result.errorMessage
                 },null)
             }
-
             return callback(null,{});
         }
     );
 
     bulkUploadTestCases = withGrpcErrorHandler<BulkUploadTestCasesRequest, Empty>(
         async (call, callback) => {
-            const req = call.request;
-            const dto = ProblemMapper.toBulkUploadTestCaseService(req);
-            const result = await this.#_problemService.bulkUploadTestCases(
-                dto._id,
-                dto.testCaseCollectionType,
-                dto.testCase
-            );
-
+            const result = await this.#_problemService.bulkUploadTestCases(call.request);
             if(!result.success){
                 return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage as string),
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
                     message : result.errorMessage
                 },null)
             }
-
             return callback(null,{});
         }
     )
 
     removeTestCase = withGrpcErrorHandler<RemoveTestCaseRequest, Empty>(
         async (call, callback) => {
-            const req = call.request;
-            const dto = ProblemMapper.toRemoveTestCaseService(req);
-            const result = await this.#_problemService.removeTestCase(
-                dto._id,
-                dto.testCaseId,
-                dto.testCaseCollectionType
-            );
+            const result = await this.#_problemService.removeTestCase(call.request);
             if(!result.success){
                 return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage as string),
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
                     message : result.errorMessage
                 },null)
             }
-
             return callback(null,{});
         }
     )
 
     addSolutionCode = withGrpcErrorHandler<AddSolutionCodeRequest, Empty>(
         async (call, callback) => {
-            const req = call.request;
-            const dto = ProblemMapper.toAddSolutionCodeService(req);
-            const result = await this.#_problemService.addSolutionCode(
-                dto._id,
-                dto.solutionCode
-            );
-
+            const result = await this.#_problemService.addSolutionCode(call.request);
             if(!result.success){
                 return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage as string),
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
                     message : result.errorMessage
                 },null)
             }
-
             return callback(null,{});
         }
     )
 
     updateSolutionCode = withGrpcErrorHandler<UpdateSolutionCodeRequest, Empty>(
         async (call, callback) => {
-            const req = call.request;
-            const dto = ProblemMapper.toUpdateSolutionCodeService(req);
-            const result = await this.#_problemService.updateSolutionCode(
-                dto._id,
-                dto.solutionCodeId,
-                dto.solutionCode
-            );
-
+            const result = await this.#_problemService.updateSolutionCode(call.request);
             if(!result.success){
                 return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage as string),
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
                     message : result.errorMessage
                 },null);
             }
-
             return callback(null,{});
         }
     )
 
     removeSolutionCode = withGrpcErrorHandler<RemoveSolutionCodeRequest, Empty>(
         async (call, callback) => {
-            const req = call.request;
-            const dto = ProblemMapper.toRemoveSolutionCodeService(req);
-            const result = await this.#_problemService.removeSolutionCode(
-                dto._id,
-                dto.solutionCodeId
-            );
-
+            const result = await this.#_problemService.removeSolutionCode(call.request);
             if(!result.success){
                 return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage as string),
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
                     message : result.errorMessage
                 },null);
             }
-
             return callback(null,{});
         }
     );
@@ -248,9 +184,7 @@ export class ProblemHandler {
     checkQuestionIdAvailability = withGrpcErrorHandler<CheckQuestionIdRequest, Empty>(
         async (call, callback) => {
             const req = call.request;
-
             const result = await this.#_problemService.checkQuestionIdAvailability(req.questionId);
-
             if(!result.success){
                 return callback({
                     code : mapMessageToGrpcStatus(result.errorMessage!),
@@ -265,17 +199,53 @@ export class ProblemHandler {
     checkProblemTitle = withGrpcErrorHandler<CheckProblemTitleRequest, Empty>(
         async (call, callback) => {
             const req = call.request;
-
             const result = await this.#_problemService.checkProblemTitleAvailability(req.title);
-
             if(!result.success){
                 return callback({
                     code : mapMessageToGrpcStatus(result.errorMessage!),
                     message : result.errorMessage
                 },null)
             };
-
             return callback(null,{});
+        }
+    )
+
+    addTemplateCode = withGrpcErrorHandler<AddTemplateCodeRequest, Empty>(
+        async (call, callback) => {
+            const result = await this.#_problemService.addTemplateCode(call.request);
+            if(!result.success){
+                return callback({
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
+                    message : result.errorMessage
+                },null)
+            };
+            return callback(null, {});
+        }
+    )
+
+    updateTemplateCode = withGrpcErrorHandler<UpdateTemplateCodeRequest, Empty>(
+        async (call, callback) => {
+            const result = await this.#_problemService.updateTemplateCode(call.request);
+            if(!result.success){
+                return callback({
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
+                    message : result.errorMessage
+                },null)
+            };
+            return callback(null, {});
+        }
+    )
+
+    removeTemplateCode = withGrpcErrorHandler<RemoveTemplateCodeRequest, Empty>(
+        async (call, callback) => {
+            const result = await this.#_problemService.removeTemplateCode(call.request);
+            if(!result.success){
+                return callback({
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
+                    message : result.errorMessage
+                },null)
+            };
+            return callback(null, {});
         }
     )
 
@@ -297,7 +267,10 @@ export class ProblemHandler {
             updateSolutionCode : this.updateSolutionCode,
             removeSolutionCode : this.removeSolutionCode,
             checkQuestionIdAvailability : this.checkQuestionIdAvailability,
-            checkProblemTitleAvail : this.checkProblemTitle,
+            checkProblemTitle : this.checkProblemTitle,
+            addTemplateCode : this.addTemplateCode,
+            updateTemplateCode : this.updateTemplateCode,
+            removeTemplateCode : this.removeTemplateCode,
         }
     }
 }

@@ -60,6 +60,17 @@ export interface ISolutionCode {
 }
 
 /**
+ * Interface representing the structure of template code that wraps user code.
+ */
+export interface ITemplateCode {
+    _id? : string;
+    language : Language;
+    solutionClass : string;
+    mainFunc : string;
+    helpers? : string;
+}
+
+/**
  * Interface representing the structure of the problem schema.
  * 
  * @interface
@@ -76,6 +87,7 @@ export interface IProblem extends Document {
     examples : IExample[];
     active : boolean;
     solutionCodes : ISolutionCode[] | null;
+    templateCodes : ITemplateCode[] | null;
     createdAt : Date;
     updatedAt : Date;
 }

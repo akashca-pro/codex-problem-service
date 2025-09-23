@@ -6,6 +6,7 @@ import { IUpdateBasicProblemRequestDTO } from "@/dtos/problem/updateProblemReque
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
 import { ISolutionCode, ITestCase } from "@/infra/db/interface/problem.interface";
+import { AddSolutionCodeRequest, AddTemplateCodeRequest, AddTestCaseRequest, BulkUploadTestCasesRequest, CreateProblemRequest, GetProblemRequest, ListProblemRequest, RemoveSolutionCodeRequest, RemoveTemplateCodeRequest, RemoveTestCaseRequest, UpdateBasicProblemDetailsRequest, UpdateSolutionCodeRequest, UpdateTemplateCode, UpdateTemplateCodeRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 
 /**
  * Interface representing the structure of the problem service.
@@ -18,144 +19,149 @@ export interface IProblemService {
      * Creates a new problem.
      * 
      * @async
-     * @param data - data to create a new problem
+     * @param request - Request payload to create a new problem
      * @returns {ResponseDTO} - the response data
      */
     createProblem(
-        data: ICreateProblemRequestDTO
+        request : CreateProblemRequest
     ): Promise<ResponseDTO>;
 
     /**
      * Fetches the details of a problem by its id.
      * 
      * @async
-     * @param id - id of the problem to fetch details
+     * @param request - Request payload to fetch details.
      * @returns {ResponseDTO} - the response data
      */
     getProblem(
-        id: string
+        request : GetProblemRequest
     ): Promise<ResponseDTO>;
 
     /**
      * Fetches the details of a public problem by its id.
      * 
      * @async
-     * @param id - id of the public problem to fetch details
+     * @param request - Request payload to fetch details for public response.
      * @returns {ResponseDTO} - the response data
      */
     getProblemPublic(
-        id: string
+        request : GetProblemRequest
     ): Promise<ResponseDTO>;
 
     /**
      * Lists problems based on the provided filters.
      * 
      * @async
-     * @param filters - filters to list problems
+     * @param request - Request payload contain filters to list problems
      * @returns {PaginationDTO} - the paginated response data
      */
     listProblems(
-        filters: IListProblemsRequestDTO
+        request : ListProblemRequest
     ): Promise<PaginationDTO>;
 
     /**
      * Updates basic details of an existing problem.
      * 
      * @async
-     * @param id - problem id to update
-     * @param updatedData - data to update problem
+     * @param request - Request payload contain id and updatedData.
      * @returns {ResponseDTO} - the response data
      */
     updateBasicProblemDetails(
-        id: string, 
-        updatedData: IUpdateBasicProblemRequestDTO
+        request : UpdateBasicProblemDetailsRequest
     ): Promise<ResponseDTO>;
 
     /**
      * Executes the add test case service.
      * 
      * @async
-     * @param {string} problemId - The ID of the problem to which the test case is to be added.
-     * @param {TestCaseCollectionType} testCaseCollectionType - The type of test case collection.
-     * @param {IAddTestCaseRequestDTO} testCase - The data for adding testcase
+     * @param request - Request payload contain problem id and testcase data.
      * @return {ResponseDTO}
      */
     addTestCase(
-        problemId: string, 
-        testCaseCollectionType : TestCaseCollectionType,
-        testCase: ITestCase
+        request : AddTestCaseRequest
     ): Promise<ResponseDTO>;
 
     /**
      * Executes the bulk upload test case service.
      * 
      * @async
-     * @param {string} problemId - The ID of the problem to which the test cases are to be added.
-     * @param {TestCaseCollectionType} testCaseCollectionType - The type of test case collection.
-     * @param {ITestCase[]} testCases - The data for bulk uploading test cases
+     * @param request - Request payload contain problem id and testcases.
      * @return {ResponseDTO}
      */
     bulkUploadTestCases(
-        problemId: string, 
-        testCaseCollectionType : TestCaseCollectionType,
-        testCases: ITestCase[]
+        request : BulkUploadTestCasesRequest
     ): Promise<ResponseDTO>;
 
     /**
      * Removes a test case from a problem.
      * 
      * @async
-     * @param problemId - problem id to which the test case to be removed
-     * @param testCaseId - test case id to be removed
-     * @param testCaseCollectionType - type of test case collection
+     * @param request - Request payload contain problem and testcase id.
      * @returns {ResponseDTO} - the response data
      */
     removeTestCase(
-        problemId: string, 
-        testCaseId: string, 
-        testCaseCollectionType : TestCaseCollectionType
+        request : RemoveTestCaseRequest
     ): Promise<ResponseDTO>;
 
     /**
      * Add solution code to a problem.
      * 
      * @async
-     * @param {string} problemId - The ID of the problem to which the solution code is to be added.
-     * @param {IAddSolutionCodeRequestDTO} solutionCode - The data for adding solution code.
+     * @param request - Request payload contains problemId, solutionId and solution code data.
      * @return {ResponseDTO}
      */
     addSolutionCode(
-        problemId: string, 
-        solutionCode: ISolutionCode
+        request : AddSolutionCodeRequest
     ): Promise<ResponseDTO>;
 
     /**
      * Updates an existing solution code for a problem.
      * 
      * @async
-     * @param problemId - id of the problem to which the solution code belongs
-     * @param solutionId - id of the solution code to be updated
-     * @param updatedSolutionCode - data to update the solution code
+     * @param request - Request payload contains problemId, solutionId and updated data.
      * @returns {ResponseDTO} - the response data
      */
     updateSolutionCode(
-        problemId: string, 
-        solutionId: string, 
-        updatedSolutionCode: IUpdateSolutionCodeDTO
+        request : UpdateSolutionCodeRequest
     ): Promise<ResponseDTO>;
 
     /**
      * Removes a solution code from a problem.
      * 
      * @async
-     * @param problemId - id of the problem to which the solution code belongs
-     * @param solutionId - id of the solution code to be removed
+     * @param request - Request payload contain problem and solution code id.
      * @returns {ResponseDTO} - the response data
      */
     removeSolutionCode(
-        problemId: string, 
-        solutionId: string
+        request : RemoveSolutionCodeRequest
     ): Promise<ResponseDTO>;
+
+    /**
+     * Add template code to problem document.
+     * 
+     * @param request - Add template request payload from handler.
+     */
+    addTemplateCode(
+        request : AddTemplateCodeRequest
+    ) : Promise<ResponseDTO>;
+
+    /**
+     * Updates template code in problem document.
+     * 
+     * @param request - Update template code request payload from handler.
+     */
+    updateTemplateCode(
+        request : UpdateTemplateCodeRequest
+    ) : Promise<ResponseDTO>;
+
+    /**
+     * Remove template code from the templateCodes array in problem document.
+     * 
+     * @param request - Remove template code request payload from handler.
+     */
+    removeTemplateCode(
+        request : RemoveTemplateCodeRequest
+    ) : Promise<ResponseDTO>
 
     /**
      * Check if the question id is available or not.

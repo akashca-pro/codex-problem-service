@@ -1,5 +1,5 @@
 import { ProblemModel } from "../db/models/problem.model";
-import { IExample, IProblem, ISolutionCode, IStarterCode, ITestCase } from "../db/interface/problem.interface";
+import { IExample, IProblem, ISolutionCode, IStarterCode, ITemplateCode, ITestCase } from "../db/interface/problem.interface";
 import { BaseRepository } from "./base.repository";
 import { IProblemRepository } from "./interfaces/problem.repository.interface";
 import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
@@ -92,6 +92,43 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
             "solutionCodes._id" : solutionCodeId } ,
         {
             $pull : { solutionCodes : { _id : solutionCodeId } }
+        })
+        return result.modifiedCount > 0
+    }
+
+    async addTemplateCode(
+        problemId : string,
+        templateCode : ITemplateCode
+    ) : Promise<void> {
+        await this.update(problemId,{
+            $push : { templateCodes : templateCode }
+        })
+    }
+
+    async updateTemplateCode(
+        problemId : string,
+        templateCodeId : string,
+        updatedTemplateCode : Partial<ITemplateCode>
+    ) : Promise<void> {
+        const set: Record<string, unknown> = {};
+        if(updatedTemplateCode.language !== undefined) set["templateCodes.$.language"] = updatedTemplateCode.language;
+        if(updatedTemplateCode.mainFunc !== undefined) set["templateCodes.$.mainFunc"] = updatedTemplateCode.mainFunc;
+        if(updatedTemplateCode.solutionClass !== undefined) set["templateCodes.$.solutionClass"] = updatedTemplateCode.solutionClass;
+        if(updatedTemplateCode.helpers !== undefined) set["templateCodes.$.helpers"] = updatedTemplateCode.helpers;
+        await this._model.updateOne(
+            { _id : problemId, "templateCodes._id" : templateCodeId },
+            { $set : set }
+        );
+    }
+
+    async removeTemplateCode(
+        problemId : string,
+        templateCodeId : string
+    ) : Promise<boolean> {
+        const result = await this._model.updateOne({ _id : problemId }, {
+            $pull : {
+                templateCodes : { _id: templateCodeId }
+            }
         })
         return result.modifiedCount > 0
     }

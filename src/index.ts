@@ -1,12 +1,8 @@
-import express from 'express';
 import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
 import { config } from '@/config';
 import { startMetricsServer } from '@/config/metrics/metrics-server';
 import { connectDB } from './config/db';
 import { startGrpcServer } from './transport/grpc/server';
-
-const app = express();
-
 
 const startServer = () => {
     try {

@@ -1,5 +1,5 @@
 import mongoose, {Schema} from "mongoose";
-import { IExample, IProblem, IStarterCode, ISolutionCode, ITestCase, ITestCaseCollection } from "../interface/problem.interface";
+import { IExample, IProblem, IStarterCode, ISolutionCode, ITestCase, ITestCaseCollection, ITemplateCode } from "../interface/problem.interface";
 import { Language } from "@/enums/language.enum";
 import { Difficulty } from "@/enums/difficulty.enum";
 
@@ -43,6 +43,15 @@ const SolutionCodeSchema = new Schema<ISolutionCode>(
     }
 )
 
+const TemplateCodeSchema = new Schema<ITemplateCode>(
+    {
+        language : { type : String, required : true, enum : Object.values(Language) },
+        solutionClass : { type : String, required : true },
+        mainFunc : { type : String, required : true },
+        helpers : { type : String,  required : false, default : undefined }
+    }
+)
+
 /**
  * Mongodb schema for problem collection.
  * 
@@ -59,6 +68,7 @@ const ProblemSchema = new Schema<IProblem>(
         starterCodes: { type: [StarterCodeSchema], required: false, default : [] },
         testcaseCollection: { type: TestCaseCollectionSchema, required: false, default : {} },
         solutionCodes : { type : [SolutionCodeSchema], required : false , default : []},
+        templateCodes : { type :  [TemplateCodeSchema], required : false, default : [] },
         examples: { type: [ExamplesSchema], required: false  , default : []},
         active: { type: Boolean, default: true },
     },

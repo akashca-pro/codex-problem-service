@@ -1,12 +1,8 @@
 import { Difficulty } from "@/enums/difficulty.enum";
 import { IExample, IStarterCode } from "@/infra/db/interface/problem.interface";
 
-/**
- * DTO (Data Tranfer Object) representing the data to update basic problem details.
- * 
- * @interface
- */
-export interface IUpdateBasicProblemRequestDTO {
+
+export interface IUpdatedDataForBasicProblem {
     questionId? : string;
     title? : string;
     description? : string;
@@ -16,4 +12,14 @@ export interface IUpdateBasicProblemRequestDTO {
     constraints? : string[];
     examples? : IExample[];
     starterCodes? : IStarterCode[];
+}
+
+/**
+ * DTO (Data Tranfer Object) representing the data to update basic problem details.
+ * 
+ * @interface
+ */
+export interface IUpdateBasicProblemRequestDTO {
+    _id : string;
+    updatedData : IUpdatedDataForBasicProblem;
 }
