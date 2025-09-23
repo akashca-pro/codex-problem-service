@@ -4,9 +4,7 @@ import { ITemplateCode } from "@/infra/db/interface/problem.interface";
 export interface IAddTemplateCodeRequestDTO{
     _id : string;
     language : Language;
-    solutionClass : string;
-    mainFunc : string;
-    helpers? : string;
+    wrappedCode : string;
 }
 
 export interface IUpdateTemplateCodeRequestDTO {

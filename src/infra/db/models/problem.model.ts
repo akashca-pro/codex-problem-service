@@ -46,9 +46,7 @@ const SolutionCodeSchema = new Schema<ISolutionCode>(
 const TemplateCodeSchema = new Schema<ITemplateCode>(
     {
         language : { type : String, required : true, enum : Object.values(Language) },
-        solutionClass : { type : String, required : true },
-        mainFunc : { type : String, required : true },
-        helpers : { type : String,  required : false, default : undefined }
+        wrappedCode : { type : String, required : true },
     }
 )
 

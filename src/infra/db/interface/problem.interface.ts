@@ -65,9 +65,7 @@ export interface ISolutionCode {
 export interface ITemplateCode {
     _id? : string;
     language : Language;
-    solutionClass : string;
-    mainFunc : string;
-    helpers? : string;
+    wrappedCode : string;
 }
 
 /**

@@ -472,9 +472,7 @@ export class ProblemService implements IProblemService {
         }
         await this.#_problemRepo.addTemplateCode(dto._id,{
             language : dto.language,
-            mainFunc : dto.mainFunc,
-            solutionClass : dto.solutionClass,
-            helpers : dto.helpers
+            wrappedCode : dto.wrappedCode
         });
         const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`;  
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;

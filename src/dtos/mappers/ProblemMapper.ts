@@ -172,9 +172,7 @@ export class ProblemMapper {
         return {
             _id : body.Id,
             language : this._mapGrpcLanguageEnum(body.templateCode.language),
-            mainFunc : body.templateCode.mainFunc,
-            solutionClass : body.templateCode.solutionClass,
-            helpers : body.templateCode.helpers
+            wrappedCode : body.templateCode.wrappedCode
         }
     }
 
@@ -187,9 +185,7 @@ export class ProblemMapper {
             templateCodeId : body.templateCodeId,
             updatedTemplateCode : {
                 language : body.updatedTemplateCode.language ? this._mapGrpcLanguageEnum(body.updatedTemplateCode.language) : undefined,
-                mainFunc : body.updatedTemplateCode.mainFunc,
-                helpers : body.updatedTemplateCode.solutionClass,
-                solutionClass : body.updatedTemplateCode.solutionClass
+                wrappedCode : body.updatedTemplateCode.wrappedCode
             }
         }
     }
@@ -286,9 +282,7 @@ export class ProblemMapper {
         return {
             Id : t._id!,
             language : this._mapServiceLanguageEnum(t.language),
-            mainFunc : t.mainFunc,
-            solutionClass : t.solutionClass,
-            helpers : t.helpers
+            wrappedCode : t.wrappedCode
         }
     }
 
