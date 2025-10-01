@@ -12,9 +12,8 @@ import { AddTestCaseRequest, BulkUploadTestCasesRequest, CreateProblemRequest,
     RemoveSolutionCodeRequest,
     CheckQuestionIdRequest,
     CheckProblemTitleRequest,
-    AddTemplateCodeRequest,
     UpdateTemplateCodeRequest,
-    RemoveTemplateCodeRequest} from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+} from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { Empty } from "@akashcapro/codex-shared-utils/dist/proto/compiled/google/protobuf/empty";
 import { inject, injectable } from "inversify";
 
@@ -210,35 +209,9 @@ export class ProblemHandler {
         }
     )
 
-    addTemplateCode = withGrpcErrorHandler<AddTemplateCodeRequest, Empty>(
-        async (call, callback) => {
-            const result = await this.#_problemService.addTemplateCode(call.request);
-            if(!result.success){
-                return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage!),
-                    message : result.errorMessage
-                },null)
-            };
-            return callback(null, {});
-        }
-    )
-
     updateTemplateCode = withGrpcErrorHandler<UpdateTemplateCodeRequest, Empty>(
         async (call, callback) => {
             const result = await this.#_problemService.updateTemplateCode(call.request);
-            if(!result.success){
-                return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage!),
-                    message : result.errorMessage
-                },null)
-            };
-            return callback(null, {});
-        }
-    )
-
-    removeTemplateCode = withGrpcErrorHandler<RemoveTemplateCodeRequest, Empty>(
-        async (call, callback) => {
-            const result = await this.#_problemService.removeTemplateCode(call.request);
             if(!result.success){
                 return callback({
                     code : mapMessageToGrpcStatus(result.errorMessage!),
@@ -268,9 +241,7 @@ export class ProblemHandler {
             removeSolutionCode : this.removeSolutionCode,
             checkQuestionIdAvailability : this.checkQuestionIdAvailability,
             checkProblemTitle : this.checkProblemTitle,
-            addTemplateCode : this.addTemplateCode,
             updateTemplateCode : this.updateTemplateCode,
-            removeTemplateCode : this.removeTemplateCode,
         }
     }
 }

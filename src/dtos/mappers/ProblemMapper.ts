@@ -15,9 +15,7 @@ import {
     Problem as GrpcProblem,
     ListProblemDetails as GrpcListProblemDetails,
     GetProblemPublicResponse as GrpcGetProblemPublicResponse,
-    AddTemplateCodeRequest,
     UpdateTemplateCodeRequest,
-    RemoveTemplateCodeRequest,
     UpdateBasicProblemDetailsRequest,
     CreateProblemRequest,
     GetProblemRequest,
@@ -35,7 +33,7 @@ import { IAddTestCaseRequestDTO, IBulkUploadTestCaseRequestDTO, IRemoveTestCaseR
 import { IAddSolutionCodeRequestDTO, IRemoveSolutionCodeRequestDTO, IUpdateSolutionCodeRequestDTO } from "../problem/solutionCodeRequestDTOs";
 import { IGetProblemRequestDTO } from "../problem/getProblemRequestDTO";
 import { LeanDocument } from "mongoose";
-import { IAddTemplateCodeRequestDTO, IRemoveTemplateCodeRequestDTO, IUpdateTemplateCodeRequestDTO } from "../problem/templateCodeRequest.dto";
+import { IUpdateTemplateCodeRequestDTO } from "../problem/templateCodeRequest.dto";
 
 export class ProblemMapper {
     
@@ -165,17 +163,6 @@ export class ProblemMapper {
         return { _id : body.Id, solutionCodeId : body.solutionCodeId }
     }
 
-    static toAddTemplateCodeService(
-        body : AddTemplateCodeRequest
-    ) : IAddTemplateCodeRequestDTO {
-        if(!body.templateCode) throw new Error('No template code found in AddTemplateCodeRequest')
-        return {
-            _id : body.Id,
-            language : this._mapGrpcLanguageEnum(body.templateCode.language),
-            wrappedCode : body.templateCode.wrappedCode
-        }
-    }
-
     static toUpdateTemplateCodeService(
         body : UpdateTemplateCodeRequest
     ) : IUpdateTemplateCodeRequestDTO {
@@ -185,17 +172,9 @@ export class ProblemMapper {
             templateCodeId : body.templateCodeId,
             updatedTemplateCode : {
                 language : body.updatedTemplateCode.language ? this._mapGrpcLanguageEnum(body.updatedTemplateCode.language) : undefined,
-                wrappedCode : body.updatedTemplateCode.wrappedCode
+                submitWrapperCode : body.updatedTemplateCode.submitWrapperCode,
+                runWrapperCode : body.updatedTemplateCode.runWrapperCode,
             }
-        }
-    }
-
-    static toRemoveTemplateCodeService(
-        body : RemoveTemplateCodeRequest
-    ) : IRemoveTemplateCodeRequestDTO {
-        return {
-            _id : body.Id,
-            templateCodeId : body.templateCodeId
         }
     }
 
@@ -213,7 +192,7 @@ export class ProblemMapper {
             tags: body.tags ?? [],
             constraints: body.constraints ?? [],
             starterCodes: body.starterCodes?.map(ProblemMapper._mapServiceStarterCode) ?? [],
-            templateCode : body.templateCodes?.map(ProblemMapper._mapServiceTemplateCodes) ?? [],
+            templateCodes : body.templateCodes?.map(ProblemMapper._mapServiceTemplateCodes) ?? [],
             testcaseCollection: {
                 run: body.testcaseCollection?.run?.map(ProblemMapper._mapServiceTestCase) ?? [],
                 submit: body.testcaseCollection?.submit?.map(ProblemMapper._mapServiceTestCase) ?? []
@@ -281,8 +260,9 @@ export class ProblemMapper {
     static _mapServiceTemplateCodes(t : ITemplateCode) : IGrpcTemplateCode {
         return {
             Id : t._id!,
-            language : this._mapServiceLanguageEnum(t.language),
-            wrappedCode : t.wrappedCode
+            language : ProblemMapper._mapServiceLanguageEnum(t.language),
+            submitWrapperCode : t.submitWrapperCode,
+            runWrapperCode : t.runWrapperCode
         }
     }
 

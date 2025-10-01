@@ -33,24 +33,15 @@ export class SubmissionService implements ISubmissionService {
     }
 
     async createSubmission(data: ICreateSubmissionRequestDTO): Promise<ResponseDTO> {
-        
-        const submissionAlreadyExist = await this.#_submissionRepo.findOne({ problemId : data.problemId });
-
-        if(submissionAlreadyExist){
-            return {
-                data : null,
-                success : false,
-                errorMessage : SubmissionErrorType.SubmissionNotFound
-            }
-        }
-
+        const submissionExist = await this.#_submissionRepo.findOne({
+            userId : data.userId, problemId : data.problemId
+        })
         const submissionData = {
             ...data,
+            isFirst : submissionExist ? false : true,
             problemId : new mongoose.Types.ObjectId(data.problemId),
         }
-
         const submission = await this.#_submissionRepo.create(submissionData)
-
         return {
             data : submission,
             success : true
@@ -58,22 +49,16 @@ export class SubmissionService implements ISubmissionService {
     }
 
     async getSubmission(filter: IGetSubmissionRequestDTO): Promise<PaginationDTO> {
-        
         const updatingfilter : Record<string, any> = {};
-
         if(filter.problemId) updatingfilter.problemId = filter.problemId;
         if(filter.battleId) updatingfilter.battleId = filter.battleId;
         if(filter.userId) updatingfilter.userId = filter.userId;
-
         const skip = (filter.page - 1) * filter.limit;
-
         const [totalItems,submissions] = await Promise.all([
             await this.#_submissionRepo.countDocuments(updatingfilter),
             await this.#_submissionRepo.findPaginated(updatingfilter,skip,filter.limit)
         ]);
-
         const totalPages = Math.ceil(totalItems/ filter.limit);
-
         return {
             body : submissions,
             currentPage : filter.page,
@@ -84,9 +69,7 @@ export class SubmissionService implements ISubmissionService {
     }
 
     async updateSubmission(id: string, updatedData: IUpdateSubmissionRequestDTO): Promise<ResponseDTO> {
-        
         const submissionExist = await this.#_submissionRepo.findById(id);
-
         if(!submissionExist){
             return {
                 data : null,
@@ -94,13 +77,10 @@ export class SubmissionService implements ISubmissionService {
                 errorMessage : SubmissionErrorType.SubmissionNotFound
             }
         }
-
         const updatedSubmission = await this.#_submissionRepo.update(id, {
             executionResult : updatedData.executionResult,
-            executionTime : updatedData.executionTime,
-            memoryUsage : updatedData.memoryUsage
+            status : updatedData.status
         });
-
         return {
             data : updatedSubmission,
             success : true

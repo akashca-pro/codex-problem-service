@@ -102,18 +102,6 @@ export interface IProblemRepository extends BaseRepository <IProblem>{
     ) : Promise<boolean>
 
     /**
-     * Add Template code.
-     * 
-     * @async
-     * @param problemId - The id of the document.
-     * @param templateCode - The template code data to be added.
-     */
-    addTemplateCode(
-        problemId : string,
-        templateCode : ITemplateCode,
-    ) : Promise<void>
-
-    /**
      * Updates existing template code in problem document.
      * 
      * @async
@@ -126,17 +114,5 @@ export interface IProblemRepository extends BaseRepository <IProblem>{
         templateCodeId : string,
         updatedTemplateCode : Partial<ITemplateCode>
     ) : Promise<void>
-
-    /**
-     * Removes one template code from the array field
-     * 
-     * @async
-     * @param problemId - The id of the document.
-     * @param templateCodeId - The id of the template code.
-     */
-    removeTemplateCode(
-        problemId : string,
-        templateCodeId : string
-    ) : Promise<boolean> 
 
 }

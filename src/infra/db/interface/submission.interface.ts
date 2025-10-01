@@ -12,6 +12,8 @@ export interface IStats {
     totalTestCase : number;
     passedTestCase : number;
     failedTestCase : number;
+    executionTimeMs : number;
+    memoryMB : number;
 }
 
 /**
@@ -52,8 +54,6 @@ export interface ISubmission extends Document {
     language : Language;
     userCode : string;
     executionResult : IExecutionResult | null;
-    executionTime : number | null;
-    memoryUsage : number | null;
     difficulty : Difficulty;
     isFirst : boolean;
     createdAt : Date;

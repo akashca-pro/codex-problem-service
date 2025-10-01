@@ -7,6 +7,5 @@ import { IExecutionResult } from "@/infra/db/interface/submission.interface";
  */
 export interface IUpdateSubmissionRequestDTO {
     executionResult : IExecutionResult;
-    executionTime? : number;
-    memoryUsage? : number;
+    status : string;
 }

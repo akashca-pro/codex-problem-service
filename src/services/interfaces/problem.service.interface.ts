@@ -1,12 +1,15 @@
 import { PaginationDTO } from "@/dtos/PaginationDTO";
-import { ICreateProblemRequestDTO } from "@/dtos/problem/CreateProblemRequestDTO";
-import { IListProblemsRequestDTO } from "@/dtos/problem/listProblemsRequestDTO";
-import { IUpdateSolutionCodeDTO } from "@/dtos/problem/solutionCodeRequestDTOs";
-import { IUpdateBasicProblemRequestDTO } from "@/dtos/problem/updateProblemRequestDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
-import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
-import { ISolutionCode, ITestCase } from "@/infra/db/interface/problem.interface";
-import { AddSolutionCodeRequest, AddTemplateCodeRequest, AddTestCaseRequest, BulkUploadTestCasesRequest, CreateProblemRequest, GetProblemRequest, ListProblemRequest, RemoveSolutionCodeRequest, RemoveTemplateCodeRequest, RemoveTestCaseRequest, UpdateBasicProblemDetailsRequest, UpdateSolutionCodeRequest, UpdateTemplateCode, UpdateTemplateCodeRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import { 
+    AddTestCaseRequest, 
+    BulkUploadTestCasesRequest, 
+    CreateProblemRequest, 
+    GetProblemRequest, 
+    ListProblemRequest,   
+    RemoveTestCaseRequest, 
+    UpdateBasicProblemDetailsRequest, 
+    UpdateTemplateCodeRequest 
+} from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 
 /**
  * Interface representing the structure of the problem service.
@@ -104,48 +107,6 @@ export interface IProblemService {
     ): Promise<ResponseDTO>;
 
     /**
-     * Add solution code to a problem.
-     * 
-     * @async
-     * @param request - Request payload contains problemId, solutionId and solution code data.
-     * @return {ResponseDTO}
-     */
-    addSolutionCode(
-        request : AddSolutionCodeRequest
-    ): Promise<ResponseDTO>;
-
-    /**
-     * Updates an existing solution code for a problem.
-     * 
-     * @async
-     * @param request - Request payload contains problemId, solutionId and updated data.
-     * @returns {ResponseDTO} - the response data
-     */
-    updateSolutionCode(
-        request : UpdateSolutionCodeRequest
-    ): Promise<ResponseDTO>;
-
-    /**
-     * Removes a solution code from a problem.
-     * 
-     * @async
-     * @param request - Request payload contain problem and solution code id.
-     * @returns {ResponseDTO} - the response data
-     */
-    removeSolutionCode(
-        request : RemoveSolutionCodeRequest
-    ): Promise<ResponseDTO>;
-
-    /**
-     * Add template code to problem document.
-     * 
-     * @param request - Add template request payload from handler.
-     */
-    addTemplateCode(
-        request : AddTemplateCodeRequest
-    ) : Promise<ResponseDTO>;
-
-    /**
      * Updates template code in problem document.
      * 
      * @param request - Update template code request payload from handler.
@@ -153,15 +114,6 @@ export interface IProblemService {
     updateTemplateCode(
         request : UpdateTemplateCodeRequest
     ) : Promise<ResponseDTO>;
-
-    /**
-     * Remove template code from the templateCodes array in problem document.
-     * 
-     * @param request - Remove template code request payload from handler.
-     */
-    removeTemplateCode(
-        request : RemoveTemplateCodeRequest
-    ) : Promise<ResponseDTO>
 
     /**
      * Check if the question id is available or not.

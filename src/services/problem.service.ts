@@ -11,8 +11,9 @@ import { ProblemMapper } from "@/dtos/mappers/ProblemMapper";
 import { config } from "@/config";
 import { PaginationDTO } from "@/dtos/PaginationDTO";
 import { IUpdatedDataForBasicProblem } from "@/dtos/problem/updateProblemRequestDTO";
-import { IUpdateSolutionCodeDTO } from "@/dtos/problem/solutionCodeRequestDTOs";
-import { AddSolutionCodeRequest, AddTemplateCodeRequest, AddTestCaseRequest, BulkUploadTestCasesRequest, CreateProblemRequest, GetProblemRequest, ListProblemRequest, RemoveSolutionCodeRequest, RemoveTemplateCodeRequest, RemoveTestCaseRequest, UpdateBasicProblemDetailsRequest, UpdateSolutionCodeRequest, UpdateTemplateCodeRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import {AddTestCaseRequest, BulkUploadTestCasesRequest, CreateProblemRequest, GetProblemRequest, ListProblemRequest, RemoveSolutionCodeRequest
+    , RemoveTestCaseRequest, UpdateBasicProblemDetailsRequest, UpdateTemplateCodeRequest 
+} from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 
 /**
  * Class representing the Problem Service management.
@@ -206,11 +207,13 @@ export class ProblemService implements IProblemService {
                     success : false
                 }
             }
-            const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${_id}`;  
-            const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${updatedProblem._id}`;
+            const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${_id}`; 
+            const cacheKeyCodeManage = `${REDIS_PREFIX.PROBLEM_DETAILS_CODE_MANAGE}${_id}` 
+            const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${_id}`;
             await Promise.all([
                 await this.#_cacheProvider.del(cacheKey),
-                await this.#_cacheProvider.del(cacheKeyAdmin)
+                await this.#_cacheProvider.del(cacheKeyAdmin),
+                await this.#_cacheProvider.del(cacheKeyCodeManage)
             ])
             return {
                 data : null,
@@ -246,11 +249,13 @@ export class ProblemService implements IProblemService {
             dto.testCaseCollectionType,
             dto.testCase
         );
-        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`;  
+        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`; 
+        const cacheKeyCodeManage = `${REDIS_PREFIX.PROBLEM_DETAILS_CODE_MANAGE}${dto._id}` 
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
         await Promise.all([
             await this.#_cacheProvider.del(cacheKey),
-            await this.#_cacheProvider.del(cacheKeyAdmin)
+            await this.#_cacheProvider.del(cacheKeyAdmin),
+            await this.#_cacheProvider.del(cacheKeyCodeManage)
         ])
         return {
             data : null,
@@ -275,11 +280,13 @@ export class ProblemService implements IProblemService {
             dto.testCaseCollectionType,
             dto.testCase
         );
-        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`;  
+        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`; 
+        const cacheKeyCodeManage = `${REDIS_PREFIX.PROBLEM_DETAILS_CODE_MANAGE}${dto._id}` 
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
         await Promise.all([
             await this.#_cacheProvider.del(cacheKey),
-            await this.#_cacheProvider.del(cacheKeyAdmin)
+            await this.#_cacheProvider.del(cacheKeyAdmin),
+            await this.#_cacheProvider.del(cacheKeyCodeManage)
         ])
         return {
             data : null,
@@ -303,118 +310,13 @@ export class ProblemService implements IProblemService {
                 errorMessage : ProblemErrorType.TestCaseNotFound
             }
         }
-        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`;  
+        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`; 
+        const cacheKeyCodeManage = `${REDIS_PREFIX.PROBLEM_DETAILS_CODE_MANAGE}${dto._id}` 
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
         await Promise.all([
             await this.#_cacheProvider.del(cacheKey),
-            await this.#_cacheProvider.del(cacheKeyAdmin)
-        ])
-        return {
-            data : null,
-            success : true
-        }
-    }
-
-    async addSolutionCode(
-        request : AddSolutionCodeRequest
-    ): Promise<ResponseDTO> {
-        const dto = ProblemMapper.toAddSolutionCodeService(request);
-        const problemExist = await this.#_problemRepo.findById(dto._id);
-        if(!problemExist){
-            return { 
-                data : null,
-                success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
-            }
-        }
-        await this.#_problemRepo.addSolutionCode(
-            dto._id,
-            dto.solutionCode);
-        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`;  
-        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
-        await Promise.all([
-            await this.#_cacheProvider.del(cacheKey),
-            await this.#_cacheProvider.del(cacheKeyAdmin)
-        ])
-        return {
-            data : null,
-            success : true
-        }
-    }
-
-    async updateSolutionCode(
-        request : UpdateSolutionCodeRequest
-    ): Promise<ResponseDTO> {
-        const dto = ProblemMapper.toUpdateSolutionCodeService(request);
-        const problemExist = await this.#_problemRepo.findById(dto._id);
-        const updatedSolutionCode = dto.solutionCode
-        if(!problemExist){
-            return { 
-                data : null,
-                success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
-            }
-        }
-        const solutionCode = await this.#_problemRepo.findOne({ _id : dto._id,
-            solutionCodes : { $elemMatch : { _id : dto.solutionCodeId } }
-         })
-        if(!solutionCode){
-            return {
-                data : null,
-                success : false,
-                errorMessage : ProblemErrorType.SolutionCodeNotFound
-            }
-        }
-        const updatedQuery : IUpdateSolutionCodeDTO = {}
-        if(updatedSolutionCode.code) updatedQuery.code = updatedSolutionCode.code;
-        if(updatedSolutionCode.language) updatedQuery.language = updatedSolutionCode.language;
-        if(updatedSolutionCode.executionTime) updatedQuery.executionTime = updatedSolutionCode.executionTime;
-        if(updatedSolutionCode.memoryTaken) updatedQuery.memoryTaken = updatedSolutionCode.memoryTaken;
-        await this.#_problemRepo.updateSolutionCode(
-            dto._id,
-            dto.solutionCodeId,
-            updatedQuery
-        );
-        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`;  
-        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
-        await Promise.all([
-            await this.#_cacheProvider.del(cacheKey),
-            await this.#_cacheProvider.del(cacheKeyAdmin)
-        ])
-        return {
-            data : null,
-            success : true,
-        }
-    }
-
-    async removeSolutionCode(
-        request : RemoveSolutionCodeRequest
-    ): Promise<ResponseDTO> {
-        const dto = ProblemMapper.toRemoveSolutionCodeService(request);
-        const problemExist = await this.#_problemRepo.findById(dto._id);
-        if(!problemExist){
-            return { 
-                data : null,
-                success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
-            }
-        }
-        const removed = await this.#_problemRepo.removeSolutionCode(
-            dto._id,
-            dto.solutionCodeId
-        );
-        if(!removed){
-             return {
-                data : null,
-                success : false,
-                errorMessage : ProblemErrorType.SolutionCodeNotFound
-            }
-        }
-        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`;  
-        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
-        await Promise.all([
-            await this.#_cacheProvider.del(cacheKey),
-            await this.#_cacheProvider.del(cacheKeyAdmin)
+            await this.#_cacheProvider.del(cacheKeyAdmin),
+            await this.#_cacheProvider.del(cacheKeyCodeManage)
         ])
         return {
             data : null,
@@ -458,34 +360,6 @@ export class ProblemService implements IProblemService {
         }
     }
 
-    async addTemplateCode(
-        request: AddTemplateCodeRequest
-    ): Promise<ResponseDTO> {
-        const dto = ProblemMapper.toAddTemplateCodeService(request);
-        const problemExist = await this.#_problemRepo.findById(dto._id);
-        if(!problemExist){
-            return { 
-                data : null,
-                success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
-            }
-        }
-        await this.#_problemRepo.addTemplateCode(dto._id,{
-            language : dto.language,
-            wrappedCode : dto.wrappedCode
-        });
-        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`;  
-        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
-        await Promise.all([
-            await this.#_cacheProvider.del(cacheKey),
-            await this.#_cacheProvider.del(cacheKeyAdmin)
-        ])
-        return {
-            data : null,
-            success : true
-        } 
-    }
-
     async updateTemplateCode(
         request: UpdateTemplateCodeRequest
     ): Promise<ResponseDTO> {
@@ -503,43 +377,17 @@ export class ProblemService implements IProblemService {
             dto.templateCodeId, 
             dto.updatedTemplateCode
         );
-        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`;  
+        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`; 
+        const cacheKeyCodeManage = `${REDIS_PREFIX.PROBLEM_DETAILS_CODE_MANAGE}${dto._id}` 
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
         await Promise.all([
             await this.#_cacheProvider.del(cacheKey),
-            await this.#_cacheProvider.del(cacheKeyAdmin)
+            await this.#_cacheProvider.del(cacheKeyAdmin),
+            await this.#_cacheProvider.del(cacheKeyCodeManage)
         ])
         return {
             data : null,
             success : true
         } 
-    }
-
-    async removeTemplateCode(
-        request: RemoveTemplateCodeRequest
-    ): Promise<ResponseDTO> {
-        const dto = ProblemMapper.toRemoveTemplateCodeService(request);
-        const removed = await this.#_problemRepo.removeTemplateCode(
-            dto._id,
-            dto.templateCodeId
-        );
-        if(!removed){
-            return {
-                data : null,
-                success : false,
-                errorMessage : ProblemErrorType.TemplateCodeNotFound
-            }
-        }
-        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`;  
-        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
-        await Promise.all([
-            await this.#_cacheProvider.del(cacheKey),
-            await this.#_cacheProvider.del(cacheKeyAdmin)
-        ])
-
-        return {
-            data : null,
-            success : true
-        }
     }
 }

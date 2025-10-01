@@ -45,10 +45,11 @@ const SolutionCodeSchema = new Schema<ISolutionCode>(
 
 const TemplateCodeSchema = new Schema<ITemplateCode>(
     {
-        language : { type : String, required : true, enum : Object.values(Language) },
-        wrappedCode : { type : String, required : true },
+        language: { type: String, required: true, enum: Object.values(Language) },
+        submitWrapperCode: { type: String, required: false, default: '' },
+        runWrapperCode: { type: String, required: false, default: '' }
     }
-)
+);
 
 /**
  * Mongodb schema for problem collection.
@@ -78,5 +79,17 @@ ProblemSchema.index({ difficulty: 1, createdAt: 1 });
 ProblemSchema.index({ title: 1 });
 ProblemSchema.index({ tags : 1 });
 ProblemSchema.index({ questionId : 1 });
+
+
+ProblemSchema.pre('save', function (next) {
+  if (!this.templateCodes || this.templateCodes.length === 0) {
+    this.templateCodes = Object.values(Language).map((lang) => ({
+      language: lang,
+      submitWrapperCode: '',
+      runWrapperCode: ''
+    }));
+  }
+  next();
+});
 
 export const ProblemModel = mongoose.model<IProblem>('Problem',ProblemSchema);

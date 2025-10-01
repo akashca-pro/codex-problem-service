@@ -11,7 +11,7 @@ import { Language } from "@/enums/language.enum";
 import { IUpdateSubmissionRequestDTO } from "../submission/UpdateSubmissionRequestDTO";
 import { IExecutionResult, IFailedTestCase, IStats, ISubmission } from "@/infra/db/interface/submission.interface";
 import { IGetSubmissionRequestDTO } from "../submission/getSubmissionRequestDTO";
-import { isValidCountry } from "@/utils/countryCheck";
+// import { isValidCountry } from "@/utils/countryCheck";
 import { SubmissionErrorType } from "@/enums/ErrorTypes/submissionErrorType.enum";
 import { GrpcError } from "@/utils/errorHandler";
 import { status } from "@grpc/grpc-js";
@@ -20,9 +20,9 @@ export class SubmissionMapper {
 
     static toCreateSubmissionService(body :ICreateSubmissionInputDTO) : ICreateSubmissionRequestDTO {
 
-        if(body.country && !isValidCountry(body.country)){
-            throw new GrpcError(SubmissionErrorType.InvalidCountryCode,status.INVALID_ARGUMENT);
-        }
+        // if(body.country){
+        //     throw new GrpcError(SubmissionErrorType.InvalidCountryCode,status.INVALID_ARGUMENT);
+        // }
 
         return {
             problemId : body.problemId,
@@ -31,17 +31,16 @@ export class SubmissionMapper {
             title : body.title,
             userCode : body.userCode,
             country : body.country ? body.country : null,
-            difficulty : this._mapGrpcDifficultyEnum(body.difficulty),
-            language : this._mapGrpcLanguageEnum(body.language)
+            difficulty : SubmissionMapper._mapGrpcDifficultyEnum(body.difficulty),
+            language : SubmissionMapper._mapGrpcLanguageEnum(body.language)
         }
     }
 
     static toUpdateSubmissionService(body : IUpdateSubmissionInputDTO) : IUpdateSubmissionRequestDTO {
         if(!body.executionResult) throw new Error('Execution result is missing for updating submission.')
         return {
-             executionResult : this._mapGrpcExecutionResult(body.executionResult),
-             executionTime : body.executionTime,
-             memoryUsage : body.memoryUsage
+             executionResult : SubmissionMapper._mapGrpcExecutionResult(body.executionResult),
+             status : body.status
         }
     }
 
@@ -67,9 +66,9 @@ export class SubmissionMapper {
             title : body.title,
             ...(body.battleId ? {battleId : body.battleId} : {}),
             score : body.score,
-            language : this._mapServiceLanguageEnum(body.language),
+            language : SubmissionMapper._mapServiceLanguageEnum(body.language),
             userCode : body.userCode,
-            ...(body.executionResult 
+            ...(body.executionResult && body.executionResult.stats.totalTestCase
             ? {
                 executionResult : {
                     ...(body.executionResult.failedTestCase
@@ -79,9 +78,7 @@ export class SubmissionMapper {
                 }
             } 
             : {}),
-            difficulty : this._mapServiceDifficulyEnum(body.difficulty),
-            ...(body.executionTime ? { executionTime : body.executionTime} : {}),
-            ...(body.memoryUsage ? { memoryUsage : body.memoryUsage } : {}),
+            difficulty : SubmissionMapper._mapServiceDifficulyEnum(body.difficulty),
             isFirst : body.isFirst,
             status : body.status,
             updatedAt : body.updatedAt.toISOString(),
@@ -135,8 +132,8 @@ export class SubmissionMapper {
 
     private static _mapGrpcExecutionResult(executionResult : IGrpcExecutionResult) : IExecutionResult {
         return {
-            failedTestCase : executionResult.failedTestCase ? this._mapGrpcFailedTestCase(executionResult.failedTestCase) : null,
-            stats : this._mapGrpcStats(executionResult.stats as IGrpcStats)
+            failedTestCase : executionResult.failedTestCase ? SubmissionMapper._mapGrpcFailedTestCase(executionResult.failedTestCase) : null,
+            stats : SubmissionMapper._mapGrpcStats(executionResult.stats as IGrpcStats)
         }
     }
 
@@ -144,7 +141,9 @@ export class SubmissionMapper {
         return {
             failedTestCase : stats.failedTestCase,
             passedTestCase : stats.passedTestCase,
-            totalTestCase : stats.totalTestCase
+            totalTestCase : stats.totalTestCase,
+            executionTimeMs : stats.executionTimeMs,
+            memoryMB : stats.memoryMB
         }
     }
     
@@ -172,8 +171,7 @@ interface ICreateSubmissionInputDTO {
 interface IUpdateSubmissionInputDTO {
     Id : string;
     executionResult? : IGrpcExecutionResult;
-    executionTime : number;
-    memoryUsage : number;
+    status : string;
 }
 
 interface IGetSubmissionInputDTO {

@@ -4,7 +4,7 @@ import { startMetricsServer } from '@/config/metrics/metrics-server';
 import { connectDB } from './config/db';
 import { startGrpcServer } from './transport/grpc/server';
 
-const startServer = () => {
+const startServer = async () => {
     try {
         // Connect to MongoDB
         connectDB();
