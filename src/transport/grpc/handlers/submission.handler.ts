@@ -1,9 +1,8 @@
 import TYPES from "@/config/inversify/types";
-import { SubmissionMapper } from "@/dtos/mappers/SubmissionMapper";
 import { ISubmissionService } from "@/services/interfaces/submission.service.interface";
 import { withGrpcErrorHandler } from "@/utils/errorHandler";
 import { mapMessageToGrpcStatus } from "@/utils/mapMessageToGrpcCode";
-import { CreateSubmissionRequest, GetSubmissionsRequest, GetSubmissionsResponse, Submission, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import { CreateSubmissionRequest, GetSubmissionsRequest, GetSubmissionsResponse, ListProblemSpecificSubmissionRequest, ListProblemSpecificSubmissionResponse, Submission, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { Empty } from "@akashcapro/codex-shared-utils/dist/proto/compiled/google/protobuf/empty";
 import { inject, injectable } from "inversify";
 
@@ -32,38 +31,27 @@ export class SubmissionHandler {
     createSubmission = withGrpcErrorHandler<CreateSubmissionRequest, Submission>(
         async (call, callback) => {
             const req = call.request;
-            const dto = SubmissionMapper.toCreateSubmissionService(req);
-            const result = await this.#_submissionService.createSubmission(dto);
-
+            const result = await this.#_submissionService.createSubmission(req);
             if(!result.success){
                 return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage as string),
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
                     message : result.errorMessage
                 },null)
             };
-
-            const outDTO = SubmissionMapper.toOutDTO(result.data);
-
-            return callback(null,outDTO);
+            return callback(null,result.data);
         }
     );
 
     updateSubmission = withGrpcErrorHandler<UpdateSubmissionRequest, Empty>(
         async (call, callback) => {
             const req = call.request;
-            const dto = SubmissionMapper.toUpdateSubmissionService(req);
-            const result = await this.#_submissionService.updateSubmission(
-                req.Id,
-                dto
-            );
-
+            const result = await this.#_submissionService.updateSubmission(req);
             if(!result.success){
                 return callback({
                     code : mapMessageToGrpcStatus(result.errorMessage as string),
                     message : result.errorMessage
                 },null);
             }
-
             return callback(null,{});
         }
     );
@@ -71,19 +59,29 @@ export class SubmissionHandler {
     getSubmissions = withGrpcErrorHandler<GetSubmissionsRequest, GetSubmissionsResponse>(
         async (call, callback) => {
             const req = call.request;
-            const dto = SubmissionMapper.toGetSubmissionsService(req);
-            const result = await this.#_submissionService.getSubmission(dto);
-
-            const outDTO = result.body.map(SubmissionMapper.toOutDTO);
-
+            const result = await this.#_submissionService.getSubmission(req);
             return callback(null,{
-                submissions : outDTO,
+                submissions : result.body,
                 currentPage : result.currentPage,
                 totalItems : result.totalItems,
                 totalPage : result.totalPages
             })
         }
     );
+
+    listProblemSpecificSubmission = withGrpcErrorHandler<ListProblemSpecificSubmissionRequest, ListProblemSpecificSubmissionResponse>(
+        async (call, callback) => {
+            const req = call.request;
+            const result = await this.#_submissionService.listSubmissionByProblem(req);
+            if(!result.success){
+                return callback({
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
+                    message : result.errorMessage
+                },null)
+            }
+            return callback(null,result.data);
+        }
+    )
 
     /**
      * Gets the service handlers for gRPC.
@@ -95,6 +93,7 @@ export class SubmissionHandler {
             createSubmission : this.createSubmission,
             getSubmissions : this.getSubmissions,
             updateSubmission : this.updateSubmission,
+            listProblemSpecificSubmission : this.listProblemSpecificSubmission,
         }
     }
 }

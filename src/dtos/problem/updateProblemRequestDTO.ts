@@ -1,4 +1,4 @@
-import { Difficulty } from "@/enums/difficulty.enum";
+import { type Difficulty } from "@/const/Difficulty.const";
 import { IExample, IStarterCode } from "@/infra/db/interface/problem.interface";
 
 

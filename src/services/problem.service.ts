@@ -3,7 +3,7 @@ import { IProblemService } from "./interfaces/problem.service.interface";
 import TYPES from "@/config/inversify/types";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
-import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
+import { PROBLEM_ERROR_MESSAGES } from "@/const/ErrorType.const"
 import { extractDup, isDupKeyError } from "@/utils/mongoError";
 import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
 import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
@@ -50,7 +50,7 @@ export class ProblemService implements IProblemService {
             return {
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.ProblemAlreadyExists
+                errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_ALREADY_EXISTS
             }
         }
         try {
@@ -66,7 +66,7 @@ export class ProblemService implements IProblemService {
                 return {
                     data : null,
                     success : false,
-                    errorMessage : ` ${field} ${ProblemErrorType.ProblemFieldAlreadyExist}`
+                    errorMessage : ` ${field} ${PROBLEM_ERROR_MESSAGES.PROBLEM_ALREADY_EXISTS}`
                 }
             }
             throw error;
@@ -90,7 +90,7 @@ export class ProblemService implements IProblemService {
             return {
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
+                errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
             }
         }
         const outDTO = ProblemMapper.toOutDTO(problem)
@@ -123,7 +123,7 @@ export class ProblemService implements IProblemService {
             return {
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
+                errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
             }
         }
         const outDTO = ProblemMapper.toOutPublicDTO(problem)
@@ -185,7 +185,7 @@ export class ProblemService implements IProblemService {
             return { 
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
+                errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
             }
         }
         const updatedQuery : IUpdatedDataForBasicProblem = {};
@@ -208,7 +208,7 @@ export class ProblemService implements IProblemService {
                 }
             }
             const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${_id}`; 
-            const cacheKeyCodeManage = `${REDIS_PREFIX.PROBLEM_DETAILS_CODE_MANAGE}${_id}` 
+            const cacheKeyCodeManage = `${REDIS_PREFIX.CODE_MANAGE_PROBLEM_DETAILS}${_id}` 
             const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${_id}`;
             await Promise.all([
                 await this.#_cacheProvider.del(cacheKey),
@@ -225,7 +225,7 @@ export class ProblemService implements IProblemService {
                 return {
                     data : null,
                     success : false,
-                    errorMessage : `${field} ${ProblemErrorType.ProblemFieldAlreadyExist}`
+                    errorMessage : `${field} ${PROBLEM_ERROR_MESSAGES.PROBLEM_FIELD_ALREADY_EXIST}`
                 }
             }
             throw error;
@@ -241,7 +241,7 @@ export class ProblemService implements IProblemService {
             return { 
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
+                errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
             }
         }
         await this.#_problemRepo.addTestCase(
@@ -250,7 +250,7 @@ export class ProblemService implements IProblemService {
             dto.testCase
         );
         const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`; 
-        const cacheKeyCodeManage = `${REDIS_PREFIX.PROBLEM_DETAILS_CODE_MANAGE}${dto._id}` 
+        const cacheKeyCodeManage = `${REDIS_PREFIX.CODE_MANAGE_PROBLEM_DETAILS}${dto._id}` 
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
         await Promise.all([
             await this.#_cacheProvider.del(cacheKey),
@@ -272,7 +272,7 @@ export class ProblemService implements IProblemService {
             return { 
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
+                errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
             }
         }
         await this.#_problemRepo.bulkUploadTestCase(
@@ -281,7 +281,7 @@ export class ProblemService implements IProblemService {
             dto.testCase
         );
         const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`; 
-        const cacheKeyCodeManage = `${REDIS_PREFIX.PROBLEM_DETAILS_CODE_MANAGE}${dto._id}` 
+        const cacheKeyCodeManage = `${REDIS_PREFIX.CODE_MANAGE_PROBLEM_DETAILS}${dto._id}` 
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
         await Promise.all([
             await this.#_cacheProvider.del(cacheKey),
@@ -307,11 +307,11 @@ export class ProblemService implements IProblemService {
             return {
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.TestCaseNotFound
+                errorMessage : PROBLEM_ERROR_MESSAGES.TEST_CASE_NOT_FOUND
             }
         }
         const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`; 
-        const cacheKeyCodeManage = `${REDIS_PREFIX.PROBLEM_DETAILS_CODE_MANAGE}${dto._id}` 
+        const cacheKeyCodeManage = `${REDIS_PREFIX.CODE_MANAGE_PROBLEM_DETAILS}${dto._id}` 
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
         await Promise.all([
             await this.#_cacheProvider.del(cacheKey),
@@ -332,7 +332,7 @@ export class ProblemService implements IProblemService {
             return {
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.QuestionIdAlreadyExist
+                errorMessage : PROBLEM_ERROR_MESSAGES.QUESTION_ID_ALREADY_EXIST
             }
         }
         return {
@@ -351,7 +351,7 @@ export class ProblemService implements IProblemService {
             return {
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.TitleAlreadyExist
+                errorMessage : PROBLEM_ERROR_MESSAGES.TITLE_ALREADY_EXIST
             }
         }
         return {
@@ -369,7 +369,7 @@ export class ProblemService implements IProblemService {
             return { 
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
+                errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
             }
         }
         await this.#_problemRepo.updateTemplateCode(
@@ -378,7 +378,7 @@ export class ProblemService implements IProblemService {
             dto.updatedTemplateCode
         );
         const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`; 
-        const cacheKeyCodeManage = `${REDIS_PREFIX.PROBLEM_DETAILS_CODE_MANAGE}${dto._id}` 
+        const cacheKeyCodeManage = `${REDIS_PREFIX.CODE_MANAGE_PROBLEM_DETAILS}${dto._id}` 
         const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
         await Promise.all([
             await this.#_cacheProvider.del(cacheKey),

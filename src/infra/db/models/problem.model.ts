@@ -1,7 +1,7 @@
 import mongoose, {Schema} from "mongoose";
-import { IExample, IProblem, IStarterCode, ISolutionCode, ITestCase, ITestCaseCollection, ITemplateCode } from "../interface/problem.interface";
+import { IExample, IProblem, IStarterCode, ITestCase, ITestCaseCollection, ITemplateCode } from "../interface/problem.interface";
 import { Language } from "@/enums/language.enum";
-import { Difficulty } from "@/enums/difficulty.enum";
+import { DIFFICULTY } from "@/const/Difficulty.const";
 
 const StarterCodeSchema = new Schema<IStarterCode>(
     {
@@ -34,20 +34,11 @@ const ExamplesSchema = new Schema<IExample>(
     }
 )
 
-const SolutionCodeSchema = new Schema<ISolutionCode>(
-    {
-        language : { type : String, required : true, enum : Object.values(Language) },
-        code : { type : String, required : true },
-        executionTime : { type : Number , required : false, default : undefined },
-        memoryTaken : { type : Number, required : false, default : undefined }
-    }
-)
-
 const TemplateCodeSchema = new Schema<ITemplateCode>(
     {
         language: { type: String, required: true, enum: Object.values(Language) },
+        runWrapperCode: { type: String, required: false, default: '' },
         submitWrapperCode: { type: String, required: false, default: '' },
-        runWrapperCode: { type: String, required: false, default: '' }
     }
 );
 
@@ -61,12 +52,11 @@ const ProblemSchema = new Schema<IProblem>(
         questionId : { type : String, required : true, unique : true },
         title: { type: String, required: true , unique : true},
         description: { type: String, required: true },
-        difficulty: { type: String, enum: Object.values(Difficulty), required: true },
+        difficulty: { type: String, enum: Object.values(DIFFICULTY), required: true },
         tags: { type: [String], required: true },
         constraints: { type: [String], required: false , default : []},
         starterCodes: { type: [StarterCodeSchema], required: false, default : [] },
         testcaseCollection: { type: TestCaseCollectionSchema, required: false, default : {} },
-        solutionCodes : { type : [SolutionCodeSchema], required : false , default : []},
         templateCodes : { type :  [TemplateCodeSchema], required : false, default : [] },
         examples: { type: [ExamplesSchema], required: false  , default : []},
         active: { type: Boolean, default: true },

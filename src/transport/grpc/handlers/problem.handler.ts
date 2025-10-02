@@ -7,9 +7,6 @@ import { AddTestCaseRequest, BulkUploadTestCasesRequest, CreateProblemRequest,
     GetProblemPublicResponse, GetProblemRequest, ListProblemRequest, 
     ListProblemResponse, Problem, UpdateBasicProblemDetailsRequest, 
     RemoveTestCaseRequest, 
-    AddSolutionCodeRequest,
-    UpdateSolutionCodeRequest,
-    RemoveSolutionCodeRequest,
     CheckQuestionIdRequest,
     CheckProblemTitleRequest,
     UpdateTemplateCodeRequest,
@@ -141,45 +138,6 @@ export class ProblemHandler {
         }
     )
 
-    addSolutionCode = withGrpcErrorHandler<AddSolutionCodeRequest, Empty>(
-        async (call, callback) => {
-            const result = await this.#_problemService.addSolutionCode(call.request);
-            if(!result.success){
-                return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage!),
-                    message : result.errorMessage
-                },null)
-            }
-            return callback(null,{});
-        }
-    )
-
-    updateSolutionCode = withGrpcErrorHandler<UpdateSolutionCodeRequest, Empty>(
-        async (call, callback) => {
-            const result = await this.#_problemService.updateSolutionCode(call.request);
-            if(!result.success){
-                return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage!),
-                    message : result.errorMessage
-                },null);
-            }
-            return callback(null,{});
-        }
-    )
-
-    removeSolutionCode = withGrpcErrorHandler<RemoveSolutionCodeRequest, Empty>(
-        async (call, callback) => {
-            const result = await this.#_problemService.removeSolutionCode(call.request);
-            if(!result.success){
-                return callback({
-                    code : mapMessageToGrpcStatus(result.errorMessage!),
-                    message : result.errorMessage
-                },null);
-            }
-            return callback(null,{});
-        }
-    );
-
     checkQuestionIdAvailability = withGrpcErrorHandler<CheckQuestionIdRequest, Empty>(
         async (call, callback) => {
             const req = call.request;
@@ -236,9 +194,6 @@ export class ProblemHandler {
             addTestCase : this.addTestCase,
             bulkUploadTestCases : this.bulkUploadTestCases,
             removeTestCase : this.removeTestCase,
-            addSolutionCode : this.addSolutionCode,
-            updateSolutionCode : this.updateSolutionCode,
-            removeSolutionCode : this.removeSolutionCode,
             checkQuestionIdAvailability : this.checkQuestionIdAvailability,
             checkProblemTitle : this.checkProblemTitle,
             updateTemplateCode : this.updateTemplateCode,

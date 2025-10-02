@@ -1,8 +1,7 @@
-import { IExample, IProblem, ISolutionCode, IStarterCode, ITemplateCode, ITestCase } from "@/infra/db/interface/problem.interface";
+import { IProblem, ITemplateCode, ITestCase } from "@/infra/db/interface/problem.interface";
 import { BaseRepository } from "../base.repository";
 import { FilterQuery } from "mongoose";
-import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
-import { IUpdateSolutionCodeDTO } from "@/dtos/problem/solutionCodeRequestDTOs";
+import { type TestcaseType } from "@/const/TestcaseType.const"; 
 
 /**
  * The interface representing the structure of problem repository.
@@ -31,7 +30,7 @@ export interface IProblemRepository extends BaseRepository <IProblem>{
      */
     addTestCase(
         problemId : string,
-        testCaseCollectionType : TestCaseCollectionType,
+        testCaseCollectionType : TestcaseType,
         testCase : ITestCase
     ) : Promise<void>
 
@@ -46,7 +45,7 @@ export interface IProblemRepository extends BaseRepository <IProblem>{
     removeTestCase(
         problemId : string,
         testCaseId : string,
-        testCaseCollectionType : TestCaseCollectionType,
+        testCaseCollectionType : TestcaseType,
     ) : Promise<boolean>
 
     /**
@@ -59,47 +58,9 @@ export interface IProblemRepository extends BaseRepository <IProblem>{
      */
     bulkUploadTestCase(
         problemId : string,
-        testCaseCollectionType : TestCaseCollectionType,
+        testCaseCollectionType : TestcaseType,
         testCases : ITestCase[]
     ) : Promise<void>
-
-    /**
-     * Adds solution code to the problem.
-     *
-     * @async
-     * @param problemId - The id of the document.
-     * @param solutionCode - The solution code data to be added.
-     */
-    addSolutionCode (
-        problemId : string,
-        solutionCode : ISolutionCode
-    ) : Promise<void>
-
-    /**
-     * Updates existing solution code in the problem.
-     *
-     * @async
-     * @param problemId - The id of the document.
-     * @param solutionCodeId - The id of the solution code to update.
-     * @param solutionCode - The updated solution code data.
-     */
-    updateSolutionCode(
-        problemId : string,
-        solutionCodeId : string,
-        updatedSolutionCode : IUpdateSolutionCodeDTO
-    ) : Promise<void>
-
-    /**
-     * Removes solution code from the problem.
-     *
-     * @async
-     * @param problemId - The id of the document.
-     * @param solutionCodeId - The id of the solution code to remove.
-     */
-    removeSolutionCode(
-        problemId : string,
-        solutionCodeId : string
-    ) : Promise<boolean>
 
     /**
      * Updates existing template code in problem document.

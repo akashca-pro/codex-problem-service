@@ -1,8 +1,11 @@
 import { PaginationDTO } from "@/dtos/PaginationDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
-import { ICreateSubmissionRequestDTO } from "@/dtos/submission/CreateSubmissionRequestDTO";
-import { IGetSubmissionRequestDTO } from "@/dtos/submission/getSubmissionRequestDTO";
-import { IUpdateSubmissionRequestDTO } from "@/dtos/submission/UpdateSubmissionRequestDTO";
+import { 
+    CreateSubmissionRequest, 
+    GetSubmissionsRequest, 
+    ListProblemSpecificSubmissionRequest, 
+    UpdateSubmissionRequest 
+} from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 
 /**
  * Interface representing the structure of the submission service.
@@ -19,7 +22,7 @@ export interface ISubmissionService {
      * @returns {ResponseDTO} - the response data
      */
     createSubmission(
-        data : ICreateSubmissionRequestDTO
+        data : CreateSubmissionRequest
     ) : Promise<ResponseDTO>;
 
     /**
@@ -30,8 +33,18 @@ export interface ISubmissionService {
      * @returns {PaginationDTO} - the paginated response data
      */
     getSubmission(
-        filter : IGetSubmissionRequestDTO
+        filter : GetSubmissionsRequest
     ) : Promise<PaginationDTO>;
+
+    /**
+     * list submission for specific problem.
+     * 
+     * @async
+     * @param request - request to list submissions
+     */
+    listSubmissionByProblem(
+        request : ListProblemSpecificSubmissionRequest
+    ) : Promise<ResponseDTO>;
 
     /**
      * Updates an existing submission.
@@ -42,8 +55,7 @@ export interface ISubmissionService {
      * @returns {ResponseDTO} - the response data
      */
     updateSubmission(
-        id : string,
-        updatedData : IUpdateSubmissionRequestDTO
+        request : UpdateSubmissionRequest
     ) : Promise<ResponseDTO>
 
 }

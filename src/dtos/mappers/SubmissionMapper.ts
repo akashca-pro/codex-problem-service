@@ -3,26 +3,20 @@ import {
     Stats as IGrpcStats,
     FailedTestCase as IGrpcFailedTestCase,
     Difficulty as GrpcDifficultyEnum, 
-    Language as GrpcLanguageEnum, 
-    Submission} from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+    Language as GrpcLanguageEnum,
+    Submission, 
+} from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { ICreateSubmissionRequestDTO } from "../submission/CreateSubmissionRequestDTO";
-import { Difficulty } from "@/enums/difficulty.enum";
+import { type Difficulty, DIFFICULTY } from "@/const/Difficulty.const";
 import { Language } from "@/enums/language.enum";
 import { IUpdateSubmissionRequestDTO } from "../submission/UpdateSubmissionRequestDTO";
 import { IExecutionResult, IFailedTestCase, IStats, ISubmission } from "@/infra/db/interface/submission.interface";
 import { IGetSubmissionRequestDTO } from "../submission/getSubmissionRequestDTO";
-// import { isValidCountry } from "@/utils/countryCheck";
-import { SubmissionErrorType } from "@/enums/ErrorTypes/submissionErrorType.enum";
-import { GrpcError } from "@/utils/errorHandler";
-import { status } from "@grpc/grpc-js";
-
+import { LeanDocument } from "mongoose";
+import { IListProblemSpecicSubmissionsDTO } from "../submission/listSubmissions.dto";
 export class SubmissionMapper {
 
     static toCreateSubmissionService(body :ICreateSubmissionInputDTO) : ICreateSubmissionRequestDTO {
-
-        // if(body.country){
-        //     throw new GrpcError(SubmissionErrorType.InvalidCountryCode,status.INVALID_ARGUMENT);
-        // }
 
         return {
             problemId : body.problemId,
@@ -86,58 +80,96 @@ export class SubmissionMapper {
         }
     }
 
-    private static _mapGrpcDifficultyEnum(difficulty : GrpcDifficultyEnum) : Difficulty {
+static toListProblemSpecificSubmissions(
+    body: LeanDocument<ISubmission>[],
+    nextCursor: string,
+    hasMore: boolean
+): IListProblemSpecicSubmissionsDTO {
+    return {
+        submissions: body.map((sub) => {
+            const stats = sub.executionResult?.stats ?? {
+                totalTestCase: 0,
+                passedTestCase: 0,
+                failedTestCase: 0,
+                executionTimeMs: 0,
+                memoryMB: 0,
+                stdout: '',
+            };
+
+            const failedTestCase = sub.executionResult?.failedTestCase ?? {
+                index: 0,
+                input: '',
+                output: '',
+                expectedOutput: '',
+            };
+
+            return {
+                Id: sub._id,
+                status: sub.status,
+                language: SubmissionMapper._mapServiceLanguageEnum(sub.language),
+                executionResult: {
+                    stats,
+                    failedTestCase,
+                },
+            };
+        }),
+        nextCursor,
+        hasMore,
+    };
+}
+
+
+
+    static _mapGrpcDifficultyEnum(difficulty : GrpcDifficultyEnum) : Difficulty {
         if (difficulty === 1) {
-            return Difficulty.EASY;
+            return DIFFICULTY.EASY;
         } else if (difficulty === 2) {
-            return Difficulty.MEDIUM;
+            return DIFFICULTY.MEDIUM;
         } else if (difficulty === 3) {
-            return Difficulty.HARD;
+            return DIFFICULTY.HARD;
         } else {
             throw new Error('Invalid difficulty value');
         }   
     }
 
-    private static _mapServiceDifficulyEnum(difficulty : Difficulty) : GrpcDifficultyEnum {
-        if (difficulty === Difficulty.EASY) {
+    static _mapServiceDifficulyEnum(difficulty : Difficulty) : GrpcDifficultyEnum {
+        if (difficulty === DIFFICULTY.EASY) {
             return 1;
-        } else if (difficulty === Difficulty.MEDIUM) {
+        } else if (difficulty === DIFFICULTY.MEDIUM) {
             return 2;
-        } else if (difficulty === Difficulty.HARD) {
+        } else if (difficulty === DIFFICULTY.HARD) {
             return 3;
         } else {
             throw new Error('Invalid difficulty value mapping from service');
         }   
     }
 
-    private static _mapGrpcLanguageEnum(language : GrpcLanguageEnum) : Language {
-        if(language === 1){
-            return Language.JAVASCRIPT;
-        } else if (language === 2){
-            return Language.PYTHON
-        } else {
-            throw new Error('Invalid choosen language')
+    static _mapGrpcLanguageEnum(language : GrpcLanguageEnum) : Language {
+        switch(language) {
+            case 1: return Language.JAVASCRIPT;
+            case 2: return Language.PYTHON;
+            case 3: return Language.GO;
+            default: throw new Error("Invalid language mapping from grpc");
         }
     }
 
-    private static _mapServiceLanguageEnum(language : Language) : GrpcLanguageEnum {
-        if(language === Language.JAVASCRIPT){
-            return 1;
-        } else if (language === Language.PYTHON){
-            return 2;
-        } else {
-            throw new Error('Invalid choosen language mapping from service');
+    static _mapServiceLanguageEnum(language : Language) : GrpcLanguageEnum {
+        switch(language) {
+            case Language.JAVASCRIPT: return 1;
+            case Language.PYTHON: return 2;
+            case Language.GO: return 3;
+            default: throw new Error("Invalid language mapping from service");
         }
     }
 
-    private static _mapGrpcExecutionResult(executionResult : IGrpcExecutionResult) : IExecutionResult {
+    static _mapGrpcExecutionResult(executionResult : IGrpcExecutionResult) : IExecutionResult {
         return {
             failedTestCase : executionResult.failedTestCase ? SubmissionMapper._mapGrpcFailedTestCase(executionResult.failedTestCase) : null,
             stats : SubmissionMapper._mapGrpcStats(executionResult.stats as IGrpcStats)
         }
     }
 
-    private static _mapGrpcStats(stats : IGrpcStats) : IStats {
+    static _mapGrpcStats(stats : IGrpcStats) : IStats {
         return {
             failedTestCase : stats.failedTestCase,
             passedTestCase : stats.passedTestCase,
@@ -147,7 +179,7 @@ export class SubmissionMapper {
         }
     }
     
-    private static _mapGrpcFailedTestCase(failedTestCase : IGrpcFailedTestCase) : IFailedTestCase {
+    static _mapGrpcFailedTestCase(failedTestCase : IGrpcFailedTestCase) : IFailedTestCase {
         return {
             index : failedTestCase.index,
             input : failedTestCase.input,

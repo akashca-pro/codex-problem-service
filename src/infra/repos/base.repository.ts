@@ -111,7 +111,12 @@ export abstract class BaseRepository <T extends Document> {
         select? : string[],
         sort: Record<string, 1 | -1> = { createdAt: -1 },
     ): Promise<LeanDocument<T>[]> {
-        return this._model.find(filter).select(select?.join(" ")).skip(skip).limit(limit).sort(sort).lean();
+        return this._model
+        .find(filter)
+        .select(select?.join(" "))
+        .skip(skip)
+        .limit(limit)
+        .sort(sort).lean();
     }
 
     /**

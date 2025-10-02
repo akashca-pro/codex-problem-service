@@ -1,4 +1,6 @@
-import { Difficulty } from "@/enums/difficulty.enum";
+import { type Difficulty, DIFFICULTY } from "@/const/Difficulty.const"
+import { TESTCASE_TYPE, type TestcaseType } from "@/const/TestcaseType.const";
+import { Language } from "@/enums/language.enum";
 import { ICreateProblemRequestDTO } from "../problem/CreateProblemRequestDTO";
 import { IListProblemsRequestDTO } from "../problem/listProblemsRequestDTO";
 import { IExample, IProblem, ISolutionCode, IStarterCode, ITemplateCode, ITestCase, ITestCaseCollection } from "@/infra/db/interface/problem.interface";
@@ -27,8 +29,6 @@ import {
     UpdateSolutionCodeRequest,
     RemoveSolutionCodeRequest
 } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
-import { Language } from "@/enums/language.enum";
-import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
 import { IAddTestCaseRequestDTO, IBulkUploadTestCaseRequestDTO, IRemoveTestCaseRequestDTO } from "../problem/testCaseRequestDTOs";
 import { IAddSolutionCodeRequestDTO, IRemoveSolutionCodeRequestDTO, IUpdateSolutionCodeRequestDTO } from "../problem/solutionCodeRequestDTOs";
 import { IGetProblemRequestDTO } from "../problem/getProblemRequestDTO";
@@ -171,7 +171,7 @@ export class ProblemMapper {
             _id : body.Id,
             templateCodeId : body.templateCodeId,
             updatedTemplateCode : {
-                language : body.updatedTemplateCode.language ? this._mapGrpcLanguageEnum(body.updatedTemplateCode.language) : undefined,
+                language : body.updatedTemplateCode.language ? ProblemMapper._mapGrpcLanguageEnum(body.updatedTemplateCode.language) : undefined,
                 submitWrapperCode : body.updatedTemplateCode.submitWrapperCode,
                 runWrapperCode : body.updatedTemplateCode.runWrapperCode,
             }
@@ -296,18 +296,18 @@ export class ProblemMapper {
 
     static _mapGrpcDifficultyEnum(difficulty : GrpcDifficultyEnum) : Difficulty {
         switch(difficulty) {
-            case 1: return Difficulty.EASY;
-            case 2: return Difficulty.MEDIUM;
-            case 3: return Difficulty.HARD;
+            case 1: return DIFFICULTY.EASY;
+            case 2: return DIFFICULTY.MEDIUM;
+            case 3: return DIFFICULTY.HARD;
             default: throw new Error("Invalid difficulty value mapping from grpc");
         }
     }
 
     static _mapServiceDifficulyEnum(difficulty : Difficulty) : GrpcDifficultyEnum {
         switch(difficulty) {
-            case Difficulty.EASY: return 1;
-            case Difficulty.MEDIUM: return 2;
-            case Difficulty.HARD: return 3;
+            case DIFFICULTY.EASY: return 1;
+            case DIFFICULTY.MEDIUM: return 2;
+            case DIFFICULTY.HARD: return 3;
             default: throw new Error("Invalid difficulty value mapping from service");
         }
     }
@@ -330,10 +330,10 @@ export class ProblemMapper {
         }
     }
 
-    static _mapGrpcTestCaseCollectionTypeEnum(t : GrpcTestCaseCollectionTypeEnum) : TestCaseCollectionType {
+    static _mapGrpcTestCaseCollectionTypeEnum(t : GrpcTestCaseCollectionTypeEnum) : TestcaseType {
         switch(t) {
-            case 1: return TestCaseCollectionType.RUN;
-            case 2: return TestCaseCollectionType.SUBMIT;
+            case 1: return TESTCASE_TYPE.RUN;
+            case 2: return TESTCASE_TYPE.SUBMIT;
             default: throw new Error("Invalid testcase collection type mapping from grpc");
         }
     }

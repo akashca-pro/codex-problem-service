@@ -1,4 +1,4 @@
-import { Difficulty } from "@/enums/difficulty.enum";
+import { type Difficulty } from "@/const/Difficulty.const";
 import { Language } from "@/enums/language.enum";
 import { Document } from "mongoose";
 
@@ -47,19 +47,6 @@ export interface IStarterCode {
 }
 
 /**
- * Interface representing the structure of template solution of the code.
- * 
- * @interface
- */
-export interface ISolutionCode {
-    _id? : string;
-    language : Language;
-    code : string;
-    executionTime? : number;
-    memoryTaken? : number;
-}
-
-/**
  * Interface representing the structure of template code that wraps user code.
  */
 export interface ITemplateCode {
@@ -85,7 +72,6 @@ export interface IProblem extends Document {
     testcaseCollection : ITestCaseCollection;
     examples : IExample[];
     active : boolean;
-    solutionCodes : ISolutionCode[] | null;
     templateCodes : ITemplateCode[] | null;
     createdAt : Date;
     updatedAt : Date;

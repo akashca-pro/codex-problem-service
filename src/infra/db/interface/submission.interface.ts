@@ -1,6 +1,6 @@
-import { Difficulty } from "@/enums/difficulty.enum";
+import { type Difficulty } from "@/const/Difficulty.const";
 import { Language } from "@/enums/language.enum";
-import { SubmissionStatus } from "@/enums/submissionStatus.enum";
+import { type SubmissionStatus } from "@/const/SubmissionStatus.const";
 import { Document, Types } from "mongoose";
 
 /**

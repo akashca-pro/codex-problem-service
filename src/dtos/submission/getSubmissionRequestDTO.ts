@@ -11,3 +11,4 @@ export interface IGetSubmissionRequestDTO {
     battleId? : string;
     userId? : string;
 }
+

@@ -1,8 +1,9 @@
 import mongoose, { Schema } from "mongoose";
 import { IExecutionResult, IFailedTestCase, IStats, ISubmission } from "../interface/submission.interface";
-import { SubmissionStatus } from "@/enums/submissionStatus.enum";
+import { SUBMISSION_STATUS_TYPES } from "@/const/SubmissionStatus.const";
 import { Language } from "@/enums/language.enum";
-import { Difficulty } from "@/enums/difficulty.enum";
+import { DIFFICULTY } from "@/const/Difficulty.const";
+
 
 
 const FailedTestCaseSchema = new Schema<IFailedTestCase>(
@@ -41,18 +42,19 @@ const SubmissionSchema = new Schema<ISubmission>(
         country : { type : String, required : false, default : null },
         battleId : { type : String, required : false, default : null },
         title : { type : String, required : true },
-        status : { type : String, required : true, enum : Object.values(SubmissionStatus), default : SubmissionStatus.PENDING},
+        status : { type : String, required : true, enum : Object.values(SUBMISSION_STATUS_TYPES), default : SUBMISSION_STATUS_TYPES.PENDING},
         score : { type : Number, required : true, default : 0 },
         language : { type : String, required : true, enum : Object.values(Language) },
         userCode : { type : String, required : true },
         executionResult : { type : ExecutionSchema, required : false, default : {} },
-        difficulty : { type : String, required : true, enum : Object.values(Difficulty)},
+        difficulty : { type : String, required : true, enum : Object.values(DIFFICULTY)},
         isFirst : { type : Boolean, required : true, default : false }
     },
     { timestamps : true }
 )
 
 SubmissionSchema.index({ userId : 1 , createdAt : -1 });
+SubmissionSchema.index({ problemId : 1, createdAt : -1, userId : 1 });
 SubmissionSchema.index({ isFirst : 1 , country : 1 , score : -1 });
 SubmissionSchema.index({ problemId : 1, userId : 1 });
 SubmissionSchema.index({ battleId : 1, userId : 1 });

@@ -1,9 +1,8 @@
 import { ProblemModel } from "../db/models/problem.model";
-import { IExample, IProblem, ISolutionCode, IStarterCode, ITemplateCode, ITestCase } from "../db/interface/problem.interface";
+import { IProblem, ITemplateCode, ITestCase } from "../db/interface/problem.interface";
 import { BaseRepository } from "./base.repository";
 import { IProblemRepository } from "./interfaces/problem.repository.interface";
-import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
-import { IUpdateSolutionCodeDTO } from "@/dtos/problem/solutionCodeRequestDTOs";
+import { type TestcaseType } from "@/const/TestcaseType.const"; 
 
 /**
  * This class implements the problem repository.
@@ -26,7 +25,7 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
 
     async addTestCase(
         problemId: string, 
-        testCaseCollectionType: TestCaseCollectionType, 
+        testCaseCollectionType: TestcaseType, 
         testCase: ITestCase
     ): Promise<void> {
         await this.update( problemId, { $push : { [`testcaseCollection.${testCaseCollectionType}`] : testCase } } );
@@ -35,7 +34,7 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
     async removeTestCase(
         problemId: string, 
         testCaseId: string, 
-        testCaseCollectionType: TestCaseCollectionType
+        testCaseCollectionType: TestcaseType
     ): Promise<boolean> {
         const result = await this._model.updateOne({ _id : problemId }, {
             $pull : {
@@ -47,7 +46,7 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
 
     async bulkUploadTestCase(
         problemId: string, 
-        testCaseCollectionType: TestCaseCollectionType,
+        testCaseCollectionType: TestcaseType,
         testCases : ITestCase[]
     ): Promise<void> {
         await this.update(problemId, {
@@ -59,43 +58,6 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         });
     }
 
-    async addSolutionCode(
-        problemId: string, 
-        solutionCode: ISolutionCode
-    ): Promise<void> {
-        await this.update(problemId,{
-            $push : { solutionCodes : solutionCode }
-        })
-    }
-
-    async updateSolutionCode(
-        problemId: string, 
-        solutionCodeId: string, 
-        updateSolutionCode: IUpdateSolutionCodeDTO
-    ): Promise<void> {
-        const set: Record<string, unknown> = {};
-        if (updateSolutionCode.code !== undefined) set["solutionCodes.$.code"] = updateSolutionCode.code;
-        if (updateSolutionCode.language !== undefined) set["solutionCodes.$.language"] = updateSolutionCode.language;
-        if (updateSolutionCode.executionTime !== undefined) set["solutionCodes.$.executionTime"] = updateSolutionCode.executionTime;
-        if (updateSolutionCode.memoryTaken !== undefined) set["solutionCodes.$.memoryTaken"] = updateSolutionCode.memoryTaken;
-        await this._model.updateOne(
-            { _id : problemId, "solutionCodes._id" : solutionCodeId },
-            { $set : set }
-        );
-    }
-
-    async removeSolutionCode(
-        problemId: string, 
-        solutionCodeId: string
-    ): Promise<boolean> {
-        const result = await this._model.updateOne({ _id : problemId , 
-            "solutionCodes._id" : solutionCodeId } ,
-        {
-            $pull : { solutionCodes : { _id : solutionCodeId } }
-        })
-        return result.modifiedCount > 0
-    }
-
     async updateTemplateCode(
         problemId : string,
         templateCodeId : string,
@@ -103,7 +65,7 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
     ) : Promise<void> {
         const set: Record<string, unknown> = {};
         if(updatedTemplateCode.language !== undefined) set["templateCodes.$.language"] = updatedTemplateCode.language;
-        if(updatedTemplateCode.submitWrapperCode !== undefined) set["templateCodes.$.submitWrappedCode"] = updatedTemplateCode.submitWrapperCode;
+        if(updatedTemplateCode.submitWrapperCode !== undefined) set["templateCodes.$.submitWrapperCode"] = updatedTemplateCode.submitWrapperCode;
         if(updatedTemplateCode.runWrapperCode !== undefined) set["templateCodes.$.runWrapperCode"] = updatedTemplateCode.runWrapperCode;
         await this._model.updateOne(
             { _id : problemId, "templateCodes._id" : templateCodeId },

@@ -1,4 +1,4 @@
-import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
+import { type TestcaseType } from "@/const/TestcaseType.const";
 import { ITestCase } from "@/infra/db/interface/problem.interface";
 
 /**
@@ -8,7 +8,7 @@ import { ITestCase } from "@/infra/db/interface/problem.interface";
  */
 export interface IAddTestCaseRequestDTO {
     _id : string;
-    testCaseCollectionType : TestCaseCollectionType;
+    testCaseCollectionType : TestcaseType;
     testCase : ITestCase
 }
 
@@ -20,7 +20,7 @@ export interface IAddTestCaseRequestDTO {
  */
 export interface IBulkUploadTestCaseRequestDTO {
     _id : string;
-    testCaseCollectionType : TestCaseCollectionType;
+    testCaseCollectionType : TestcaseType;
     testCase : ITestCase[]
 }
 
@@ -32,5 +32,5 @@ export interface IBulkUploadTestCaseRequestDTO {
 export interface IRemoveTestCaseRequestDTO {
     _id : string;
     testCaseId : string;
-    testCaseCollectionType : TestCaseCollectionType;
+    testCaseCollectionType : TestcaseType;
 }
