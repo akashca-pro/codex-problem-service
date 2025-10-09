@@ -11,7 +11,7 @@ import { ProblemMapper } from "@/dtos/mappers/ProblemMapper";
 import { config } from "@/config";
 import { PaginationDTO } from "@/dtos/PaginationDTO";
 import { IUpdatedDataForBasicProblem } from "@/dtos/problem/updateProblemRequestDTO";
-import {AddTestCaseRequest, BulkUploadTestCasesRequest, CreateProblemRequest, GetProblemRequest, ListProblemRequest, RemoveSolutionCodeRequest
+import {AddTestCaseRequest, BulkUploadTestCasesRequest, CreateProblemRequest, GetProblemRequest, ListProblemRequest
     , RemoveTestCaseRequest, UpdateBasicProblemDetailsRequest, UpdateTemplateCodeRequest 
 } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 
@@ -188,17 +188,17 @@ export class ProblemService implements IProblemService {
                 errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
             }
         }
-        const updatedQuery : IUpdatedDataForBasicProblem = {};
-        if(updatedData.title) updatedQuery.title = updatedData.title;
-        if(updatedData.description) updatedQuery.description = updatedData.description;
-        if(updatedData.difficulty) updatedQuery.difficulty = updatedData.difficulty;
-        if(updatedData.tags) updatedQuery.tags = updatedData.tags;
-        if(updatedData.constraints?.length !== 0) updatedQuery.constraints = updatedData.constraints;
-        if(updatedData.questionId) updatedQuery.questionId = updatedData.questionId;
-        if(updatedData.examples?.length !== 0) updatedQuery.examples = updatedData.examples;
-        if(updatedData.starterCodes?.length !== 0) updatedQuery.starterCodes = updatedData.starterCodes;
-        if(updatedData.active) updatedQuery.active = true;
-        else updatedQuery.active = false;
+        const updatedQuery: IUpdatedDataForBasicProblem = {
+        ...(updatedData.title && { title: updatedData.title }),
+        ...(updatedData.description && { description: updatedData.description }),
+        ...(updatedData.difficulty && { difficulty: updatedData.difficulty }),
+        ...(updatedData.tags && { tags: updatedData.tags }),
+        ...(updatedData.constraints?.length ? { constraints: updatedData.constraints } : {}),
+        ...(updatedData.questionId && { questionId: updatedData.questionId }),
+        ...(updatedData.examples?.length ? { examples: updatedData.examples } : {}),
+        ...(updatedData.starterCodes?.length ? { starterCodes: updatedData.starterCodes } : {}),
+        active: updatedData.active ?? false, // always set, default false
+        };
         try {
             const updatedProblem = await this.#_problemRepo.update(_id, updatedQuery);
             if(!updatedProblem){

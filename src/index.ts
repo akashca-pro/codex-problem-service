@@ -10,7 +10,7 @@ const startServer = async () => {
         connectDB();
 
         // Start prometheus metrics server.
-        startMetricsServer(config.METRICS_PORT);
+        startMetricsServer(config.PROBLEM_SERVICE_METRICS_PORT);
 
         // start gRPC server.
         startGrpcServer();

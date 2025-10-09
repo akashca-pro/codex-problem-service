@@ -107,6 +107,7 @@ export class SubmissionService implements ISubmissionService {
         }
         let filter: Record<string, any> = {};
         filter.problemId = problem._id;
+        filter.status = { $nin: ['pending'] };
         filter.userId = request.userId;
         if(request.nextCursor){
             filter.createdAt = { $lt: new Date(request.nextCursor) }

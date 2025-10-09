@@ -30,7 +30,7 @@ export const startGrpcServer = () => {
     )
 
     server.bindAsync(
-        config.GRPC_SERVER_URL,
+        config.GRPC_PROBLEM_SERVICE_SERVER_URL,
         ServerCredentials.createInsecure(),
         (err,port) => {
             if(err){

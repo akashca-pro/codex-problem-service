@@ -80,45 +80,44 @@ export class SubmissionMapper {
         }
     }
 
-static toListProblemSpecificSubmissions(
-    body: LeanDocument<ISubmission>[],
-    nextCursor: string,
-    hasMore: boolean
-): IListProblemSpecicSubmissionsDTO {
-    return {
-        submissions: body.map((sub) => {
-            const stats = sub.executionResult?.stats ?? {
-                totalTestCase: 0,
-                passedTestCase: 0,
-                failedTestCase: 0,
-                executionTimeMs: 0,
-                memoryMB: 0,
-                stdout: '',
-            };
+    static toListProblemSpecificSubmissions(
+        body: LeanDocument<ISubmission>[],
+        nextCursor: string,
+        hasMore: boolean
+    ): IListProblemSpecicSubmissionsDTO {
+        return {
+            submissions: body.map((sub) => {
+                const rawStats: Partial<IExecutionResult['stats']> = sub.executionResult?.stats ?? {};
+                const stats: IExecutionResult['stats'] = {
+                    totalTestCase: rawStats.totalTestCase ?? 0,
+                    passedTestCase: rawStats.passedTestCase ?? 0,
+                    failedTestCase: rawStats.failedTestCase ?? 0,
+                    executionTimeMs: rawStats.executionTimeMs ?? 0,
+                    memoryMB: rawStats.memoryMB ?? 0,
+                };
 
-            const failedTestCase = sub.executionResult?.failedTestCase ?? {
-                index: 0,
-                input: '',
-                output: '',
-                expectedOutput: '',
-            };
+                const rawFailed: Partial<IExecutionResult['failedTestCase']> = sub.executionResult?.failedTestCase ?? {};
+                const failedTestCase: IExecutionResult['failedTestCase'] = {
+                    index: rawFailed.index ?? 0,
+                    input: rawFailed.input ?? '',
+                    output: rawFailed.output ?? '',
+                    expectedOutput: rawFailed.expectedOutput ?? '',
+                };
 
-            return {
-                Id: sub._id,
-                status: sub.status,
-                language: SubmissionMapper._mapServiceLanguageEnum(sub.language),
-                executionResult: {
-                    stats,
-                    failedTestCase,
-                },
-            };
-        }),
-        nextCursor,
-        hasMore,
-    };
-}
-
-
+                return {
+                    Id: sub._id,
+                    status: sub.status,
+                    language: SubmissionMapper._mapServiceLanguageEnum(sub.language),
+                    executionResult: {
+                        stats,
+                        failedTestCase,
+                    },
+                };
+            }),
+            nextCursor,
+            hasMore,
+        };
+    }
 
     static _mapGrpcDifficultyEnum(difficulty : GrpcDifficultyEnum) : Difficulty {
         if (difficulty === 1) {

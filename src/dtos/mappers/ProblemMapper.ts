@@ -3,13 +3,12 @@ import { TESTCASE_TYPE, type TestcaseType } from "@/const/TestcaseType.const";
 import { Language } from "@/enums/language.enum";
 import { ICreateProblemRequestDTO } from "../problem/CreateProblemRequestDTO";
 import { IListProblemsRequestDTO } from "../problem/listProblemsRequestDTO";
-import { IExample, IProblem, ISolutionCode, IStarterCode, ITemplateCode, ITestCase, ITestCaseCollection } from "@/infra/db/interface/problem.interface";
+import { IExample, IProblem, IStarterCode, ITemplateCode, ITestCase, ITestCaseCollection } from "@/infra/db/interface/problem.interface";
 import { IUpdateBasicProblemRequestDTO } from "../problem/updateProblemRequestDTO";
 import { 
     Example as IGrpcExample,
     StarterCode as IGrpcStarterCode, 
     TestCase as IGrpcTestCase,
-    SolutionCode as IGrpcSolutionCode,
     TemplateCode as IGrpcTemplateCode,
     TestCaseCollectionType as GrpcTestCaseCollectionTypeEnum, 
     Difficulty as GrpcDifficultyEnum,
@@ -25,12 +24,8 @@ import {
     AddTestCaseRequest,
     BulkUploadTestCasesRequest,
     RemoveTestCaseRequest,
-    AddSolutionCodeRequest,
-    UpdateSolutionCodeRequest,
-    RemoveSolutionCodeRequest
 } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { IAddTestCaseRequestDTO, IBulkUploadTestCaseRequestDTO, IRemoveTestCaseRequestDTO } from "../problem/testCaseRequestDTOs";
-import { IAddSolutionCodeRequestDTO, IRemoveSolutionCodeRequestDTO, IUpdateSolutionCodeRequestDTO } from "../problem/solutionCodeRequestDTOs";
 import { IGetProblemRequestDTO } from "../problem/getProblemRequestDTO";
 import { LeanDocument } from "mongoose";
 import { IUpdateTemplateCodeRequestDTO } from "../problem/templateCodeRequest.dto";
@@ -128,41 +123,6 @@ export class ProblemMapper {
         }
     }
 
-    static toAddSolutionCodeService(
-        body : AddSolutionCodeRequest 
-    ) : IAddSolutionCodeRequestDTO {
-        if(!body.solutionCode) throw new Error("No Solution code found in IAddSolutionCodeInputDTO");
-        return {
-            _id : body.Id,
-            solutionCode : ProblemMapper._mapGrpcSolutionCode(body.solutionCode)
-        }
-    }
-
-    static toUpdateSolutionCodeService(
-        body : UpdateSolutionCodeRequest
-    ) : IUpdateSolutionCodeRequestDTO {
-        if(!body.solutionCode) throw new Error("No Solution code found in IUpdateSolutionCodeInputDTO");
-        const language = body.solutionCode.language 
-            ? ProblemMapper._mapGrpcLanguageEnum(body.solutionCode.language)
-            : undefined;
-        return {
-            _id : body.Id,
-            solutionCodeId : body.solutionCodeId,
-            solutionCode : {
-                code : body.solutionCode.code,
-                executionTime : body.solutionCode.executionTime,
-                language,
-                memoryTaken : body.solutionCode.memoryTaken
-            }
-        }
-    }
-
-    static toRemoveSolutionCodeService(
-        body : RemoveSolutionCodeRequest 
-    ) : IRemoveSolutionCodeRequestDTO {
-        return { _id : body.Id, solutionCodeId : body.solutionCodeId }
-    }
-
     static toUpdateTemplateCodeService(
         body : UpdateTemplateCodeRequest
     ) : IUpdateTemplateCodeRequestDTO {
@@ -199,7 +159,6 @@ export class ProblemMapper {
             },
             examples: body.examples?.map(ProblemMapper._mapServiceExample) ?? [],
             active: body.active ?? false,
-            solutionCodes: body.solutionCodes?.map(ProblemMapper._mapServiceSolutionCode) ?? [],
             updatedAt: body.updatedAt instanceof Date ? body.updatedAt.toISOString() : body.updatedAt,
             createdAt: body.createdAt instanceof Date ? body.createdAt.toISOString() : body.createdAt
         };
@@ -272,26 +231,6 @@ export class ProblemMapper {
 
     static _mapServiceTestCase(t : ITestCase) : IGrpcTestCase {
         return { Id : t._id!, input : t.input, output : t.output }
-    }
-
-    static _mapGrpcSolutionCode(s : IGrpcSolutionCode ) : ISolutionCode {
-        return {
-            _id : s.Id || undefined,
-            code : s.code,
-            language : ProblemMapper._mapGrpcLanguageEnum(s.language),
-            executionTime : s.executionTime,
-            memoryTaken : s.memoryTaken
-        }
-    }
-
-    static _mapServiceSolutionCode(s : ISolutionCode) : IGrpcSolutionCode {
-        return {
-            Id : s._id!,
-            code : s.code,
-            executionTime : s.executionTime ?? 0,
-            memoryTaken : s.memoryTaken ?? 0,
-            language : s.language ? ProblemMapper._mapServiceLanguageEnum(s.language) : 1
-        }
     }
 
     static _mapGrpcDifficultyEnum(difficulty : GrpcDifficultyEnum) : Difficulty {
