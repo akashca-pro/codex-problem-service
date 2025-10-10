@@ -2,12 +2,12 @@ import { ProblemModel } from "../db/models/problem.model";
 import { IProblem, ITemplateCode, ITestCase } from "../db/interface/problem.interface";
 import { BaseRepository } from "./base.repository";
 import { IProblemRepository } from "./interfaces/problem.repository.interface";
-import { type TestcaseType } from "@/const/TestcaseType.const"; 
+import { type TestcaseType } from "@/const/TestcaseType.const";
+import logger from '@/utils/pinoLogger'; // Import the logger
 
 /**
  * This class implements the problem repository.
- * 
- * @class
+ * * @class
  * @extends {BaseRepository}
  * @implements {IProblemRepository}
  */
@@ -20,7 +20,18 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
     async findByTitle(
         title: string
     ): Promise<IProblem | null> {
-        return await this._model.findOne({ title })
+        const startTime = Date.now();
+        const operation = 'findByTitle';
+        try {
+            logger.debug(`[REPO] Executing ${operation}`, { title });
+            const result = await this._model.findOne({ title })
+            const found = !!result;
+            logger.info(`[REPO] ${operation} successful`, { found, title, duration: Date.now() - startTime });
+            return result;
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, title, duration: Date.now() - startTime });
+            throw error;
+        }
     }
 
     async addTestCase(
@@ -28,7 +39,16 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         testCaseCollectionType: TestcaseType, 
         testCase: ITestCase
     ): Promise<void> {
-        await this.update( problemId, { $push : { [`testcaseCollection.${testCaseCollectionType}`] : testCase } } );
+        const startTime = Date.now();
+        const operation = 'addTestCase';
+        try {
+            logger.debug(`[REPO] Executing ${operation}`, { problemId, collectionType: testCaseCollectionType });
+            await this.update( problemId, { $push : { [`testcaseCollection.${testCaseCollectionType}`] : testCase } } );
+            logger.info(`[REPO] ${operation} successful`, { problemId, collectionType: testCaseCollectionType, duration: Date.now() - startTime });
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, problemId, collectionType: testCaseCollectionType, duration: Date.now() - startTime });
+            throw error;
+        }
     }
 
     async removeTestCase(
@@ -36,12 +56,22 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         testCaseId: string, 
         testCaseCollectionType: TestcaseType
     ): Promise<boolean> {
-        const result = await this._model.updateOne({ _id : problemId }, {
-            $pull : {
-                [`testcaseCollection.${testCaseCollectionType}`]: { _id: testCaseId }
-            }
-        })
-        return result.modifiedCount > 0
+        const startTime = Date.now();
+        const operation = 'removeTestCase';
+        try {
+            logger.debug(`[REPO] Executing ${operation}`, { problemId, testCaseId, collectionType: testCaseCollectionType });
+            const result = await this._model.updateOne({ _id : problemId }, {
+                $pull : {
+                    [`testcaseCollection.${testCaseCollectionType}`]: { _id: testCaseId }
+                }
+            })
+            const modified = result.modifiedCount > 0
+            logger.info(`[REPO] ${operation} successful`, { problemId, testCaseId, modified, duration: Date.now() - startTime });
+            return modified;
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, problemId, testCaseId, duration: Date.now() - startTime });
+            throw error;
+        }
     }
 
     async bulkUploadTestCase(
@@ -49,13 +79,22 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         testCaseCollectionType: TestcaseType,
         testCases : ITestCase[]
     ): Promise<void> {
-        await this.update(problemId, {
-            $push: {
-                [`testcaseCollection.${testCaseCollectionType}`]: {
-                    $each: testCases,
+        const startTime = Date.now();
+        const operation = 'bulkUploadTestCase';
+        try {
+            logger.debug(`[REPO] Executing ${operation}`, { problemId, collectionType: testCaseCollectionType, count: testCases.length });
+            await this.update(problemId, {
+                $push: {
+                    [`testcaseCollection.${testCaseCollectionType}`]: {
+                        $each: testCases,
+                    },
                 },
-            },
-        });
+            });
+            logger.info(`[REPO] ${operation} successful`, { problemId, count: testCases.length, duration: Date.now() - startTime });
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, problemId, count: testCases.length, duration: Date.now() - startTime });
+            throw error;
+        }
     }
 
     async updateTemplateCode(
@@ -63,13 +102,25 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
         templateCodeId : string,
         updatedTemplateCode : Partial<ITemplateCode>
     ) : Promise<void> {
-        const set: Record<string, unknown> = {};
-        if(updatedTemplateCode.language !== undefined) set["templateCodes.$.language"] = updatedTemplateCode.language;
-        if(updatedTemplateCode.submitWrapperCode !== undefined) set["templateCodes.$.submitWrapperCode"] = updatedTemplateCode.submitWrapperCode;
-        if(updatedTemplateCode.runWrapperCode !== undefined) set["templateCodes.$.runWrapperCode"] = updatedTemplateCode.runWrapperCode;
-        await this._model.updateOne(
-            { _id : problemId, "templateCodes._id" : templateCodeId },
-            { $set : set }
-        );
+        const startTime = Date.now();
+        const operation = 'updateTemplateCode';
+        try {
+            logger.debug(`[REPO] Executing ${operation}`, { problemId, templateCodeId, updatedKeys: Object.keys(updatedTemplateCode) });
+            const set: Record<string, unknown> = {};
+            if(updatedTemplateCode.language !== undefined) set["templateCodes.$.language"] = updatedTemplateCode.language;
+            if(updatedTemplateCode.submitWrapperCode !== undefined) set["templateCodes.$.submitWrapperCode"] = updatedTemplateCode.submitWrapperCode;
+            if(updatedTemplateCode.runWrapperCode !== undefined) set["templateCodes.$.runWrapperCode"] = updatedTemplateCode.runWrapperCode;
+            
+            const result = await this._model.updateOne(
+                { _id : problemId, "templateCodes._id" : templateCodeId },
+                { $set : set }
+            );
+
+            const modified = result.modifiedCount > 0;
+            logger.info(`[REPO] ${operation} successful`, { problemId, templateCodeId, modified, duration: Date.now() - startTime });
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, problemId, templateCodeId, duration: Date.now() - startTime });
+            throw error;
+        }
     }
 }

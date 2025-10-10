@@ -3,7 +3,7 @@ import TYPES from "@/config/inversify/types";
 import { Server, ServerCredentials } from "@grpc/grpc-js";
 import { ProblemServiceService, SubmissionServiceService } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { config } from "@/config";
-import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
+import logger from '@/utils/pinoLogger';
 import { wrapAll } from "@/utils/metricsMiddleware";
 
 import { ProblemHandler } from "./handlers/problem.handler";

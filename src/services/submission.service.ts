@@ -9,11 +9,11 @@ import { CreateSubmissionRequest, GetSubmissionsRequest, ListProblemSpecificSubm
 import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
 import { PROBLEM_ERROR_MESSAGES, SUBMISSION_ERROR_MESSAGES } from "@/const/ErrorType.const"
 import { SubmissionMapper } from "@/dtos/mappers/SubmissionMapper";
+import logger from '@/utils/pinoLogger'; // Import the logger
 
 /**
  * Class representing the service for managing submissions.
- * 
- * @class
+ * * @class
  */
 @injectable()
 export class SubmissionService implements ISubmissionService {
@@ -23,8 +23,7 @@ export class SubmissionService implements ISubmissionService {
 
     /**
      * Creates an instance of SubmissionService.
-     * 
-     * @param submissionRepo - The submission repository instance.
+     * * @param submissionRepo - The submission repository instance.
      * @constructor
      */
     constructor(
@@ -36,17 +35,29 @@ export class SubmissionService implements ISubmissionService {
     }
 
     async createSubmission(data: CreateSubmissionRequest): Promise<ResponseDTO> {
+        const method = 'createSubmission';
+        logger.info(`[SERVICE] ${method} started`, { userId: data.userId, problemId: data.problemId, language: data.language });
+        
+        // Check for existing submission by user for this problem
         const submissionExist = await this.#_submissionRepo.findOne({
             userId : data.userId, problemId : data.problemId
         })
+        
         const dto = SubmissionMapper.toCreateSubmissionService(data);
         const submissionData = {
             ...dto,
+            // Determine if this is the first submission for the user/problem combination
             isFirst : submissionExist ? false : true,
             problemId : new mongoose.Types.ObjectId(data.problemId),
         }
+        
+        logger.debug(`[SERVICE] ${method}: isFirst=${submissionData.isFirst}`, { userId: data.userId, problemId: data.problemId });
+
         const submission = await this.#_submissionRepo.create(submissionData)
         const outDTO = SubmissionMapper.toOutDTO(submission);
+        
+        logger.info(`[SERVICE] ${method} completed successfully`, { submissionId: submission._id.toString(), isFirst: submissionData.isFirst });
+        
         return {
             data : outDTO,
             success : true
@@ -54,17 +65,26 @@ export class SubmissionService implements ISubmissionService {
     }
 
     async getSubmission(filter: GetSubmissionsRequest): Promise<PaginationDTO> {
+        const method = 'getSubmission (Paginated List)';
+        logger.info(`[SERVICE] ${method} started`, { page: filter.page, limit: filter.limit, userId: filter.userId, problemId: filter.problemId });
+
         const updatingfilter : Record<string, any> = {};
         if(filter.problemId) updatingfilter.problemId = filter.problemId;
         if(filter.battleId) updatingfilter.battleId = filter.battleId;
         if(filter.userId) updatingfilter.userId = filter.userId;
+        
         const skip = (filter.page - 1) * filter.limit;
+        
         const [totalItems,submissions] = await Promise.all([
             await this.#_submissionRepo.countDocuments(updatingfilter),
             await this.#_submissionRepo.findPaginated(updatingfilter,skip,filter.limit)
         ]);
+        
         const totalPages = Math.ceil(totalItems/ filter.limit);
         const outDTO = submissions.map(SubmissionMapper.toOutDTO);
+        
+        logger.info(`[SERVICE] ${method} completed successfully`, { totalItems, currentPage: filter.page });
+
         return {
             body : outDTO,
             currentPage : filter.page,
@@ -74,19 +94,29 @@ export class SubmissionService implements ISubmissionService {
     }
 
     async updateSubmission(request : UpdateSubmissionRequest): Promise<ResponseDTO> {
+        const method = 'updateSubmission';
+        logger.info(`[SERVICE] ${method} started`, { submissionId: request.Id, status: request.status });
+
         const updatedData = SubmissionMapper.toUpdateSubmissionService(request);
-        const submissionExist = await this.#_submissionRepo.findById(request.Id);
+        const submissionId = request.Id;
+        
+        const submissionExist = await this.#_submissionRepo.findById(submissionId);
         if(!submissionExist){
+            logger.warn(`[SERVICE] ${method} failed: Submission not found`, { submissionId });
             return {
                 data : null,
                 success : false,
                 errorMessage : SUBMISSION_ERROR_MESSAGES.SUBMISSION_NOT_FOUND
             }
         }
-        const updatedSubmission = await this.#_submissionRepo.update(request.Id, {
+        
+        const updatedSubmission = await this.#_submissionRepo.update(submissionId, {
             executionResult : updatedData.executionResult,
             status : updatedData.status
         });
+        
+        logger.info(`[SERVICE] ${method} completed successfully`, { submissionId, newStatus: request.status });
+
         return {
             data : updatedSubmission,
             success : true
@@ -96,22 +126,30 @@ export class SubmissionService implements ISubmissionService {
     async listSubmissionByProblem(
         request: ListProblemSpecificSubmissionRequest
     ): Promise<ResponseDTO> {
+        const method = 'listSubmissionByProblem';
+        logger.info(`[SERVICE] ${method} started`, { problemId: request.problemId, userId: request.userId, cursor: request.nextCursor, limit: request.limit });
 
         const problem = await this.#_problemRepo.findByIdLean(request.problemId);
         if(!problem){
+            logger.warn(`[SERVICE] ${method} failed: Problem not found`, { problemId: request.problemId });
             return {
                 data : null,
                 success : false,
                 errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
             }
         }
+        
         let filter: Record<string, any> = {};
         filter.problemId = problem._id;
+        // Exclude 'pending' status submissions
         filter.status = { $nin: ['pending'] };
         filter.userId = request.userId;
+        
         if(request.nextCursor){
             filter.createdAt = { $lt: new Date(request.nextCursor) }
+            logger.debug(`[SERVICE] ${method}: Applied cursor filter`, { createdAtLt: request.nextCursor });
         }
+        
         const select = ['status','language','executionResult','problemId','userId','createdAt']
         const submissions = await this.#_submissionRepo.findPaginatedLean(
             filter,
@@ -120,16 +158,21 @@ export class SubmissionService implements ISubmissionService {
             select,
             { createdAt: -1 }
         );
+        
         let nextCursor: string | null = null;
         if (submissions.length === request.limit) {
             nextCursor = submissions[submissions.length - 1].createdAt.toISOString();
         }
+        
         const hasMore = submissions.length === request.limit
         const outDTO = SubmissionMapper.toListProblemSpecificSubmissions(
             submissions,
             nextCursor ?? '',
             hasMore
         )
+        
+        logger.info(`[SERVICE] ${method} completed successfully`, { count: submissions.length, hasMore, nextCursor });
+
         return {
             data : outDTO,
             success : true,

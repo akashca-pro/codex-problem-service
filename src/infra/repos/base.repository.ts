@@ -1,5 +1,6 @@
 import { Model, Document, FilterQuery, UpdateQuery, LeanDocument } from 'mongoose';
 import { IProblem } from '../db/interface/problem.interface';
+import logger from '@/utils/pinoLogger'; // Import the logger
 
 /**
  * Abstract base class for a generic repository.
@@ -21,7 +22,17 @@ export abstract class BaseRepository <T extends Document> {
      * @returns The created document.
      */
     async create(data : Partial<T>) : Promise<T> {
-        return this._model.create(data);
+        const startTime = Date.now();
+        const operation = `create:${this._model.modelName}`;
+        try {
+            logger.debug(`[REPO] Executing ${operation}`);
+            const result = await this._model.create(data);
+            logger.info(`[REPO] ${operation} successful`, { id: result._id.toString(), duration: Date.now() - startTime });
+            return result;
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, duration: Date.now() - startTime });
+            throw error;
+        }
     }
 
     /**
@@ -30,7 +41,18 @@ export abstract class BaseRepository <T extends Document> {
      * @returns The found document or null.
      */
     async findById(documentId : string) : Promise<T | null> {
-        return this._model.findById(documentId)
+        const startTime = Date.now();
+        const operation = `findById:${this._model.modelName}`;
+        try {
+            logger.debug(`[REPO] Executing ${operation}`, { documentId });
+            const result = await this._model.findById(documentId)
+            const found = !!result;
+            logger.info(`[REPO] ${operation} successful`, { found, documentId, duration: Date.now() - startTime });
+            return result;
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, documentId, duration: Date.now() - startTime });
+            throw error;
+        }
     }
 
     /**
@@ -48,7 +70,18 @@ export abstract class BaseRepository <T extends Document> {
      * @returns The found document or null.
      */
     async findOne(filter : FilterQuery<T>) : Promise<T | null> {
-        return this._model.findOne(filter);
+        const startTime = Date.now();
+        const operation = `findOne:${this._model.modelName}`;
+        try {
+            logger.debug(`[REPO] Executing ${operation}`, { filter });
+            const result = await this._model.findOne(filter);
+            const found = !!result;
+            logger.info(`[REPO] ${operation} successful`, { found, duration: Date.now() - startTime });
+            return result;
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, filter, duration: Date.now() - startTime });
+            throw error;
+        }
     }
 
     /**
@@ -66,7 +99,17 @@ export abstract class BaseRepository <T extends Document> {
      * @returns An array of found documents.
      */
     async find(filter : FilterQuery<T>) : Promise<T[]> {
-        return this._model.find(filter)
+        const startTime = Date.now();
+        const operation = `find:${this._model.modelName}`;
+        try {
+            logger.debug(`[REPO] Executing ${operation}`, { filter });
+            const result = await this._model.find(filter)
+            logger.info(`[REPO] ${operation} successful`, { count: result.length, duration: Date.now() - startTime });
+            return result;
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, filter, duration: Date.now() - startTime });
+            throw error;
+        }
     }
 
     /**
@@ -75,7 +118,17 @@ export abstract class BaseRepository <T extends Document> {
      * @returns An array of lean documents.
      */
     async findLean(filter: FilterQuery<T>): Promise<LeanDocument<T>[]> {
-        return this._model.find(filter).lean();
+        const startTime = Date.now();
+        const operation = `findLean:${this._model.modelName}`;
+        try {
+            logger.debug(`[REPO] Executing ${operation}`, { filter });
+            const result = await this._model.find(filter).lean();
+            logger.info(`[REPO] ${operation} successful`, { count: result.length, duration: Date.now() - startTime });
+            return result;
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, filter, duration: Date.now() - startTime });
+            throw error;
+        }
     }
 
     /**
@@ -93,7 +146,17 @@ export abstract class BaseRepository <T extends Document> {
         limit : number,
         sort : Record<string, 1 | -1 > = { createdAt : -1 }
     ) : Promise<T[]> {
-        return this._model.find(filter).skip(skip).limit(limit).sort(sort).exec();
+        const startTime = Date.now();
+        const operation = `findPaginated:${this._model.modelName}`;
+        try {
+            logger.debug(`[REPO] Executing ${operation}`, { skip, limit, filter, sort });
+            const result = await this._model.find(filter).skip(skip).limit(limit).sort(sort).exec();
+            logger.info(`[REPO] ${operation} successful`, { count: result.length, duration: Date.now() - startTime });
+            return result;
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, filter, duration: Date.now() - startTime });
+            throw error;
+        }
     }
 
     /**
@@ -111,12 +174,22 @@ export abstract class BaseRepository <T extends Document> {
         select? : string[],
         sort: Record<string, 1 | -1> = { createdAt: -1 },
     ): Promise<LeanDocument<T>[]> {
-        return this._model
-        .find(filter)
-        .select(select?.join(" "))
-        .skip(skip)
-        .limit(limit)
-        .sort(sort).lean();
+        const startTime = Date.now();
+        const operation = `findPaginatedLean:${this._model.modelName}`;
+        try {
+            logger.debug(`[REPO] Executing ${operation}`, { skip, limit, filter, sort, select });
+            const result = await this._model
+            .find(filter)
+            .select(select?.join(" "))
+            .skip(skip)
+            .limit(limit)
+            .sort(sort).lean();
+            logger.info(`[REPO] ${operation} successful`, { count: result.length, duration: Date.now() - startTime });
+            return result;
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, filter, duration: Date.now() - startTime });
+            throw error;
+        }
     }
 
     /**
@@ -125,7 +198,20 @@ export abstract class BaseRepository <T extends Document> {
      * @param update - The update query.
      */
     async update(documentId : string, update : UpdateQuery<T>) : Promise<IProblem | null> {
-        return await this._model.findByIdAndUpdate(documentId, update, { new : true });
+        const startTime = Date.now();
+        const operation = `update:${this._model.modelName}`;
+        try {
+            logger.debug(`[REPO] Executing ${operation}`, { documentId, updateKeys: Object.keys(update) });
+            const result = await this._model.findByIdAndUpdate(documentId, update, { new : true });
+            const updated = !!result;
+            logger.info(`[REPO] ${operation} successful`, { updated, documentId, duration: Date.now() - startTime });
+            // Note: The return type here is specific to IProblem, which is unusual for a generic base repo.
+            // Assuming this is intended for the consumer of this code.
+            return result as unknown as IProblem | null; 
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, documentId, duration: Date.now() - startTime });
+            throw error;
+        }
     }
 
     /**
@@ -141,26 +227,45 @@ export abstract class BaseRepository <T extends Document> {
         itemId : string,
         updatedFields : Record<string,any>
     ) : Promise<void> {
+        const startTime = Date.now();
+        const operation = `updateEmbeddedArrayItems:${this._model.modelName}`;
+        try {
+            logger.debug(`[REPO] Executing ${operation}`, { documentId, arrayName, itemId, updatedFieldKeys: Object.keys(updatedFields) });
+            const updateQuery : Record<string,any> = {};
 
-        const updateQuery : Record<string,any> = {};
+            for(const [key, value] of Object.entries(updatedFields)){
+                updateQuery[`${arrayName}.$.${key}`] = value;
+            }
 
-        for(const [key, value] of Object.entries(updatedFields)){
-            updateQuery[`${arrayName}.$.${key}`] = value;
+            const result = await this._model.updateOne(
+                {_id : documentId, [`${arrayName}._id`] : itemId },
+                { $set : updateQuery }
+            )
+            const matched = result.matchedCount > 0;
+            const modified = result.modifiedCount > 0;
+            logger.info(`[REPO] ${operation} successful`, { matched, modified, documentId, itemId, duration: Date.now() - startTime });
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, documentId, arrayName, itemId, duration: Date.now() - startTime });
+            throw error;
         }
-
-       await this._model.updateOne(
-        {_id : documentId, [`${arrayName}._id`] : itemId },
-        { $set : updateQuery }
-       )
     }
 
     /**
-     * 
-     * @param filter - The filter query.
+     * * @param filter - The filter query.
      * @returns The count of documents.
      */
     async countDocuments(filter : FilterQuery<T>) : Promise<number> {
-        return await this._model.countDocuments(filter);
+        const startTime = Date.now();
+        const operation = `countDocuments:${this._model.modelName}`;
+        try {
+            logger.debug(`[REPO] Executing ${operation}`, { filter });
+            const count = await this._model.countDocuments(filter);
+            logger.info(`[REPO] ${operation} successful`, { count, duration: Date.now() - startTime });
+            return count;
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, filter, duration: Date.now() - startTime });
+            throw error;
+        }
     }
 
     /**
@@ -169,7 +274,17 @@ export abstract class BaseRepository <T extends Document> {
      * @returns The deleted document or null.
      */
     async delete(documentId: string): Promise<T | null> {
-        return this._model.findByIdAndDelete(documentId).exec();
+        const startTime = Date.now();
+        const operation = `delete:${this._model.modelName}`;
+        try {
+            logger.warn(`[REPO] Executing ${operation} (HARD DELETE)`, { documentId });
+            const result = await this._model.findByIdAndDelete(documentId).exec();
+            const deleted = !!result;
+            logger.info(`[REPO] ${operation} successful`, { deleted, documentId, duration: Date.now() - startTime });
+            return result;
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, documentId, duration: Date.now() - startTime });
+            throw error;
+        }
     }
-
 }

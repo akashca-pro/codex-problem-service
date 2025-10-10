@@ -1,5 +1,5 @@
 import { SYSTEM_ERROR_MESSAGES } from "@/const/ErrorType.const"
-import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
+import logger from '@/utils/pinoLogger';
 import { sendUnaryData, ServerUnaryCall } from '@grpc/grpc-js';
 import { Status } from '@grpc/grpc-js/build/src/constants';
 

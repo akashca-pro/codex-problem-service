@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { register } from './metrics';
-import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
+import logger from '@/utils/pinoLogger';
 
 export const startMetricsServer = (port : number)  => {
 
