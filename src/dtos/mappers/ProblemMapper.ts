@@ -3,7 +3,7 @@ import { TESTCASE_TYPE, type TestcaseType } from "@/const/TestcaseType.const";
 import { Language } from "@/enums/language.enum";
 import { ICreateProblemRequestDTO } from "../problem/CreateProblemRequestDTO";
 import { IListProblemsRequestDTO } from "../problem/listProblemsRequestDTO";
-import { IExample, IProblem, IStarterCode, ITemplateCode, ITestCase, ITestCaseCollection } from "@/infra/db/interface/problem.interface";
+import { IExample, IProblem, IStarterCode, ITemplateCode, ITestCase, ITestCaseCollection } from "@/db/interface/problem.interface";
 import { IUpdateBasicProblemRequestDTO } from "../problem/updateProblemRequestDTO";
 import { 
     Example as IGrpcExample,

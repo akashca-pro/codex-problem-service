@@ -2,7 +2,6 @@ import mongoose, {Schema} from "mongoose";
 import { IExample, IProblem, IStarterCode, ITestCase, ITestCaseCollection, ITemplateCode } from "../interface/problem.interface";
 import { Language } from "@/enums/language.enum";
 import { DIFFICULTY } from "@/const/Difficulty.const";
-
 const StarterCodeSchema = new Schema<IStarterCode>(
     {
         language : { type : String, required : true , enum : Object.values(Language) },

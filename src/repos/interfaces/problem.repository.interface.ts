@@ -1,4 +1,4 @@
-import { IProblem, ITemplateCode, ITestCase } from "@/infra/db/interface/problem.interface";
+import { IProblem, ITemplateCode, ITestCase } from "@/db/interface/problem.interface";
 import { BaseRepository } from "../base.repository";
 import { FilterQuery } from "mongoose";
 import { type TestcaseType } from "@/const/TestcaseType.const"; 

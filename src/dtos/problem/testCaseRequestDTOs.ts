@@ -1,5 +1,5 @@
 import { type TestcaseType } from "@/const/TestcaseType.const";
-import { ITestCase } from "@/infra/db/interface/problem.interface";
+import { ITestCase } from "@/db/interface/problem.interface";
 
 /**
  * DTO (Data Tranfer Object) representing the data to add a new test case.

@@ -1,5 +1,5 @@
-import { SubmissionModel } from "../db/models/submission.model";
-import { IExecutionResult, ISubmission } from "../db/interface/submission.interface";
+import { SubmissionModel } from "@/db/models/submission.model";
+import { IExecutionResult, ISubmission } from "@/db/interface/submission.interface";
 import { BaseRepository } from "./base.repository";
 import { ISubmissionRepository } from "./interfaces/submission.repository.interface";
 import logger from '@/utils/pinoLogger'; // Import the logger

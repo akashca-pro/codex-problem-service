@@ -2,14 +2,17 @@ import TYPES from "@/config/inversify/types";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { inject, injectable } from "inversify";
 import { ISubmissionService } from "./interfaces/submission.service.interface";
-import { ISubmissionRepository } from "@/infra/repos/interfaces/submission.repository.interface";
+import { ISubmissionRepository } from "@/repos/interfaces/submission.repository.interface";
 import mongoose from "mongoose";
 import { PaginationDTO } from "@/dtos/PaginationDTO";
 import { CreateSubmissionRequest, GetSubmissionsRequest, ListProblemSpecificSubmissionRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
-import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
+import { IProblemRepository } from "@/repos/interfaces/problem.repository.interface";
 import { PROBLEM_ERROR_MESSAGES, SUBMISSION_ERROR_MESSAGES } from "@/const/ErrorType.const"
 import { SubmissionMapper } from "@/dtos/mappers/SubmissionMapper";
-import logger from '@/utils/pinoLogger'; // Import the logger
+import logger from '@/utils/pinoLogger';
+import { IFirstSubmissionRepository } from "@/repos/interfaces/firstSubmission.repository.interface";
+import { ILeaderboard } from "@/libs/leaderboard/leaderboard.interface";
+import { SCORE_MAP } from "@/const/ScoreMap.const";
 
 /**
  * Class representing the service for managing submissions.
@@ -20,18 +23,19 @@ export class SubmissionService implements ISubmissionService {
 
     #_submissionRepo : ISubmissionRepository;
     #_problemRepo : IProblemRepository;
+    #_firstSubmissionRepo : IFirstSubmissionRepository;
+    #_leaderboard : ILeaderboard;
 
-    /**
-     * Creates an instance of SubmissionService.
-     * * @param submissionRepo - The submission repository instance.
-     * @constructor
-     */
     constructor(
         @inject(TYPES.ISubmissionRepository) submissionRepo : ISubmissionRepository,
-        @inject(TYPES.IProblemRepository) problemRepo : IProblemRepository
+        @inject(TYPES.IProblemRepository) problemRepo : IProblemRepository,
+        @inject(TYPES.IFirstSubmissionRepository) firstSubmissionRepo : IFirstSubmissionRepository,
+        @inject(TYPES.ILeaderboard) leaderboard : ILeaderboard
     ){
         this.#_submissionRepo = submissionRepo;
-        this.#_problemRepo = problemRepo
+        this.#_problemRepo = problemRepo;
+        this.#_firstSubmissionRepo = firstSubmissionRepo;
+        this.#_leaderboard = leaderboard;
     }
 
     async createSubmission(data: CreateSubmissionRequest): Promise<ResponseDTO> {
@@ -46,7 +50,6 @@ export class SubmissionService implements ISubmissionService {
         const dto = SubmissionMapper.toCreateSubmissionService(data);
         const submissionData = {
             ...dto,
-            // Determine if this is the first submission for the user/problem combination
             isFirst : submissionExist ? false : true,
             problemId : new mongoose.Types.ObjectId(data.problemId),
         }
@@ -114,6 +117,36 @@ export class SubmissionService implements ISubmissionService {
             executionResult : updatedData.executionResult,
             status : updatedData.status
         });
+
+        if (updatedSubmission && updatedSubmission.status === 'accepted' && submissionExist.isFirst) {
+            
+            logger.info(`[SERVICE] ${method}: First accepted submission detected`, { submissionId, userId: updatedSubmission.userId });
+            const score = SCORE_MAP[updatedSubmission.difficulty];
+
+            if (score > 0) {
+                try {
+                    await Promise.all([
+                        this.#_firstSubmissionRepo.create(updatedSubmission),
+                        this.#_leaderboard.incrementScore(
+                            updatedSubmission.userId,
+                            updatedSubmission.country ?? '',
+                            score
+                        ),
+                        this.#_leaderboard.incrementProblemsSolved(updatedSubmission.userId)
+                    ])
+                    logger.info(`[SERVICE] ${method}: Leaderboard score incremented and problems solved updated`, { userId: updatedSubmission.userId, score });
+
+                } catch (leaderboardError) {
+                    logger.error(`[SERVICE] ${method}: Failed to update FirstSubmission or Leaderboard`, { 
+                        submissionId, 
+                        userId: updatedSubmission.userId, 
+                        error: leaderboardError 
+                    });
+                }
+            } else {
+                logger.warn(`[SERVICE] ${method}: No score found for difficulty ${updatedSubmission.difficulty}`, { submissionId });
+            }
+        }
         
         logger.info(`[SERVICE] ${method} completed successfully`, { submissionId, newStatus: request.status });
 
@@ -141,7 +174,6 @@ export class SubmissionService implements ISubmissionService {
         
         let filter: Record<string, any> = {};
         filter.problemId = problem._id;
-        // Exclude 'pending' status submissions
         filter.status = { $nin: ['pending'] };
         filter.userId = request.userId;
         
@@ -176,6 +208,47 @@ export class SubmissionService implements ISubmissionService {
         return {
             data : outDTO,
             success : true,
+        }
+    }
+
+    async listTopKGlobalLeaderboard(
+        k: number
+    ): Promise<ResponseDTO> {
+        const method = 'listTopKGlobalLeaderboard';
+        logger.info(`[SERVICE] ${method} started`, { k });
+        const globalLeaderboard = await this.#_leaderboard.getTopKGlobal(k);
+        logger.info(`[SERVICE] ${method} completed successfully`, { k });
+        return {
+            data : globalLeaderboard,
+            success : true
+        }
+    }
+
+    async listTopKCountryLeaderboard(
+        country: string, 
+        k: number
+    ): Promise<ResponseDTO> {
+        const method = 'listTopKCountryLeaderboard';
+        logger.info(`[SERVICE] ${method} started`, { country, k });
+        const countryLeaderboard = await this.#_leaderboard.getTopKEntity(country, k)
+
+        logger.info(`[SERVICE] ${method} completed successfully`, { country, k });
+        return {
+            data : countryLeaderboard,
+            success : true
+        }
+    }
+
+    async getLeaderboardDetailsForUser(
+        userId: string
+    ): Promise<ResponseDTO> {
+        const method = 'getLeaderboardDetails';
+        logger.info(`[SERVICE] ${method} started`, { userId });
+        const leaderboardDetails = await this.#_leaderboard.getUserLeaderboardData(userId);
+        logger.info(`[SERVICE] ${method} completed successfully`, { userId });
+        return {
+            data : leaderboardDetails,
+            success : true
         }
     }
 }

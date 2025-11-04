@@ -1,10 +1,9 @@
 import mongoose, { Schema } from "mongoose";
-import { IExecutionResult, IFailedTestCase, IStats, ISubmission } from "../interface/submission.interface";
+import { IExecutionResult, IFailedTestCase, IStats } from "../interface/submission.interface";
+import { IFirstSubmission } from "../interface/firstSubmission.interface";
 import { SUBMISSION_STATUS_TYPES } from "@/const/SubmissionStatus.const";
 import { Language } from "@/enums/language.enum";
 import { DIFFICULTY } from "@/const/Difficulty.const";
-
-
 
 const FailedTestCaseSchema = new Schema<IFailedTestCase>(
     {
@@ -35,7 +34,7 @@ const ExecutionSchema = new Schema<IExecutionResult>(
     {_id : false}
 )
 
-const SubmissionSchema = new Schema<ISubmission>(
+const FirstSubmissionSchema = new Schema<IFirstSubmission>(
     {
         problemId : { type : Schema.Types.ObjectId, ref : 'Problem', required : true },
         userId : { type : String, required : true },
@@ -53,11 +52,7 @@ const SubmissionSchema = new Schema<ISubmission>(
     { timestamps : true }
 )
 
-SubmissionSchema.index({ userId : 1 , createdAt : -1 });
-SubmissionSchema.index({ problemId : 1, createdAt : -1, userId : 1 });
-SubmissionSchema.index({ isFirst : 1 , country : 1 , score : -1 });
-SubmissionSchema.index({ problemId : 1, userId : 1 });
-SubmissionSchema.index({ battleId : 1, userId : 1 });
+FirstSubmissionSchema.index({ userId: 1, problemId: 1 }, { unique: true });
+FirstSubmissionSchema.index({ userId: 1, difficulty: 1 });
 
-
-export const SubmissionModel = mongoose.model<ISubmission>('Submission',SubmissionSchema);
+export const FirstSubmissionModel = mongoose.model<IFirstSubmission>('FirstSubmission', FirstSubmissionSchema);

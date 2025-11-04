@@ -10,7 +10,7 @@ import { ICreateSubmissionRequestDTO } from "../submission/CreateSubmissionReque
 import { type Difficulty, DIFFICULTY } from "@/const/Difficulty.const";
 import { Language } from "@/enums/language.enum";
 import { IUpdateSubmissionRequestDTO } from "../submission/UpdateSubmissionRequestDTO";
-import { IExecutionResult, IFailedTestCase, IStats, ISubmission } from "@/infra/db/interface/submission.interface";
+import { IExecutionResult, IFailedTestCase, IStats, ISubmission } from "@/db/interface/submission.interface";
 import { IGetSubmissionRequestDTO } from "../submission/getSubmissionRequestDTO";
 import { LeanDocument } from "mongoose";
 import { IListProblemSpecicSubmissionsDTO } from "../submission/listSubmissions.dto";

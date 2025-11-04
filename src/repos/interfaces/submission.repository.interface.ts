@@ -1,4 +1,4 @@
-import { IExecutionResult, ISubmission } from "@/infra/db/interface/submission.interface";
+import { IExecutionResult, ISubmission } from "@/db/interface/submission.interface";
 import { BaseRepository } from "../base.repository";
 
 /**

@@ -1,4 +1,4 @@
-import { ProblemModel } from '@/infra/db/models/problem.model';
+import { ProblemModel } from '@/db/models/problem.model';
 
 export async function addRunWrapperCodeToTemplateCodes() {
   const problems = await ProblemModel.find({ 'templateCodes': { $exists: true, $ne: [] } });

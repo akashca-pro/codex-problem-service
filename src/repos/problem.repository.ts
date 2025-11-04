@@ -1,5 +1,5 @@
-import { ProblemModel } from "../db/models/problem.model";
-import { IProblem, ITemplateCode, ITestCase } from "../db/interface/problem.interface";
+import { ProblemModel } from "@/db/models/problem.model";
+import { IProblem, ITemplateCode, ITestCase } from "@/db/interface/problem.interface";
 import { BaseRepository } from "./base.repository";
 import { IProblemRepository } from "./interfaces/problem.repository.interface";
 import { type TestcaseType } from "@/const/TestcaseType.const";

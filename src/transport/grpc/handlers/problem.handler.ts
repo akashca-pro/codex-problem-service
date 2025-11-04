@@ -16,18 +16,14 @@ import logger from '@/utils/pinoLogger'; // Import the logger
 
 /**
  * Class Responsible for handling problem-related gRPC requests.
- * * @class
+ * 
+ * @class
  */
 @injectable()
 export class ProblemHandler {
 
     #_problemService : IProblemService;
 
-    /**
-     * Creates an instance of ProblemHandler.
-     * * @param problemService - Instance of IProblemService
-     * @constructor
-     */
     constructor(
         @inject(TYPES.IProblemService) problemService : IProblemService
     ){

@@ -1,4 +1,4 @@
-import { ITemplateCode } from "@/infra/db/interface/problem.interface";
+import { ITemplateCode } from "@/db/interface/problem.interface";
 
 export interface IUpdateTemplateCodeRequestDTO {
     _id : string;

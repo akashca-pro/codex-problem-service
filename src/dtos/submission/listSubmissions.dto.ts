@@ -1,4 +1,4 @@
-import { IExecutionResult } from "@/infra/db/interface/submission.interface";
+import { IExecutionResult } from "@/db/interface/submission.interface";
 import { Language } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 
 interface Submission {

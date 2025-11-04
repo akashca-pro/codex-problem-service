@@ -1,5 +1,4 @@
 import { Model, Document, FilterQuery, UpdateQuery, LeanDocument } from 'mongoose';
-import { IProblem } from '../db/interface/problem.interface';
 import logger from '@/utils/pinoLogger'; // Import the logger
 
 /**
@@ -197,7 +196,7 @@ export abstract class BaseRepository <T extends Document> {
      * @param documentId - The ID of the document to update.
      * @param update - The update query.
      */
-    async update(documentId : string, update : UpdateQuery<T>) : Promise<IProblem | null> {
+    async update(documentId : string, update : UpdateQuery<T>) : Promise<T | null> {
         const startTime = Date.now();
         const operation = `update:${this._model.modelName}`;
         try {
@@ -205,9 +204,7 @@ export abstract class BaseRepository <T extends Document> {
             const result = await this._model.findByIdAndUpdate(documentId, update, { new : true });
             const updated = !!result;
             logger.info(`[REPO] ${operation} successful`, { updated, documentId, duration: Date.now() - startTime });
-            // Note: The return type here is specific to IProblem, which is unusual for a generic base repo.
-            // Assuming this is intended for the consumer of this code.
-            return result as unknown as IProblem | null; 
+            return result as unknown as T | null; 
         } catch (error) {
             logger.error(`[REPO] ${operation} failed`, { error, documentId, duration: Date.now() - startTime });
             throw error;

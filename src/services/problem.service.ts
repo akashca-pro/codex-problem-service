@@ -2,7 +2,7 @@ import { inject, injectable } from "inversify";
 import { IProblemService } from "./interfaces/problem.service.interface";
 import TYPES from "@/config/inversify/types";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
-import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
+import { IProblemRepository } from "@/repos/interfaces/problem.repository.interface";
 import { PROBLEM_ERROR_MESSAGES } from "@/const/ErrorType.const"
 import { extractDup, isDupKeyError } from "@/utils/mongoError";
 import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";

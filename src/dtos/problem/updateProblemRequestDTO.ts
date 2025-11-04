@@ -1,5 +1,5 @@
 import { type Difficulty } from "@/const/Difficulty.const";
-import { IExample, IStarterCode } from "@/infra/db/interface/problem.interface";
+import { IExample, IStarterCode } from "@/db/interface/problem.interface";
 
 
 export interface IUpdatedDataForBasicProblem {
