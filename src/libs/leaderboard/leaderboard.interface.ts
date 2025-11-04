@@ -19,10 +19,6 @@ export interface ILeaderboard {
      */
     incrementScore(userId: string, entity: string, scoreIncrement: number): Promise<void>;
 
-    /**
-     * 
-     * @param userId 
-     */
     incrementProblemsSolved(userId: string): Promise<void>;
 
     /**

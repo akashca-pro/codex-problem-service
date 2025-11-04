@@ -97,6 +97,7 @@ export class RedisLeaderboard implements ILeaderboard {
             multi.zrem(this.getEntityKey(entity), userId);
         }
         multi.hdel(this.getUsersHashKey(), userId);
+        multi.hdel(this.getProblemsSolvedHashKey(), userId);
         await multi.exec();
     }
 
