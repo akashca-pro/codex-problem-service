@@ -13,6 +13,9 @@ import logger from '@/utils/pinoLogger';
 import { IFirstSubmissionRepository } from "@/repos/interfaces/firstSubmission.repository.interface";
 import { ILeaderboard } from "@/libs/leaderboard/leaderboard.interface";
 import { SCORE_MAP } from "@/const/ScoreMap.const";
+import { IActivity } from "@/dtos/Activity.dto";
+import { format, subDays } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 
 /**
  * Class representing the service for managing submissions.
@@ -42,7 +45,6 @@ export class SubmissionService implements ISubmissionService {
         const method = 'createSubmission';
         logger.info(`[SERVICE] ${method} started`, { userId: data.userId, problemId: data.problemId, language: data.language });
         
-        // Check for existing submission by user for this problem
         const submissionExist = await this.#_submissionRepo.findOne({
             userId : data.userId, problemId : data.problemId
         })
@@ -250,5 +252,62 @@ export class SubmissionService implements ISubmissionService {
             data : leaderboardDetails,
             success : true
         }
+    }
+
+    async getDashboardStats(userId: string, userTimezone: string) {
+        const activity = await this.#_submissionRepo.getDailyActivity(userId, userTimezone);
+        const streak = this.calculateStreak(activity, userTimezone);
+        return {
+            success: true,
+            data: {
+                heatmap: activity,
+                currentStreak: streak
+            }
+        };
+    }
+
+    private calculateStreak(activity: IActivity[], userTimezone: string): number {
+        if (activity.length === 0) {
+            return 0;
+        }
+
+        // 1. Get "today" and "yesterday" in the user's timezone
+        const now = new Date();
+        const today = format(toZonedTime(now, userTimezone), 'yyyy-MM-dd');
+        const yesterday = format(subDays(toZonedTime(now, userTimezone), 1), 'yyyy-MM-dd');
+        
+        let streak = 0;
+        let expectedDate: string; // The date we expect to see next
+
+        // 2. Check if the most recent submission was today or yesterday
+        const mostRecentDate = activity[0].date;
+
+        if (mostRecentDate === today) {
+            streak = 1;
+            expectedDate = yesterday;
+        } else if (mostRecentDate === yesterday) {
+            streak = 1;
+            expectedDate = format(subDays(toZonedTime(now, userTimezone), 2), 'yyyy-MM-dd');
+        } else {
+            // Most recent submission was not today or yesterday, so streak is 0
+            return 0;
+        }
+
+        // 3. Walk backwards through the rest of the activity
+        // (Start from the *second* item, since we already processed the first)
+        for (let i = 1; i < activity.length; i++) {
+            const currentDate = activity[i].date;
+            
+            if (currentDate === expectedDate) {
+                streak++;
+                // Update the next date we expect to see
+                const expectedDateObj = toZonedTime(new Date(expectedDate), userTimezone);
+                expectedDate = format(subDays(expectedDateObj, 1), 'yyyy-MM-dd');
+            } else {
+                // The streak is broken
+                break;
+            }
+        }
+        return streak;
     }
 }

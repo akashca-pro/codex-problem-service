@@ -1,5 +1,6 @@
 import { IExecutionResult, ISubmission } from "@/db/interface/submission.interface";
 import { BaseRepository } from "../base.repository";
+import { IActivity } from "@/dtos/Activity.dto";
 
 /**
  * Interface representing the structure of the submission repository.
@@ -8,15 +9,14 @@ import { BaseRepository } from "../base.repository";
  */
 export interface ISubmissionRepository extends BaseRepository<ISubmission> {
 
-    /**
-     * 
-     * @async
-     * @param submissionId - The id of the submission data.
-     * @param executionResult - The execution result to be updated.
-     */
     updateExecutionResult(
         submissionId : string,
         executionResult : IExecutionResult
     ) : Promise<void> 
+
+    getDailyActivity(
+        userId: string, 
+        userTimezone: string
+    ) : Promise<IActivity[]>
 
 }
