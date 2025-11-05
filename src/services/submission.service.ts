@@ -361,6 +361,33 @@ export class SubmissionService implements ISubmissionService {
         };
     }
 
+    async updateCountryInLeaderboard(
+        userId: string, 
+        country: string
+    ): Promise<ResponseDTO> {
+        const method = 'updateCountryInLeaderboard';
+        logger.info(`[SERVICE] ${method} started`, { userId, country });
+        await this.#_leaderboard.updateEntityByUserId(userId, country);
+        logger.info(`[SERVICE] ${method} completed successfully`, { userId, country });
+        return {
+            data : null,
+            success : true
+        }
+    }
+
+    async removeUserInLeaderboard(
+        userId: string
+    ): Promise<ResponseDTO> {
+        const method = 'removeUserInLeaderboard';
+        logger.info(`[SERVICE] ${method} started`, { userId });
+        await this.#_leaderboard.removeUser(userId);
+        logger.info(`[SERVICE] ${method} completed successfully`, { userId });
+        return {
+            data : null,
+            success : true
+        }
+    }
+
     #_calculateStreak(activity: IActivity[], userTimezone: string): number {
         if (activity.length === 0) {
             return 0;
@@ -405,4 +432,5 @@ export class SubmissionService implements ISubmissionService {
         }
         return streak;
     }
+
 }

@@ -2,7 +2,7 @@ import TYPES from "@/config/inversify/types";
 import { ISubmissionService } from "@/services/interfaces/submission.service.interface";
 import { withGrpcErrorHandler } from "@/utils/errorHandler";
 import { mapMessageToGrpcStatus } from "@/utils/mapMessageToGrpcCode";
-import { CreateSubmissionRequest, GetDashboardStatsRequest, GetDashboardStatsResponse, GetSubmissionsRequest, GetSubmissionsResponse, ListProblemSpecificSubmissionRequest, ListProblemSpecificSubmissionResponse, ListTopKCountryLeaderboardRequest, ListTopKCountryLeaderboardResponse, Submission, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import { CreateSubmissionRequest, GetDashboardStatsRequest, GetDashboardStatsResponse, GetSubmissionsRequest, GetSubmissionsResponse, ListProblemSpecificSubmissionRequest, ListProblemSpecificSubmissionResponse, ListTopKCountryLeaderboardRequest, ListTopKCountryLeaderboardResponse, RemoveUserRequest, Submission, UpdateCountryRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { Empty } from "@akashcapro/codex-shared-utils/dist/proto/compiled/google/protobuf/empty";
 import { inject, injectable } from "inversify";
 import logger from '@/utils/pinoLogger';
@@ -141,6 +141,26 @@ export class SubmissionHandler {
         }
     )
 
+    updateCountryInLeaderboard = withGrpcErrorHandler<UpdateCountryRequest, Empty>(
+        async (call, callback) => {
+            const method = 'updateCountryInLeaderboard';
+            const req = call.request;
+            logger.info(`[gRPC] ${method} started`, { userId: req.userId, country: req.country });
+            const result = await this.#_submissionService.updateCountryInLeaderboard(req.userId, req.country);
+            return callback(null, result.data)
+        }
+    )
+
+    removeUserInLeaderboard = withGrpcErrorHandler<RemoveUserRequest, Empty>(
+        async (call, callback) => {
+            const method = 'removeUserInLeaderboard';
+            const req = call.request;
+            logger.info(`[gRPC] ${method} started`, { userId: req.userId });
+            const result = await this.#_submissionService.removeUserInLeaderboard(req.userId);
+            return callback(null, result.data)
+        }
+    )
+
     /**
      * Gets the service handlers for gRPC.
      * * @returns {Record<string, Function>} - An object containing the bound handler methods for the gRPC service.
@@ -154,6 +174,8 @@ export class SubmissionHandler {
             listTopKGlobalLeaderboard : this.listTopKGlobalLeaderboard,
             listTopKCountryLeaderboard : this.listTopKCountryLeaderboard,
             getDashboardStats : this.getDashboardStats,
+            updateCountryInLeaderboard : this.updateCountryInLeaderboard,
+            removeUserInLeaderboard : this.removeUserInLeaderboard,
         }
     }
 }

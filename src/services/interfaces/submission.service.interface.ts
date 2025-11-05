@@ -44,4 +44,13 @@ export interface ISubmissionService {
         userTimezone: string
     ) : Promise<ResponseDTO>
 
+    updateCountryInLeaderboard(
+        userId : string,
+        country : string
+    ) : Promise<ResponseDTO>
+
+    removeUserInLeaderboard(
+        userId : string
+    ) : Promise<ResponseDTO>
+
 }
