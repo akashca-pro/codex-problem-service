@@ -5,7 +5,7 @@ import { mapMessageToGrpcStatus } from "@/utils/mapMessageToGrpcCode";
 import { CreateSubmissionRequest, GetDashboardStatsRequest, GetDashboardStatsResponse, GetSubmissionsRequest, GetSubmissionsResponse, ListProblemSpecificSubmissionRequest, ListProblemSpecificSubmissionResponse, ListTopKCountryLeaderboardRequest, ListTopKCountryLeaderboardResponse, Submission, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { Empty } from "@akashcapro/codex-shared-utils/dist/proto/compiled/google/protobuf/empty";
 import { inject, injectable } from "inversify";
-import logger from '@/utils/pinoLogger'; // Import the logger
+import logger from '@/utils/pinoLogger';
 
 /**
  * Class Responsible for handling gRPC submissions requests.

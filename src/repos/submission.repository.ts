@@ -2,8 +2,8 @@ import { SubmissionModel } from "@/db/models/submission.model";
 import { IExecutionResult, ISubmission } from "@/db/interface/submission.interface";
 import { BaseRepository } from "./base.repository";
 import { ISubmissionRepository } from "./interfaces/submission.repository.interface";
-import logger from '@/utils/pinoLogger'; // Import the logger
-import { IActivity } from "@/dtos/Activity.dto";
+import logger from '@/utils/pinoLogger';
+import { IActivity, IRecentActivity } from "@/dtos/Activity.dto";
 
 /**
  * This class implements the submission repository
@@ -86,5 +86,42 @@ export class SubmissionRepository
         ]);
 
         return activity;
+    }
+    
+    async getRecentActivities(
+        userId: string, 
+        limit: number = 5
+    ): Promise<IRecentActivity[]> {
+        return await this._model.aggregate([
+            {
+                $match: { userId }
+            },
+            {
+                $sort: { createdAt: -1 }
+            },
+            {
+                $limit: limit
+            },
+            {
+                $lookup: {
+                    from: "problems",
+                    localField: "problemId",
+                    foreignField: "_id",
+                    as: "problem"
+                }
+            },
+            {
+                $unwind: "$problem"
+            },
+            {
+                $project: {
+                    _id: 0,
+                    title: "$problem.title",
+                    difficulty: "$problem.difficulty",
+                    status: "$status",
+                    createdAt: 1
+                }
+            }
+        ]);
     }
 }

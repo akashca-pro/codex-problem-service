@@ -13,9 +13,12 @@ import logger from '@/utils/pinoLogger';
 import { IFirstSubmissionRepository } from "@/repos/interfaces/firstSubmission.repository.interface";
 import { ILeaderboard } from "@/libs/leaderboard/leaderboard.interface";
 import { SCORE_MAP } from "@/const/ScoreMap.const";
-import { IActivity } from "@/dtos/Activity.dto";
-import { format, subDays } from 'date-fns';
+import { IActivity, IRecentActivity } from "@/dtos/Activity.dto";
+import { format, subDays, differenceInHours, differenceInDays } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
+import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
+import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
+import { LeaderboardData } from "@/dtos/Leaderboard.dto";
 
 /**
  * Class representing the service for managing submissions and leaderboard.
@@ -29,17 +32,20 @@ export class SubmissionService implements ISubmissionService {
     #_problemRepo : IProblemRepository;
     #_firstSubmissionRepo : IFirstSubmissionRepository;
     #_leaderboard : ILeaderboard;
+    #_cacheProvider : ICacheProvider;
 
     constructor(
         @inject(TYPES.ISubmissionRepository) submissionRepo : ISubmissionRepository,
         @inject(TYPES.IProblemRepository) problemRepo : IProblemRepository,
         @inject(TYPES.IFirstSubmissionRepository) firstSubmissionRepo : IFirstSubmissionRepository,
-        @inject(TYPES.ILeaderboard) leaderboard : ILeaderboard
+        @inject(TYPES.ILeaderboard) leaderboard : ILeaderboard,
+        @inject(TYPES.ICacheProvider) cacheProvider : ICacheProvider
     ){
         this.#_submissionRepo = submissionRepo;
         this.#_problemRepo = problemRepo;
         this.#_firstSubmissionRepo = firstSubmissionRepo;
         this.#_leaderboard = leaderboard;
+        this.#_cacheProvider = cacheProvider;
     }
 
     async createSubmission(data: CreateSubmissionRequest): Promise<ResponseDTO> {
@@ -242,17 +248,107 @@ export class SubmissionService implements ISubmissionService {
         }
     }
 
-    async getDashboardStats(userId: string, userTimezone: string) {
-        const activity = await this.#_submissionRepo.getDailyActivity(userId, userTimezone);
-        const streak = this.#_calculateStreak(activity, userTimezone);
-        const leaderboardDetails = await this.#_leaderboard.getUserLeaderboardData(userId);
+    async getDashboardStats(
+        userId: string, 
+        userTimezone: string
+    ) : Promise<ResponseDTO> {
+        const method = 'getDashboardStats';
+        logger.info(`[SERVICE] ${method} started`, { userId });
+
+        // Heatmap
+        let activity: IActivity[];
+        const cacheKeyHeatmap = `${REDIS_PREFIX.DASHBOARD_HEATMAP}${userId}`;
+        const cachedHeatmap = await this.#_cacheProvider.get(cacheKeyHeatmap);
+        if (cachedHeatmap) {
+            activity = cachedHeatmap as IActivity[];
+            logger.info(`[SERVICE] ${method} heatmap cache hit`, { userId })
+        } else {
+            activity = await this.#_submissionRepo.getDailyActivity(userId, userTimezone);
+            await this.#_cacheProvider.set(cacheKeyHeatmap, activity, 300); // 5 mins
+            logger.info(`[SERVICE] ${method} heatmap cache miss`, { userId })
+        }
+
+        // Streak
+        let streak: number;
+        const cacheKeyStreak = `${REDIS_PREFIX.DASHBOARD_STREAK}${userId}`;
+        const cachedStreak = await this.#_cacheProvider.get(cacheKeyStreak);
+        if (cachedStreak) {
+            streak = cachedStreak as number;
+            logger.info(`[SERVICE] ${method} streak cache hit`, { userId })
+        } else {
+            streak = this.#_calculateStreak(activity, userTimezone);
+            await this.#_cacheProvider.set(cacheKeyStreak, streak, 86400); // 24 hours
+            logger.info(`[SERVICE] ${method} streak cache miss`, { userId })
+        }
+
+        // Leaderboard
+        let leaderboardDetails: LeaderboardData;
+        const cacheKeyLeaderboard = `${REDIS_PREFIX.DASHBOARD_LEADERBOARD}${userId}`;
+        const cachedLeaderboard = await this.#_cacheProvider.get(cacheKeyLeaderboard);
+        if (cachedLeaderboard) {
+            leaderboardDetails = cachedLeaderboard as LeaderboardData;
+            logger.info(`[SERVICE] ${method} leaderboard cache hit`, { userId })
+        } else {
+            leaderboardDetails = await this.#_leaderboard.getUserLeaderboardData(userId);
+            await this.#_cacheProvider.set(cacheKeyLeaderboard, leaderboardDetails, 300); // 5 min
+            logger.info(`[SERVICE] ${method} leaderboard cache miss`, { userId })
+        }
+
+        // Problems solved
+        let problemsSolved: number;
+        const cacheKeyProblemsSolved = `${REDIS_PREFIX.DASHBOARD_PROBLEMS_SOLVED}${userId}`;
+        const cachedSolved = await this.#_cacheProvider.get(cacheKeyProblemsSolved);
+        if (cachedSolved) {
+            problemsSolved = cachedSolved as number;
+            logger.info(`[SERVICE] ${method} problems solved cache hit`, { userId })
+        } else {
+            const solved = await this.#_submissionRepo.find({ userId, status: 'accepted' });
+            problemsSolved = solved.length;
+            await this.#_cacheProvider.set(cacheKeyProblemsSolved, problemsSolved, 600); // 10 min
+            logger.info(`[SERVICE] ${method} problems solved cache miss`, { userId })
+        }
+
+        // Recent activities
+        const cacheKeyRecentActivities = `${REDIS_PREFIX.DASHBOARD_RECENT_ACTIVITY}${userId}`;
+        let recentActivities: {title: string, difficulty: string, status: string, timeAgo: string}[];
+        const cachedRecent = await this.#_cacheProvider.get(cacheKeyRecentActivities);
+        if (cachedRecent) {
+            recentActivities = cachedRecent as {title: string, difficulty: string, status: string, timeAgo: string}[];
+            logger.info(`[SERVICE] ${method} recent activities cache hit`, { userId })
+        } else {
+            const recent = await this.#_submissionRepo.getRecentActivities(userId, 5);
+            const now = new Date();
+                recentActivities = recent.map(a => {
+                const hours = differenceInHours(now, a.createdAt);
+                const days = differenceInDays(now, a.createdAt);
+                let timeAgo = '';
+
+                if (hours < 1) timeAgo = 'Just now';
+                else if (hours < 24) timeAgo = `${hours} hours ago`;
+                else timeAgo = `${days} days ago`;
+
+                return {
+                    title: a.title,
+                    difficulty: a.difficulty,
+                    status: a.status,
+                    timeAgo,
+                };
+            });
+            await this.#_cacheProvider.set(cacheKeyRecentActivities, recentActivities, 60); // 1 min
+            logger.info(`[SERVICE] ${method} recent activities cache miss`, { userId })
+        }
+        
+        logger.info(`[SERVICE] ${method} completed successfully`, { userId });
+
         return {
             success: true,
             data: {
                 heatmap: activity,
                 currentStreak: streak,
-                leaderboardDetails
-            }
+                leaderboardDetails,
+                problemsSolved,
+                recentActivities,
+            },
         };
     }
 

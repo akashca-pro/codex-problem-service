@@ -1,6 +1,6 @@
 import { IExecutionResult, ISubmission } from "@/db/interface/submission.interface";
 import { BaseRepository } from "../base.repository";
-import { IActivity } from "@/dtos/Activity.dto";
+import { IActivity, IRecentActivity } from "@/dtos/Activity.dto";
 
 /**
  * Interface representing the structure of the submission repository.
@@ -18,5 +18,10 @@ export interface ISubmissionRepository extends BaseRepository<ISubmission> {
         userId: string, 
         userTimezone: string
     ) : Promise<IActivity[]>
+
+    getRecentActivities(
+        userId: string, 
+        limit: number
+    ) : Promise<IRecentActivity[]>
 
 }
