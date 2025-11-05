@@ -46,6 +46,7 @@ export interface IExecutionResult {
 export interface ISubmission extends Document {
     problemId : Types.ObjectId;
     userId : string;
+    username : string;
     country : string | null;
     battleId : string | null;
     title : string;

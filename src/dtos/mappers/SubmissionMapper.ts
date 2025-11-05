@@ -4,7 +4,8 @@ import {
     FailedTestCase as IGrpcFailedTestCase,
     Difficulty as GrpcDifficultyEnum, 
     Language as GrpcLanguageEnum,
-    Submission, 
+    Submission,
+    CreateSubmissionRequest, 
 } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { ICreateSubmissionRequestDTO } from "../submission/CreateSubmissionRequestDTO";
 import { type Difficulty, DIFFICULTY } from "@/const/Difficulty.const";
@@ -16,11 +17,12 @@ import { LeanDocument } from "mongoose";
 import { IListProblemSpecicSubmissionsDTO } from "../submission/listSubmissions.dto";
 export class SubmissionMapper {
 
-    static toCreateSubmissionService(body :ICreateSubmissionInputDTO) : ICreateSubmissionRequestDTO {
+    static toCreateSubmissionService(body : CreateSubmissionRequest) : ICreateSubmissionRequestDTO {
 
         return {
             problemId : body.problemId,
             userId : body.userId,
+            username : body.username,
             battleId : body.battleId ? body.battleId : null,
             title : body.title,
             userCode : body.userCode,
@@ -56,6 +58,7 @@ export class SubmissionMapper {
             Id : body.id,
             problemId : body.problemId.toString(),
             userId : body.userId,
+            username : body.username,
             country : body.country ?? '',
             title : body.title,
             ...(body.battleId ? {battleId : body.battleId} : {}),
@@ -191,6 +194,7 @@ export class SubmissionMapper {
 interface ICreateSubmissionInputDTO {
     problemId : string;
     userId : string;
+    username : string;
     battleId? : string;
     country? : string;
     title : string;

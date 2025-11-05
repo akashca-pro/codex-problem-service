@@ -39,6 +39,7 @@ const SubmissionSchema = new Schema<ISubmission>(
     {
         problemId : { type : Schema.Types.ObjectId, ref : 'Problem', required : true },
         userId : { type : String, required : true },
+        username : { type : String, required : true },
         country : { type : String, required : false, default : null },
         battleId : { type : String, required : false, default : null },
         title : { type : String, required : true },

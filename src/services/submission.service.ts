@@ -3,7 +3,7 @@ import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { inject, injectable } from "inversify";
 import { ISubmissionService } from "./interfaces/submission.service.interface";
 import { ISubmissionRepository } from "@/repos/interfaces/submission.repository.interface";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { PaginationDTO } from "@/dtos/PaginationDTO";
 import { CreateSubmissionRequest, GetSubmissionsRequest, ListProblemSpecificSubmissionRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { IProblemRepository } from "@/repos/interfaces/problem.repository.interface";
@@ -13,7 +13,7 @@ import logger from '@/utils/pinoLogger';
 import { IFirstSubmissionRepository } from "@/repos/interfaces/firstSubmission.repository.interface";
 import { ILeaderboard } from "@/libs/leaderboard/leaderboard.interface";
 import { SCORE_MAP } from "@/const/ScoreMap.const";
-import { IActivity, IRecentActivity } from "@/dtos/Activity.dto";
+import { IActivity } from "@/dtos/Activity.dto";
 import { format, subDays, differenceInHours, differenceInDays } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
@@ -134,14 +134,22 @@ export class SubmissionService implements ISubmissionService {
 
             if (score > 0) {
                 try {
+                    const { _id, ...submissionData } = updatedSubmission.toObject();
                     await Promise.all([
-                        this.#_firstSubmissionRepo.create(updatedSubmission),
+                        this.#_firstSubmissionRepo.create({
+                            ...submissionData,
+                            submissionId : _id as Types.ObjectId
+                        }),
                         this.#_leaderboard.incrementScore(
                             updatedSubmission.userId,
                             updatedSubmission.country ?? '',
                             score
                         ),
-                        this.#_leaderboard.incrementProblemsSolved(updatedSubmission.userId)
+                        this.#_leaderboard.incrementProblemsSolved(updatedSubmission.userId),
+                        this.#_leaderboard.setUsername(
+                            updatedSubmission.userId, 
+                            updatedSubmission.username
+                        )
                     ])
                     logger.info(`[SERVICE] ${method}: Leaderboard score incremented and problems solved updated`, { userId: updatedSubmission.userId, score });
 
@@ -240,7 +248,6 @@ export class SubmissionService implements ISubmissionService {
         const method = 'listTopKCountryLeaderboard';
         logger.info(`[SERVICE] ${method} started`, { country, k });
         const users = await this.#_leaderboard.getTopKEntity(country, k)
-
         logger.info(`[SERVICE] ${method} completed successfully`, { country, k });
         return {
             data : { users },
@@ -302,8 +309,10 @@ export class SubmissionService implements ISubmissionService {
             problemsSolved = cachedSolved as number;
             logger.info(`[SERVICE] ${method} problems solved cache hit`, { userId })
         } else {
-            const solved = await this.#_submissionRepo.find({ userId, status: 'accepted' });
-            problemsSolved = solved.length;
+            problemsSolved = await this.#_submissionRepo.countDocuments({ 
+                userId, 
+                status: 'accepted' 
+            });
             await this.#_cacheProvider.set(cacheKeyProblemsSolved, problemsSolved, 600); // 10 min
             logger.info(`[SERVICE] ${method} problems solved cache miss`, { userId })
         }

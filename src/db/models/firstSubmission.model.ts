@@ -37,7 +37,9 @@ const ExecutionSchema = new Schema<IExecutionResult>(
 const FirstSubmissionSchema = new Schema<IFirstSubmission>(
     {
         problemId : { type : Schema.Types.ObjectId, ref : 'Problem', required : true },
+        submissionId : { type : Schema.Types.ObjectId, ref : 'Submission', required : true},
         userId : { type : String, required : true },
+        username : { type : String, requried : true },
         country : { type : String, required : false, default : null },
         battleId : { type : String, required : false, default : null },
         title : { type : String, required : true },

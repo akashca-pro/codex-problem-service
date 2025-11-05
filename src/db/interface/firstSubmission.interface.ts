@@ -6,7 +6,9 @@ import { Difficulty } from "@/const/Difficulty.const";
 
 export interface IFirstSubmission extends Document {
     problemId : Types.ObjectId;
+    submissionId : Types.ObjectId;
     userId : string;
+    username : string;
     country : string | null;
     battleId : string | null;
     title : string;

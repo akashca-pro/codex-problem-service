@@ -20,6 +20,11 @@ export interface ILeaderboard {
     incrementScore(userId: string, entity: string, scoreIncrement: number): Promise<void>;
 
     incrementProblemsSolved(userId: string): Promise<void>;
+    
+    setUsername(
+        userId: string, 
+        username: string
+    ) : Promise<void>;
 
     /**
      * Atomically subtracts a value from a user's score.

@@ -24,6 +24,11 @@ export interface IGlobalProblemsSolved {
     count: number;
 }
 
+export interface IUsernames {
+    _id: string;
+    username: string;
+}
+
 export interface IFirstSubmissionRepository extends BaseRepository<IFirstSubmission> {
     /**
      * Get Global Scores: Aggregates all scores for each user.
@@ -38,9 +43,9 @@ export interface IFirstSubmissionRepository extends BaseRepository<IFirstSubmiss
      * Get Country-Specific Scores
      */
     getCountryScores() : Promise<ICountryScores[]>
-    /**
-     * 
-     */
+
     getGlobalProblemsSolved() : Promise<IGlobalProblemsSolved[]>
+
+    getUsernames(): Promise<IUsernames[]>;
 
 }

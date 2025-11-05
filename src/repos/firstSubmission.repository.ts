@@ -1,6 +1,6 @@
 import { IFirstSubmission } from "@/db/interface/firstSubmission.interface";
 import { BaseRepository } from "./base.repository";
-import { ICountryScores, IFirstSubmissionRepository, IGlobalProblemsSolved, IGlobalScore, IUserCountries } from "./interfaces/firstSubmission.repository.interface";
+import { ICountryScores, IFirstSubmissionRepository, IGlobalProblemsSolved, IGlobalScore, IUserCountries, IUsernames } from "./interfaces/firstSubmission.repository.interface";
 import { FirstSubmissionModel } from "@/db/models/firstSubmission.model";
 import logger from "@/utils/pinoLogger";
 
@@ -93,6 +93,27 @@ export class FirstSubmissionRepository extends BaseRepository<IFirstSubmission> 
             logger.error(`[REPO] ${operation} failed`, { error });
             throw error;
         }
+    }
+
+    async getUsernames(): Promise<IUsernames[]> {
+        const operation = 'Get Usernames';
+        try {
+            logger.debug(`[REPO] Executing ${operation}`);
+            const result = await this._model.aggregate<IUsernames>([
+                { $sort : { createdAt : -1 } },
+                {
+                    $group: {
+                        _id: "$userId",
+                        username: { $first: "$username" }
+                    }
+                }
+            ]);
+            logger.info(`[REPO] ${operation} successful`);
+            return result;
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error });
+            throw error; 
         }
+    }
 
 }   

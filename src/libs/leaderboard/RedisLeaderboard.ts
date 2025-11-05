@@ -19,6 +19,7 @@ export class RedisLeaderboard implements ILeaderboard {
     private getEntityKey(entity: string): string { return `${this.#_namespace}:entity:${entity}`; }
     private getUsersHashKey(): string { return `${this.#_namespace}:users`; }
     private getProblemsSolvedHashKey(): string { return `${this.#_namespace}:problems_solved`; }
+    private getUsernameHashKey(): string { return `${this.#_namespace}:usernames`; }
 
     constructor(
         @inject(TYPES.IFirstSubmissionRepository) firstSubmissionRepo : IFirstSubmissionRepository,
@@ -87,6 +88,17 @@ export class RedisLeaderboard implements ILeaderboard {
         }
     }
 
+    public async setUsername(
+        userId: string, 
+        username: string
+    ): Promise<void> {
+        try {
+            await this.#_redis.hset(this.getUsernameHashKey(), userId, username);
+        } catch (error) {
+            logger.error("Failed to set username", { userId, error });
+        }
+    }
+
     async removeUser(
         userId: string
     ): Promise<void> {
@@ -98,6 +110,7 @@ export class RedisLeaderboard implements ILeaderboard {
         }
         multi.hdel(this.getUsersHashKey(), userId);
         multi.hdel(this.getProblemsSolvedHashKey(), userId);
+        multi.hdel(this.getUsernameHashKey(), userId);
         await multi.exec();
     }
 
@@ -124,23 +137,16 @@ export class RedisLeaderboard implements ILeaderboard {
 
     async getUserLeaderboardData(
         userId: string,
-        k : number = this.#_k
     ): Promise<LeaderboardData> {
-        const [score, entity, globalRank, topKGlobal] = await Promise.all([
+        const [score, entity, globalRank, username] = await Promise.all([
             this.getUserScore(userId),
             this.getUserEntity(userId),
             this.getRankGlobal(userId),
-            this.getTopKGlobal(k),
+            this.getUsername(userId),
         ]);
         let entityRank = -1;
-        let topKEntity: LeaderboardUser[] = [];
         if (entity) {
-            const [rank, topK] = await Promise.all([
-                this.getRankEntity(userId),
-                this.getTopKEntity(entity, k)
-            ]);
-            entityRank = rank;
-            topKEntity = topK;
+            entityRank = await this.getRankEntity(userId);
         }
         return {
             userId,
@@ -148,8 +154,7 @@ export class RedisLeaderboard implements ILeaderboard {
             entity,
             globalRank,
             entityRank,
-            topKGlobal,
-            topKEntity
+            username: username || '',
         };  
     }
 
@@ -198,6 +203,10 @@ export class RedisLeaderboard implements ILeaderboard {
         return rank === null ? -1 : rank;
     }
 
+    public async getUsername(userId: string): Promise<string | null> {
+        return this.#_redis.hget(this.getUsernameHashKey(), userId);
+    }
+
     public async getTopKGlobal(k : number = this.#_k): Promise<LeaderboardUser[]> {
         const results = await this.#_redis.zrevrange(
             this.getGlobalKey(), 0, k - 1, 'WITHSCORES'
@@ -231,20 +240,22 @@ export class RedisLeaderboard implements ILeaderboard {
                 id: id,
                 score: score,
                 entity: entity,
-                problemsSolved: 0
+                problemsSolved: 0,
+                username: ''
             });
         }
         // Fetch the problemsSolved counts
-        const problemsSolvedCounts = await this.#_redis.hmget(
-            this.getProblemsSolvedHashKey(), 
-            ...userIds
-        );
-        // Merge the problemsSolved counts into the final list
+        const [problemsSolvedCounts, usernames] = await Promise.all([ 
+            this.#_redis.hmget(this.getProblemsSolvedHashKey(), ...userIds),
+            this.#_redis.hmget(this.getUsernameHashKey(), ...userIds)
+        ]);
+        // Merge the counts and usernames
         for (let i = 0; i < userIds.length; i++) {
             const id = userIds[i];
             const user = usersById.get(id);
             if (user) {
                 user.problemsSolved = parseInt(problemsSolvedCounts[i] || '0', 10);
+                user.username = usernames[i] || ''; 
             }
         }
         return Array.from(usersById.values());
@@ -252,11 +263,12 @@ export class RedisLeaderboard implements ILeaderboard {
 
     private async resyncFromDatabase(namespace : string = this.#_namespace) : Promise<void> {
         logger.info('Starting database aggregation for resync...');
-        const [globalScores, userEntities, countryScores, problemsSolved] = await Promise.all([
+        const [globalScores, userEntities, countryScores, problemsSolved, usernames] = await Promise.all([ // <-- UPDATE
             this.#_firstSubmissionRepo.getGlobalScores(),
             this.#_firstSubmissionRepo.getUserCountries(),
             this.#_firstSubmissionRepo.getCountryScores(),
-            this.#_firstSubmissionRepo.getGlobalProblemsSolved()
+            this.#_firstSubmissionRepo.getGlobalProblemsSolved(),
+            this.#_firstSubmissionRepo.getUsernames() 
         ]);
         logger.debug(`Aggregated ${globalScores.length} global scores, ${countryScores.length} country scores.`);
 
@@ -312,6 +324,17 @@ export class RedisLeaderboard implements ILeaderboard {
             }
             multi.hset(this.getProblemsSolvedHashKey(), problemsMap);
         }   
+        if (usernames.length > 0) {
+            const userMap: { [key: string]: string } = {};
+            for (const item of usernames) {
+                if (item.username) { 
+                    userMap[item._id] = item.username;
+                }
+            }
+            if (Object.keys(userMap).length > 0) {
+                multi.hset(this.getUsernameHashKey(), userMap);
+            }
+        }
         await multi.exec();
     }
 
@@ -320,15 +343,17 @@ export class RedisLeaderboard implements ILeaderboard {
             return [];
         }
         const userIds = users.map(u => u.value);
-        const [entities, problemsSolved] = await Promise.all([
+        const [entities, problemsSolved, usernames] = await Promise.all([
             this.#_redis.hmget(this.getUsersHashKey(), ...userIds),
-            this.#_redis.hmget(this.getProblemsSolvedHashKey(), ...userIds)
+            this.#_redis.hmget(this.getProblemsSolvedHashKey(), ...userIds),
+            this.#_redis.hmget(this.getUsernameHashKey(), ...userIds)
         ]);
         return users.map((user, index) => ({
             id: user.value,
             score: user.score,
             entity: entities[index] || '',
-            problemsSolved: parseInt(problemsSolved[index] || '0', 10)
+            problemsSolved: parseInt(problemsSolved[index] || '0', 10),
+            username: usernames[index] || ''
         }));
     }
 
