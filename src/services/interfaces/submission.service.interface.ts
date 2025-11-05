@@ -39,10 +39,6 @@ export interface ISubmissionService {
         k : number
     ) : Promise<ResponseDTO>
 
-    getLeaderboardDetailsForUser(
-        userId : string
-    ) : Promise<ResponseDTO>
-
     getDashboardStats(
         userId: string, 
         userTimezone: string

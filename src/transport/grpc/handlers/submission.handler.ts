@@ -2,7 +2,7 @@ import TYPES from "@/config/inversify/types";
 import { ISubmissionService } from "@/services/interfaces/submission.service.interface";
 import { withGrpcErrorHandler } from "@/utils/errorHandler";
 import { mapMessageToGrpcStatus } from "@/utils/mapMessageToGrpcCode";
-import { CreateSubmissionRequest, GetSubmissionsRequest, GetSubmissionsResponse, ListProblemSpecificSubmissionRequest, ListProblemSpecificSubmissionResponse, Submission, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import { CreateSubmissionRequest, GetDashboardStatsRequest, GetDashboardStatsResponse, GetSubmissionsRequest, GetSubmissionsResponse, ListProblemSpecificSubmissionRequest, ListProblemSpecificSubmissionResponse, ListTopKCountryLeaderboardRequest, ListTopKCountryLeaderboardResponse, Submission, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { Empty } from "@akashcapro/codex-shared-utils/dist/proto/compiled/google/protobuf/empty";
 import { inject, injectable } from "inversify";
 import logger from '@/utils/pinoLogger'; // Import the logger
@@ -109,6 +109,38 @@ export class SubmissionHandler {
         }
     )
 
+    listTopKGlobalLeaderboard = withGrpcErrorHandler<ListTopKCountryLeaderboardRequest, ListTopKCountryLeaderboardResponse>(
+        async (call, callback) => {
+            const method = 'listTopKGlobalLeaderboard';
+            const req = call.request;
+            logger.info(`[gRPC] ${method} started`, { k: req.k });
+            const result = await this.#_submissionService.listTopKGlobalLeaderboard(req.k);
+            logger.info(`[gRPC] ${method} completed successfully`, { k: req.k });
+            return callback(null,result.data);
+        }
+    )
+
+    listTopKCountryLeaderboard = withGrpcErrorHandler<ListTopKCountryLeaderboardRequest, ListTopKCountryLeaderboardResponse>(
+        async (call, callback) => {
+            const method = 'listTopKCountryLeaderboard';
+            const req = call.request;
+            logger.info(`[gRPC] ${method} started`, { country: req.country, k: req.k });
+            const result = await this.#_submissionService.listTopKCountryLeaderboard(req.country, req.k); 
+            logger.info(`[gRPC] ${method} completed successfully`, { country: req.country, k: req.k });
+            return callback(null,result.data);
+        }
+    )
+
+    getDashboardStats = withGrpcErrorHandler<GetDashboardStatsRequest, GetDashboardStatsResponse>(
+        async (call, callback) => {
+            const method = 'getDashboardStats';
+            const req = call.request;
+            logger.info(`[gRPC] ${method} started`, { userId: req.userId });
+            const result = await this.#_submissionService.getDashboardStats(req.userId, req.userTimezone);
+            return callback(null, result.data)
+        }
+    )
+
     /**
      * Gets the service handlers for gRPC.
      * * @returns {Record<string, Function>} - An object containing the bound handler methods for the gRPC service.
@@ -119,6 +151,9 @@ export class SubmissionHandler {
             getSubmissions : this.getSubmissions,
             updateSubmission : this.updateSubmission,
             listProblemSpecificSubmission : this.listProblemSpecificSubmission,
+            listTopKGlobalLeaderboard : this.listTopKGlobalLeaderboard,
+            listTopKCountryLeaderboard : this.listTopKCountryLeaderboard,
+            getDashboardStats : this.getDashboardStats,
         }
     }
 }

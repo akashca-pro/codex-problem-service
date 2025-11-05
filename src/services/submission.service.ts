@@ -18,8 +18,9 @@ import { format, subDays } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 
 /**
- * Class representing the service for managing submissions.
- * * @class
+ * Class representing the service for managing submissions and leaderboard.
+ * @class
+ * @implements {ISubmissionService}
  */
 @injectable()
 export class SubmissionService implements ISubmissionService {
@@ -218,10 +219,10 @@ export class SubmissionService implements ISubmissionService {
     ): Promise<ResponseDTO> {
         const method = 'listTopKGlobalLeaderboard';
         logger.info(`[SERVICE] ${method} started`, { k });
-        const globalLeaderboard = await this.#_leaderboard.getTopKGlobal(k);
+        const users = await this.#_leaderboard.getTopKGlobal(k);
         logger.info(`[SERVICE] ${method} completed successfully`, { k });
         return {
-            data : globalLeaderboard,
+            data : { users },
             success : true
         }
     }
@@ -232,41 +233,30 @@ export class SubmissionService implements ISubmissionService {
     ): Promise<ResponseDTO> {
         const method = 'listTopKCountryLeaderboard';
         logger.info(`[SERVICE] ${method} started`, { country, k });
-        const countryLeaderboard = await this.#_leaderboard.getTopKEntity(country, k)
+        const users = await this.#_leaderboard.getTopKEntity(country, k)
 
         logger.info(`[SERVICE] ${method} completed successfully`, { country, k });
         return {
-            data : countryLeaderboard,
-            success : true
-        }
-    }
-
-    async getLeaderboardDetailsForUser(
-        userId: string
-    ): Promise<ResponseDTO> {
-        const method = 'getLeaderboardDetails';
-        logger.info(`[SERVICE] ${method} started`, { userId });
-        const leaderboardDetails = await this.#_leaderboard.getUserLeaderboardData(userId);
-        logger.info(`[SERVICE] ${method} completed successfully`, { userId });
-        return {
-            data : leaderboardDetails,
+            data : { users },
             success : true
         }
     }
 
     async getDashboardStats(userId: string, userTimezone: string) {
         const activity = await this.#_submissionRepo.getDailyActivity(userId, userTimezone);
-        const streak = this.calculateStreak(activity, userTimezone);
+        const streak = this.#_calculateStreak(activity, userTimezone);
+        const leaderboardDetails = await this.#_leaderboard.getUserLeaderboardData(userId);
         return {
             success: true,
             data: {
                 heatmap: activity,
-                currentStreak: streak
+                currentStreak: streak,
+                leaderboardDetails
             }
         };
     }
 
-    private calculateStreak(activity: IActivity[], userTimezone: string): number {
+    #_calculateStreak(activity: IActivity[], userTimezone: string): number {
         if (activity.length === 0) {
             return 0;
         }
