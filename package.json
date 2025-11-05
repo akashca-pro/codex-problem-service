@@ -15,7 +15,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@akashcapro/codex-shared-utils": "^0.5.2",
+    "@akashcapro/codex-shared-utils": "^0.5.3",
     "@bufbuild/protobuf": "^2.6.3",
     "@faker-js/faker": "^10.1.0",
     "@grpc/grpc-js": "^1.13.4",
