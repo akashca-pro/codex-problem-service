@@ -2,7 +2,7 @@ import TYPES from "@/config/inversify/types";
 import { ISubmissionService } from "@/services/interfaces/submission.service.interface";
 import { withGrpcErrorHandler } from "@/utils/errorHandler";
 import { mapMessageToGrpcStatus } from "@/utils/mapMessageToGrpcCode";
-import { CreateSubmissionRequest, GetDashboardStatsRequest, GetDashboardStatsResponse, GetSubmissionsRequest, GetSubmissionsResponse, ListProblemSpecificSubmissionRequest, ListProblemSpecificSubmissionResponse, ListTopKCountryLeaderboardRequest, ListTopKCountryLeaderboardResponse, RemoveUserRequest, Submission, UpdateCountryRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import { CreateSubmissionRequest, GetDashboardStatsRequest, GetDashboardStatsResponse, GetSubmissionsRequest, GetSubmissionsResponse, ListProblemSpecificSubmissionRequest, ListProblemSpecificSubmissionResponse, ListTopKCountryLeaderboardRequest, ListTopKCountryLeaderboardResponse, ListTopKGlobalLeaderboardRequest, ListTopKGlobalLeaderboardResponse, RemoveUserRequest, Submission, UpdateCountryRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { Empty } from "@akashcapro/codex-shared-utils/dist/proto/compiled/google/protobuf/empty";
 import { inject, injectable } from "inversify";
 import logger from '@/utils/pinoLogger';
@@ -109,7 +109,7 @@ export class SubmissionHandler {
         }
     )
 
-    listTopKGlobalLeaderboard = withGrpcErrorHandler<ListTopKCountryLeaderboardRequest, ListTopKCountryLeaderboardResponse>(
+    listTopKGlobalLeaderboard = withGrpcErrorHandler<ListTopKGlobalLeaderboardRequest, ListTopKGlobalLeaderboardResponse>(
         async (call, callback) => {
             const method = 'listTopKGlobalLeaderboard';
             const req = call.request;

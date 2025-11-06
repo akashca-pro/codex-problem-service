@@ -5,7 +5,9 @@ interface Submission {
     Id : string;
     status : string;
     language : Language;
-    executionResult : IExecutionResult
+    executionResult : IExecutionResult,
+    userCode : string,
+    createdAt : string
 }
 
 export interface IListProblemSpecicSubmissionsDTO {

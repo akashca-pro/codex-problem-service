@@ -115,6 +115,8 @@ export class SubmissionMapper {
                         stats,
                         failedTestCase,
                     },
+                    userCode : sub.userCode,
+                    createdAt : sub.createdAt.toISOString(),
                 };
             }),
             nextCursor,

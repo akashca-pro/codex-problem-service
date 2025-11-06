@@ -121,16 +121,17 @@ export class SubmissionService implements ISubmissionService {
                 errorMessage : SUBMISSION_ERROR_MESSAGES.SUBMISSION_NOT_FOUND
             }
         }
-        
+        const score = SCORE_MAP[submissionExist.difficulty];
+
         const updatedSubmission = await this.#_submissionRepo.update(submissionId, {
             executionResult : updatedData.executionResult,
-            status : updatedData.status
+            status : updatedData.status,
+            score : updatedData.status === 'accepted' ? score : undefined
         });
 
         if (updatedSubmission && updatedSubmission.status === 'accepted' && submissionExist.isFirst) {
             
             logger.info(`[SERVICE] ${method}: First accepted submission detected`, { submissionId, userId: updatedSubmission.userId });
-            const score = SCORE_MAP[updatedSubmission.difficulty];
 
             if (score > 0) {
                 try {
