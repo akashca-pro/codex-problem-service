@@ -10,6 +10,7 @@ export interface LeaderboardUser {
     score: number;
     problemsSolved?: number;
     username?: string;
+    rank?:number;
 }
 
 

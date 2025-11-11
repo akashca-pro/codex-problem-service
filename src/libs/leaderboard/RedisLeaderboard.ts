@@ -229,7 +229,6 @@ export class RedisLeaderboard implements ILeaderboard {
     }
 
     public async getUserEntity(userId: string): Promise<string> {
-        // Logging for this simple hget can be verbose, using debug level only
         logger.debug(`[LB] Getting entity for user ${userId}`);
         const entity = await this.#_redis.hget(this.getUsersHashKey(), userId);
         return entity || '';
@@ -278,8 +277,10 @@ export class RedisLeaderboard implements ILeaderboard {
             }
             logger.debug(`[LB] Hydrating ${topK.length} global users.`);
             const hydrated = await this.hydrateUsers(topK);
-            logger.info(`[LB] Successfully fetched and hydrated ${hydrated.length} global users.`);
-            return hydrated;
+            logger.debug(`[LB] Hydrated ${hydrated.length} global users.`);
+            const ranked = this.assignRanks(hydrated);
+            logger.info(`[LB] Successfully fetched top ${k} global users.`);
+            return ranked;
         } catch (error) {
             logger.error(`[LB] Failed to fetch top ${k} global users.`, error);
             throw error;
@@ -302,7 +303,6 @@ export class RedisLeaderboard implements ILeaderboard {
             }
             const userIds: string[] = [];
             const usersById: Map<string, LeaderboardUser> = new Map();
-            // Parse the list and prepare for hydration
             for (let i = 0; i < topKWithScores.length; i += 2) {
                 const id = topKWithScores[i];
                 const score = Number(topKWithScores[i + 1]);
@@ -331,11 +331,34 @@ export class RedisLeaderboard implements ILeaderboard {
                 }
             }
             logger.info(`[LB] Successfully fetched and hydrated ${userIds.length} users for entity: ${entity}.`);
-            return Array.from(usersById.values());
+            const ranked = this.assignRanks(Array.from(usersById.values()));
+            logger.info(`[LB] Successfully fetched top ${k} global users.`);
+            return ranked;
         } catch (error) {
             logger.error(`[LB] Failed to fetch top ${k} users for entity: ${entity}`, error);
             throw error;
         }
+    }
+
+    private assignRanks(users: Omit<LeaderboardUser, 'rank'>[]) : LeaderboardUser[] {
+        let lastScore: number | null = null;
+        let currentRank = 0;
+        let usersSeen = 0;
+
+        return users.map((user) => {
+            usersSeen++;
+
+            if (user.score !== lastScore) {
+            currentRank = usersSeen;
+            lastScore = user.score;
+            }
+
+            return {
+            ...user,
+            rank: currentRank,
+            };
+        });
+        
     }
 
     private async resyncFromDatabase(namespace : string = this.#_namespace) : Promise<void> {

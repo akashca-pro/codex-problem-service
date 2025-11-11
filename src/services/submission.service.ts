@@ -237,6 +237,7 @@ export class SubmissionService implements ISubmissionService {
         const method = 'listTopKGlobalLeaderboard';
         logger.info(`[SERVICE] ${method} started`, { k });
         const users = await this.#_leaderboard.getTopKGlobal(k);
+        console.log(users)
         logger.info(`[SERVICE] ${method} completed successfully`, { k });
         return {
             data : { users },
