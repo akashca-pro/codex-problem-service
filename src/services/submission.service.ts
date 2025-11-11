@@ -132,6 +132,7 @@ export class SubmissionService implements ISubmissionService {
         if (updatedSubmission && updatedSubmission.status === 'accepted' && submissionExist.isFirst) {
             
             logger.info(`[SERVICE] ${method}: First accepted submission detected`, { submissionId, userId: updatedSubmission.userId });
+            const cacheKeyLeaderboard = `${REDIS_PREFIX.DASHBOARD_LEADERBOARD}${updatedSubmission.userId}`
 
             if (score > 0) {
                 try {
@@ -150,7 +151,8 @@ export class SubmissionService implements ISubmissionService {
                         this.#_leaderboard.setUsername(
                             updatedSubmission.userId, 
                             updatedSubmission.username
-                        )
+                        ),
+                        this.#_cacheProvider.del(cacheKeyLeaderboard),
                     ])
                     logger.info(`[SERVICE] ${method}: Leaderboard score incremented and problems solved updated`, { userId: updatedSubmission.userId, score });
 
@@ -369,6 +371,8 @@ export class SubmissionService implements ISubmissionService {
         const method = 'updateCountryInLeaderboard';
         logger.info(`[SERVICE] ${method} started`, { userId, country });
         await this.#_leaderboard.updateEntityByUserId(userId, country);
+        const cacheKeyLeaderboard = `${REDIS_PREFIX.DASHBOARD_LEADERBOARD}${userId}`;
+        await this.#_cacheProvider.del(cacheKeyLeaderboard);
         logger.info(`[SERVICE] ${method} completed successfully`, { userId, country });
         return {
             data : null,
@@ -382,6 +386,8 @@ export class SubmissionService implements ISubmissionService {
         const method = 'removeUserInLeaderboard';
         logger.info(`[SERVICE] ${method} started`, { userId });
         await this.#_leaderboard.removeUser(userId);
+        const cacheKeyLeaderboard = `${REDIS_PREFIX.DASHBOARD_LEADERBOARD}${userId}`;
+        await this.#_cacheProvider.del(cacheKeyLeaderboard);
         logger.info(`[SERVICE] ${method} completed successfully`, { userId });
         return {
             data : null,
