@@ -2,8 +2,13 @@ import { PaginationDTO } from "@/dtos/PaginationDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { 
     CreateSubmissionRequest, 
+    GetDashboardStatsRequest, 
     GetSubmissionsRequest, 
     ListProblemSpecificSubmissionRequest, 
+    ListTopKCountryLeaderboardRequest, 
+    ListTopKGlobalLeaderboardRequest, 
+    RemoveUserRequest, 
+    UpdateCountryRequest, 
     UpdateSubmissionRequest 
 } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 
@@ -31,26 +36,23 @@ export interface ISubmissionService {
     ) : Promise<ResponseDTO>
 
     listTopKGlobalLeaderboard(
-        k : number
+       req : ListTopKGlobalLeaderboardRequest
     ) : Promise<ResponseDTO>
 
     listTopKCountryLeaderboard(
-        country : string,
-        k : number
+        req : ListTopKCountryLeaderboardRequest
     ) : Promise<ResponseDTO>
 
     getDashboardStats(
-        userId: string, 
-        userTimezone: string
+        req : GetDashboardStatsRequest
     ) : Promise<ResponseDTO>
 
     updateCountryInLeaderboard(
-        userId : string,
-        country : string
+        req : UpdateCountryRequest
     ) : Promise<ResponseDTO>
 
     removeUserInLeaderboard(
-        userId : string
+        req : RemoveUserRequest
     ) : Promise<ResponseDTO>
 
 }

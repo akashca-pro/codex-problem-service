@@ -153,9 +153,11 @@ export class RedisLeaderboard implements ILeaderboard {
             throw new Error("New entity cannot be empty");
         }
         try {
-            const [oldEntity, score] = await Promise.all([
+            const [oldEntity, score, username, problemsSolved] = await Promise.all([
                 this.getUserEntity(userId),
-                this.getUserScore(userId)
+                this.getUserScore(userId),
+                this.getUsername(userId),
+                this.getProblemsSolved(userId)
             ]);
             if(oldEntity === newEntity) {
                 logger.debug(`[LB] Entity is unchanged for user ${userId}. Skipping update.`, { userId, entity: newEntity });
@@ -168,8 +170,20 @@ export class RedisLeaderboard implements ILeaderboard {
             }
             multi.zadd(this.getEntityKey(newEntity), score, userId);
             multi.hset(this.getUsersHashKey(), userId, newEntity);
+            if (username) {
+                multi.hset(this.getUsernameHashKey(), userId, username);
+            }
+            if (problemsSolved !== null) {
+                multi.hset(this.getProblemsSolvedHashKey(), userId, problemsSolved);
+            }
             await multi.exec();
-            logger.info(`[LB] Successfully updated entity for user ${userId} from ${oldEntity} to ${newEntity}`, { userId, oldEntity, newEntity });
+            logger.info(`[LB] Successfully updated entity and refreshed metadata for user ${userId}`, {
+                userId,
+                oldEntity,
+                newEntity,
+                username,
+                problemsSolved,
+            });
         } catch (error) {
             logger.error(`[LB] Failed to update entity for user ${userId}`, error);
             throw error;
@@ -260,6 +274,12 @@ export class RedisLeaderboard implements ILeaderboard {
     public async getUsername(userId: string): Promise<string | null> {
         logger.debug(`[LB] Getting username for user ${userId}`);
         return this.#_redis.hget(this.getUsernameHashKey(), userId);
+    }
+
+    public async getProblemsSolved(userId : string) : Promise<number> {
+        logger.debug(`[LB] Getting problems solved for user ${userId}`);
+        const problemsSolved = await this.#_redis.hget(this.getProblemsSolvedHashKey(), userId);
+        return problemsSolved ? parseInt(problemsSolved, 10) : 0;
     }
 
     public async getTopKGlobal(k : number = this.#_k): Promise<LeaderboardUser[]> {

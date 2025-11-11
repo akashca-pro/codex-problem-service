@@ -5,7 +5,7 @@ import { ISubmissionService } from "./interfaces/submission.service.interface";
 import { ISubmissionRepository } from "@/repos/interfaces/submission.repository.interface";
 import mongoose, { Types } from "mongoose";
 import { PaginationDTO } from "@/dtos/PaginationDTO";
-import { CreateSubmissionRequest, GetSubmissionsRequest, ListProblemSpecificSubmissionRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import { CreateSubmissionRequest, GetDashboardStatsRequest, GetSubmissionsRequest, ListProblemSpecificSubmissionRequest, ListTopKCountryLeaderboardRequest, ListTopKGlobalLeaderboardRequest, UpdateCountryRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { IProblemRepository } from "@/repos/interfaces/problem.repository.interface";
 import { PROBLEM_ERROR_MESSAGES, SUBMISSION_ERROR_MESSAGES } from "@/const/ErrorType.const"
 import { SubmissionMapper } from "@/dtos/mappers/SubmissionMapper";
@@ -232,8 +232,9 @@ export class SubmissionService implements ISubmissionService {
     }
 
     async listTopKGlobalLeaderboard(
-        k: number
+        req : ListTopKGlobalLeaderboardRequest
     ): Promise<ResponseDTO> {
+        const { k } = req;
         const method = 'listTopKGlobalLeaderboard';
         logger.info(`[SERVICE] ${method} started`, { k });
         const users = await this.#_leaderboard.getTopKGlobal(k);
@@ -246,9 +247,9 @@ export class SubmissionService implements ISubmissionService {
     }
 
     async listTopKCountryLeaderboard(
-        country: string, 
-        k: number
+        req : ListTopKCountryLeaderboardRequest
     ): Promise<ResponseDTO> {
+        const { country, k } = req;
         const method = 'listTopKCountryLeaderboard';
         logger.info(`[SERVICE] ${method} started`, { country, k });
         const users = await this.#_leaderboard.getTopKEntity(country, k)
@@ -260,9 +261,9 @@ export class SubmissionService implements ISubmissionService {
     }
 
     async getDashboardStats(
-        userId: string, 
-        userTimezone: string
+        req : GetDashboardStatsRequest
     ) : Promise<ResponseDTO> {
+        const { userId, userTimezone } = req;
         const method = 'getDashboardStats';
         logger.info(`[SERVICE] ${method} started`, { userId });
 
@@ -366,10 +367,19 @@ export class SubmissionService implements ISubmissionService {
     }
 
     async updateCountryInLeaderboard(
-        userId: string, 
-        country: string
+        req : UpdateCountryRequest
     ): Promise<ResponseDTO> {
+        const { userId, country } = req;
         const method = 'updateCountryInLeaderboard';
+        const isUserExistInLeaderboard =await this.#_firstSubmissionRepo.findOne({ userId })
+        if(!isUserExistInLeaderboard){
+            logger.warn(`[SERVICE] ${method} failed: User not found in leaderboard`, { userId });
+            return {
+                data : null,
+                success : false,
+                errorMessage : SUBMISSION_ERROR_MESSAGES.SUBMISSION_NOT_FOUND
+            }
+        }
         logger.info(`[SERVICE] ${method} started`, { userId, country });
         await this.#_leaderboard.updateEntityByUserId(userId, country);
         const cacheKeyLeaderboard = `${REDIS_PREFIX.DASHBOARD_LEADERBOARD}${userId}`;
@@ -382,8 +392,9 @@ export class SubmissionService implements ISubmissionService {
     }
 
     async removeUserInLeaderboard(
-        userId: string
+        req : UpdateCountryRequest
     ): Promise<ResponseDTO> {
+        const { userId } = req;
         const method = 'removeUserInLeaderboard';
         logger.info(`[SERVICE] ${method} started`, { userId });
         await this.#_leaderboard.removeUser(userId);

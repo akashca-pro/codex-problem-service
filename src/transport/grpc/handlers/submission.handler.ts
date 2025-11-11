@@ -114,7 +114,7 @@ export class SubmissionHandler {
             const method = 'listTopKGlobalLeaderboard';
             const req = call.request;
             logger.info(`[gRPC] ${method} started`, { k: req.k });
-            const result = await this.#_submissionService.listTopKGlobalLeaderboard(req.k);
+            const result = await this.#_submissionService.listTopKGlobalLeaderboard(req);
             logger.info(`[gRPC] ${method} completed successfully`, { k: req.k });
             return callback(null,result.data);
         }
@@ -125,7 +125,7 @@ export class SubmissionHandler {
             const method = 'listTopKCountryLeaderboard';
             const req = call.request;
             logger.info(`[gRPC] ${method} started`, { country: req.country, k: req.k });
-            const result = await this.#_submissionService.listTopKCountryLeaderboard(req.country, req.k); 
+            const result = await this.#_submissionService.listTopKCountryLeaderboard(req); 
             logger.info(`[gRPC] ${method} completed successfully`, { country: req.country, k: req.k });
             return callback(null,result.data);
         }
@@ -136,7 +136,7 @@ export class SubmissionHandler {
             const method = 'getDashboardStats';
             const req = call.request;
             logger.info(`[gRPC] ${method} started`, { userId: req.userId });
-            const result = await this.#_submissionService.getDashboardStats(req.userId, req.userTimezone);
+            const result = await this.#_submissionService.getDashboardStats(req);
             return callback(null, result.data)
         }
     )
@@ -146,7 +146,7 @@ export class SubmissionHandler {
             const method = 'updateCountryInLeaderboard';
             const req = call.request;
             logger.info(`[gRPC] ${method} started`, { userId: req.userId, country: req.country });
-            const result = await this.#_submissionService.updateCountryInLeaderboard(req.userId, req.country);
+            const result = await this.#_submissionService.updateCountryInLeaderboard(req);
             return callback(null, result.data)
         }
     )
@@ -156,7 +156,7 @@ export class SubmissionHandler {
             const method = 'removeUserInLeaderboard';
             const req = call.request;
             logger.info(`[gRPC] ${method} started`, { userId: req.userId });
-            const result = await this.#_submissionService.removeUserInLeaderboard(req.userId);
+            const result = await this.#_submissionService.removeUserInLeaderboard(req);
             return callback(null, result.data)
         }
     )
