@@ -13,7 +13,7 @@ import logger from '@/utils/pinoLogger';
 import { IFirstSubmissionRepository } from "@/repos/interfaces/firstSubmission.repository.interface";
 import { ILeaderboard } from "@/libs/leaderboard/leaderboard.interface";
 import { SCORE_MAP } from "@/const/ScoreMap.const";
-import { IActivity } from "@/dtos/Activity.dto";
+import { IActivity, ISolvedByDifficulty } from "@/dtos/Activity.dto";
 import { format, subDays, differenceInHours, differenceInDays } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
@@ -305,7 +305,7 @@ export class SubmissionService implements ISubmissionService {
             logger.info(`[SERVICE] ${method} leaderboard cache miss`, { userId })
         }
 
-        // Problems solved
+        // Problems solved (overall)
         let problemsSolved: number;
         const cacheKeyProblemsSolved = `${REDIS_PREFIX.DASHBOARD_PROBLEMS_SOLVED}${userId}`;
         const cachedSolved = await this.#_cacheProvider.get(cacheKeyProblemsSolved);
@@ -316,6 +316,19 @@ export class SubmissionService implements ISubmissionService {
             problemsSolved = await this.#_submissionRepo.getProblemsSolvedCount(userId);
             await this.#_cacheProvider.set(cacheKeyProblemsSolved, problemsSolved, 600); // 10 min
             logger.info(`[SERVICE] ${method} problems solved cache miss`, { userId })
+        }
+
+        // Problems solved (based on difficulty)
+        let solvedByDifficulty: ISolvedByDifficulty[];
+        const cacheKeySolvedByDifficulty = `${REDIS_PREFIX.DASHBOARD_PROBLEMS_SOLVED_BY_DIFFICULTY}${userId}`;
+        const cachedSolvedByDifficulty = await this.#_cacheProvider.get(cacheKeySolvedByDifficulty);
+        if (cachedSolvedByDifficulty) {
+            solvedByDifficulty = cachedSolvedByDifficulty as ISolvedByDifficulty[];
+            logger.info(`[SERVICE] ${method} problems solved by difficulty cache hit`, { userId })
+        } else {
+            solvedByDifficulty = await this.#_submissionRepo.getProblemsSolvedByDifficulty(userId);
+            await this.#_cacheProvider.set(cacheKeySolvedByDifficulty, solvedByDifficulty, 600); // 10  
+            logger.info(`[SERVICE] ${method} problems solved by difficulty cache miss`, { userId })
         }
 
         // Recent activities
@@ -357,6 +370,7 @@ export class SubmissionService implements ISubmissionService {
                 leaderboardDetails,
                 problemsSolved,
                 recentActivities,
+                solvedByDifficulty
             },
         };
     }

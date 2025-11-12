@@ -3,7 +3,7 @@ import { IExecutionResult, ISubmission } from "@/db/interface/submission.interfa
 import { BaseRepository } from "./base.repository";
 import { ISubmissionRepository } from "./interfaces/submission.repository.interface";
 import logger from '@/utils/pinoLogger';
-import { IActivity, IRecentActivity } from "@/dtos/Activity.dto";
+import { IActivity, IRecentActivity, ISolvedByDifficulty } from "@/dtos/Activity.dto";
 
 /**
  * This class implements the submission repository
@@ -175,4 +175,49 @@ export class SubmissionRepository
             throw error;
         }
     }
+
+    async getProblemsSolvedByDifficulty(
+        userId : string
+    ) : Promise<ISolvedByDifficulty[]> {
+        const startTime = Date.now();
+        const operation = 'getProblemsSolvedByDifficulty';
+        logger.debug(`[REPO] Executing ${operation}`, { userId });
+
+        try {
+            const solvedProblems = await this._model.aggregate<ISolvedByDifficulty>([
+                {
+                    $match: {
+                        userId,
+                        status: 'accepted'
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            userId: '$userId',
+                            problemId: '$problemId'
+                        },
+                        difficulty: { $first: '$difficulty' }
+                    }
+                },
+                {
+                    $group: {
+                        _id: '$difficulty',
+                        count: { $sum: 1 }
+                    }
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        difficulty: '$_id',
+                        count: 1
+                    }
+                }
+            ]);
+            return solvedProblems;
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, userId, duration: Date.now() - startTime });
+            throw error;
+        }
+    }   
 }

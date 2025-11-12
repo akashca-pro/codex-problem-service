@@ -9,3 +9,8 @@ export interface IRecentActivity {
   status: string;
   createdAt: Date;
 }
+
+export interface ISolvedByDifficulty {
+  difficulty : string;
+  count : number;
+}

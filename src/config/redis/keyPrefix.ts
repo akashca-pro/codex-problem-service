@@ -7,6 +7,7 @@ export const REDIS_PREFIX = {
   DASHBOARD_STREAK: 'dashboard:streak:',                  // + userId
   DASHBOARD_LEADERBOARD: 'dashboard:leaderboard:',        // + userId
   DASHBOARD_PROBLEMS_SOLVED: 'dashboard:problemsSolved:', // + userId
+  DASHBOARD_PROBLEMS_SOLVED_BY_DIFFICULTY: 'dashboard:problemsSolvedByDifficulty:', // + userId
   DASHBOARD_RECENT_ACTIVITY: 'dashboard:recentActivity:', // + userId
 
   GLOBAL_LEADERBOARD: 'leaderboard:global:',
