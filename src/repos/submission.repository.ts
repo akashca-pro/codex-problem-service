@@ -146,4 +146,33 @@ export class SubmissionRepository
             throw error;
         }
     }
+
+    async getProblemsSolvedCount(
+        userId: string
+    ): Promise<number> {
+        const startTime = Date.now();
+        const operation = 'getProblemsSolvedCount';
+        logger.debug(`[REPO] Executing ${operation}`, { userId });
+
+        try {
+            const solvedProblems = await this._model.aggregate([
+                {
+                    $match: { userId, status: 'accepted' }
+                },
+                {
+                    $group : { 
+                        _id : "$problemId",
+                    }
+                },
+                {
+                    $count : "count"
+                }
+            ])
+            logger.info(`[REPO] ${operation} successful`, { userId, duration: Date.now() - startTime });
+            return solvedProblems.length;
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, { error, userId, duration: Date.now() - startTime });
+            throw error;
+        }
+    }
 }

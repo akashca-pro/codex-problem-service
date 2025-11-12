@@ -24,4 +24,8 @@ export interface ISubmissionRepository extends BaseRepository<ISubmission> {
         limit: number
     ) : Promise<IRecentActivity[]>
 
+    getProblemsSolvedCount(
+        userId: string
+    ) : Promise<number> 
+
 }

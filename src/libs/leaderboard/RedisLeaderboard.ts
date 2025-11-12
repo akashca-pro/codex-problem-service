@@ -255,20 +255,21 @@ export class RedisLeaderboard implements ILeaderboard {
     }
 
     public async getRankGlobal(userId: string): Promise<number> {
-        logger.debug(`[LB] Getting global rank for user ${userId}`);
-        const rank = await this.#_redis.zrevrank(this.getGlobalKey(), userId);
-        return rank === null ? -1 : rank;
+        const score = await this.getUserScore(userId);
+        if (score === null || score === 0) return -1;
+        const countHigher = await this.#_redis.zcount(this.getGlobalKey(), `(${score}`, '+inf');
+        const competitionRank = countHigher + 1; 
+        return competitionRank;
     }
 
     public async getRankEntity(userId: string): Promise<number> {
-        logger.debug(`[LB] Getting entity rank for user ${userId}`);
         const entity = await this.getUserEntity(userId);
-        if (!entity) {
-            logger.debug(`[LB] User ${userId} has no entity, returning rank -1.`);
-            return -1;
-        }
-        const rank = await this.#_redis.zrevrank(this.getEntityKey(entity), userId);
-        return rank === null ? -1 : rank;
+        if (!entity) return -1;
+        const score = await this.getUserScore(userId);
+        if (score === null || score === 0) return -1;
+        const countHigher = await this.#_redis.zcount(this.getEntityKey(entity), `(${score}`, '+inf');
+        const competitionRank = countHigher + 1; 
+        return competitionRank;
     }
 
     public async getUsername(userId: string): Promise<string | null> {

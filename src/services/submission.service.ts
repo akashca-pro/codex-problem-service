@@ -202,7 +202,7 @@ export class SubmissionService implements ISubmissionService {
             logger.debug(`[SERVICE] ${method}: Applied cursor filter`, { createdAtLt: request.nextCursor });
         }
         
-        const select = ['status','language','executionResult','problemId','userId','createdAt']
+        const select = ['status','language','executionResult','problemId','userId','createdAt','userCode']
         const submissions = await this.#_submissionRepo.findPaginatedLean(
             filter,
             0,          
@@ -222,7 +222,6 @@ export class SubmissionService implements ISubmissionService {
             nextCursor ?? '',
             hasMore
         )
-        
         logger.info(`[SERVICE] ${method} completed successfully`, { count: submissions.length, hasMore, nextCursor });
 
         return {
@@ -314,10 +313,7 @@ export class SubmissionService implements ISubmissionService {
             problemsSolved = cachedSolved as number;
             logger.info(`[SERVICE] ${method} problems solved cache hit`, { userId })
         } else {
-            problemsSolved = await this.#_submissionRepo.countDocuments({ 
-                userId, 
-                status: 'accepted' 
-            });
+            problemsSolved = await this.#_submissionRepo.getProblemsSolvedCount(userId);
             await this.#_cacheProvider.set(cacheKeyProblemsSolved, problemsSolved, 600); // 10 min
             logger.info(`[SERVICE] ${method} problems solved cache miss`, { userId })
         }
@@ -353,7 +349,6 @@ export class SubmissionService implements ISubmissionService {
         }
         
         logger.info(`[SERVICE] ${method} completed successfully`, { userId });
-
         return {
             success: true,
             data: {
