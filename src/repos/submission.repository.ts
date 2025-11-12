@@ -3,7 +3,12 @@ import { IExecutionResult, ISubmission } from "@/db/interface/submission.interfa
 import { BaseRepository } from "./base.repository";
 import { ISubmissionRepository } from "./interfaces/submission.repository.interface";
 import logger from '@/utils/pinoLogger';
-import { IActivity, IRecentActivity, ISolvedByDifficulty } from "@/dtos/Activity.dto";
+import { 
+    IActivity, 
+    IAdminDashboardSubmissionStats, 
+    IRecentActivity, 
+    ISolvedByDifficulty 
+} from "@/dtos/dashboard.dto";
 
 /**
  * This class implements the submission repository
@@ -219,5 +224,82 @@ export class SubmissionRepository
             logger.error(`[REPO] ${operation} failed`, { error, userId, duration: Date.now() - startTime });
             throw error;
         }
-    }   
+    }
+    
+    async getAdminSubmissionStats(): Promise<IAdminDashboardSubmissionStats> {
+        const startTime = Date.now()
+        const operation = 'getAdminSubmissionStats'
+        logger.debug(`[REPO] Executing ${operation}`)
+
+        try {
+            const startOfToday = new Date()
+            startOfToday.setHours(0, 0, 0, 0)
+
+            const [result] = await this._model.aggregate([
+                {
+                    $facet: {
+                    // --- Total submissions ---
+                    totalSubmissions: [{ $count: 'count' }],
+
+                    // --- Today's submissions ---
+                    todaysSubmissions: [
+                        {
+                            $match: {
+                                createdAt: { $gte: startOfToday },
+                            },
+                        },
+                        { $count: 'count' },
+                    ],
+
+                    // --- Language-wise submissions ---
+                    languageWise: [
+                        {
+                            $group: {
+                                _id: '$language',
+                                count: { $sum: 1 },
+                            },
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                language: '$_id',
+                                count: 1,
+                            },
+                        },
+                    ],
+                    },
+                },
+                {
+                    // Normalize results to avoid missing fields when counts = 0
+                    $project: {
+                        totalSubmissions: {
+                            $ifNull: [{ $arrayElemAt: ['$totalSubmissions.count', 0] }, 0],
+                        },
+                        todaysSubmissions: {
+                            $ifNull: [{ $arrayElemAt: ['$todaysSubmissions.count', 0] }, 0],
+                        },
+                        languageWise: 1,
+                    },
+                },
+            ])
+
+            const stats = {
+                totalSubmissions: result.totalSubmissions ?? 0,
+                todaysSubmissions: result.todaysSubmissions ?? 0,
+                languageWise: result.languageWise ?? [],
+            }
+
+            logger.info(`[REPO] ${operation} successful`, {
+                duration: Date.now() - startTime,
+                ...stats,
+            })
+            return stats
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, {
+                error,
+                duration: Date.now() - startTime,
+            })
+            throw error
+        }
+    }
 }

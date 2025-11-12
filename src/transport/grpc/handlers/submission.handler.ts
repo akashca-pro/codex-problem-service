@@ -2,7 +2,7 @@ import TYPES from "@/config/inversify/types";
 import { ISubmissionService } from "@/services/interfaces/submission.service.interface";
 import { withGrpcErrorHandler } from "@/utils/errorHandler";
 import { mapMessageToGrpcStatus } from "@/utils/mapMessageToGrpcCode";
-import { CreateSubmissionRequest, GetDashboardStatsRequest, GetDashboardStatsResponse, GetSubmissionsRequest, GetSubmissionsResponse, ListProblemSpecificSubmissionRequest, ListProblemSpecificSubmissionResponse, ListTopKCountryLeaderboardRequest, ListTopKCountryLeaderboardResponse, ListTopKGlobalLeaderboardRequest, ListTopKGlobalLeaderboardResponse, RemoveUserRequest, Submission, UpdateCountryRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import { CreateSubmissionRequest, GetDashboardStatsRequest, GetDashboardStatsResponse, GetProblemSubmissionStatsResponse, GetSubmissionsRequest, GetSubmissionsResponse, ListProblemSpecificSubmissionRequest, ListProblemSpecificSubmissionResponse, ListTopKCountryLeaderboardRequest, ListTopKCountryLeaderboardResponse, ListTopKGlobalLeaderboardRequest, ListTopKGlobalLeaderboardResponse, RemoveUserRequest, Submission, UpdateCountryRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { Empty } from "@akashcapro/codex-shared-utils/dist/proto/compiled/google/protobuf/empty";
 import { inject, injectable } from "inversify";
 import logger from '@/utils/pinoLogger';
@@ -136,7 +136,18 @@ export class SubmissionHandler {
             const method = 'getDashboardStats';
             const req = call.request;
             logger.info(`[gRPC] ${method} started`, { userId: req.userId });
-            const result = await this.#_submissionService.getDashboardStats(req);
+            const result = await this.#_submissionService.getUserDashboardStats(req);
+            logger.info(`[gRPC] ${method} completed successfully`);
+            return callback(null, result.data)
+        }
+    )
+
+    getProblemSubmissionStats = withGrpcErrorHandler<Empty, GetProblemSubmissionStatsResponse>(
+        async (call, callback) => {
+            const method = 'getAdminDashboardStats';
+            logger.info(`[gRPC] ${method} started`);
+            const result = await this.#_submissionService.getProblemSubmissionStats();
+            logger.info(`[gRPC] ${method} completed successfully`);
             return callback(null, result.data)
         }
     )
@@ -147,6 +158,7 @@ export class SubmissionHandler {
             const req = call.request;
             logger.info(`[gRPC] ${method} started`, { userId: req.userId, country: req.country });
             const result = await this.#_submissionService.updateCountryInLeaderboard(req);
+            logger.info(`[gRPC] ${method} completed successfully`);
             return callback(null, result.data)
         }
     )
@@ -157,6 +169,7 @@ export class SubmissionHandler {
             const req = call.request;
             logger.info(`[gRPC] ${method} started`, { userId: req.userId });
             const result = await this.#_submissionService.removeUserInLeaderboard(req);
+            logger.info(`[gRPC] ${method} completed successfully`);
             return callback(null, result.data)
         }
     )
@@ -176,6 +189,7 @@ export class SubmissionHandler {
             getDashboardStats : this.getDashboardStats,
             updateCountryInLeaderboard : this.updateCountryInLeaderboard,
             removeUserInLeaderboard : this.removeUserInLeaderboard,
+            getProblemSubmissionStats : this.getProblemSubmissionStats
         }
     }
 }

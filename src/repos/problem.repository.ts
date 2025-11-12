@@ -4,6 +4,7 @@ import { BaseRepository } from "./base.repository";
 import { IProblemRepository } from "./interfaces/problem.repository.interface";
 import { type TestcaseType } from "@/const/TestcaseType.const";
 import logger from '@/utils/pinoLogger'; // Import the logger
+import { IAdminDashboardProblemStats } from "@/dtos/dashboard.dto";
 
 /**
  * This class implements the problem repository.
@@ -120,6 +121,84 @@ export class ProblemRepository extends BaseRepository<IProblem> implements IProb
             logger.info(`[REPO] ${operation} successful`, { problemId, templateCodeId, modified, duration: Date.now() - startTime });
         } catch (error) {
             logger.error(`[REPO] ${operation} failed`, { error, problemId, templateCodeId, duration: Date.now() - startTime });
+            throw error;
+        }
+    }
+
+    async getAdminProblemStats(): Promise<IAdminDashboardProblemStats> {
+        const startTime = Date.now();
+        const operation = 'getAdminProblemStats';
+        logger.debug(`[REPO] Executing ${operation}`);
+
+        try {
+            const startOfToday = new Date();
+            startOfToday.setHours(0, 0, 0, 0);
+
+            const [result] = await this._model.aggregate([
+                {
+                    $facet: {
+                    // --- Total problems ---
+                    totalProblems: [{ $count: "count" }],
+
+                    // --- Today's problems ---
+                    todaysProblems: [
+                        {
+                            $match: {
+                                createdAt: { $gte: startOfToday },
+                            },
+                        },
+                        { $count: "count" },
+                    ],
+
+                    // --- Difficulty-wise problems ---
+                        difficultyWise: [
+                            {
+                                $group: {
+                                    _id: "$difficulty",
+                                    count: { $sum: 1 },
+                                },
+                            },
+                            {
+                                $project: {
+                                    _id: 0,
+                                    difficulty: "$_id",
+                                    count: 1,
+                                },
+                            },
+                        ],
+                    },
+                },
+                {
+                    // Normalize results to always have valid fields
+                    $project: {
+                        totalProblems: {
+                            $ifNull: [{ $arrayElemAt: ["$totalProblems.count", 0] }, 0],
+                        },
+                        todaysProblems: {
+                            $ifNull: [{ $arrayElemAt: ["$todaysProblems.count", 0] }, 0],
+                        },
+                        difficultyWise: 1,
+                    },
+                },
+            ]);
+
+            const stats: IAdminDashboardProblemStats = {
+                totalProblems: result.totalProblems ?? 0,
+                todaysProblems: result.todaysProblems ?? 0,
+                difficultyWise: result.difficultyWise ?? [],
+            };
+
+            logger.info(`[REPO] ${operation} successful`, {
+                duration: Date.now() - startTime,
+                ...stats,
+            });
+
+            return stats;
+        } catch (error) {
+            logger.error(`[REPO] ${operation} failed`, {
+                error,
+                duration: Date.now() - startTime,
+            });
             throw error;
         }
     }

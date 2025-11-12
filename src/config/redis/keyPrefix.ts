@@ -9,6 +9,7 @@ export const REDIS_PREFIX = {
   DASHBOARD_PROBLEMS_SOLVED: 'dashboard:problemsSolved:', // + userId
   DASHBOARD_PROBLEMS_SOLVED_BY_DIFFICULTY: 'dashboard:problemsSolvedByDifficulty:', // + userId
   DASHBOARD_RECENT_ACTIVITY: 'dashboard:recentActivity:', // + userId
+  DASHBOARD_ADMIN_STATS : 'dashboard:adminStats',
 
   GLOBAL_LEADERBOARD: 'leaderboard:global:',
   COUNTRY_LEADERBOARD: 'leaderboard:country:',            // + countryCode

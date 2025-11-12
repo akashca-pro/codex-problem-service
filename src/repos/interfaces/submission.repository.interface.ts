@@ -1,6 +1,11 @@
 import { IExecutionResult, ISubmission } from "@/db/interface/submission.interface";
 import { BaseRepository } from "../base.repository";
-import { IActivity, IRecentActivity, ISolvedByDifficulty } from "@/dtos/Activity.dto";
+import { 
+    IActivity, 
+    IAdminDashboardSubmissionStats, 
+    IRecentActivity, 
+    ISolvedByDifficulty
+} from "@/dtos/dashboard.dto";
 
 /**
  * Interface representing the structure of the submission repository.
@@ -31,5 +36,7 @@ export interface ISubmissionRepository extends BaseRepository<ISubmission> {
     getProblemsSolvedByDifficulty(
         userId: string
     ) : Promise<ISolvedByDifficulty[]>
+
+    getAdminSubmissionStats() : Promise<IAdminDashboardSubmissionStats>
 
 }

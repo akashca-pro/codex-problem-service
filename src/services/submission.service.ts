@@ -13,7 +13,7 @@ import logger from '@/utils/pinoLogger';
 import { IFirstSubmissionRepository } from "@/repos/interfaces/firstSubmission.repository.interface";
 import { ILeaderboard } from "@/libs/leaderboard/leaderboard.interface";
 import { SCORE_MAP } from "@/const/ScoreMap.const";
-import { IActivity, ISolvedByDifficulty } from "@/dtos/Activity.dto";
+import { IActivity, ISolvedByDifficulty } from "@/dtos/dashboard.dto";
 import { format, subDays, differenceInHours, differenceInDays } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
@@ -259,11 +259,11 @@ export class SubmissionService implements ISubmissionService {
         }
     }
 
-    async getDashboardStats(
+    async getUserDashboardStats(
         req : GetDashboardStatsRequest
     ) : Promise<ResponseDTO> {
         const { userId, userTimezone } = req;
-        const method = 'getDashboardStats';
+        const method = 'getUserDashboardStats';
         logger.info(`[SERVICE] ${method} started`, { userId });
 
         // Heatmap
@@ -373,6 +373,34 @@ export class SubmissionService implements ISubmissionService {
                 solvedByDifficulty
             },
         };
+    }
+
+    async getProblemSubmissionStats(): Promise<ResponseDTO> {
+        const method = 'getProblemSubmissionStats';
+        logger.info(`[SERVICE] ${method} started`);
+        const cacheKey = `${REDIS_PREFIX.DASHBOARD_ADMIN_STATS}`;
+        const cached = await this.#_cacheProvider.get(cacheKey);
+        if(cached){
+            logger.info(`[SERVICE] ${method} cache hit`);
+            return {
+                data : cached,
+                success : true
+            }
+        }
+        const [submissionStats, problemStats] = await Promise.all([
+            this.#_submissionRepo.getAdminSubmissionStats(),
+            this.#_problemRepo.getAdminProblemStats()
+        ])
+        const outDTO = {
+            submissionStats,
+            problemStats
+        }
+        await this.#_cacheProvider.set(cacheKey, outDTO, 60);
+        logger.info(`[SERVICE] ${method} cache  miss`);
+        return {
+            data : outDTO,
+            success : true
+        }
     }
 
     async updateCountryInLeaderboard(

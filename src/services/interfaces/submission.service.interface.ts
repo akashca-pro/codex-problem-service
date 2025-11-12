@@ -43,9 +43,11 @@ export interface ISubmissionService {
         req : ListTopKCountryLeaderboardRequest
     ) : Promise<ResponseDTO>
 
-    getDashboardStats(
+    getUserDashboardStats(
         req : GetDashboardStatsRequest
     ) : Promise<ResponseDTO>
+
+    getProblemSubmissionStats() : Promise<ResponseDTO>
 
     updateCountryInLeaderboard(
         req : UpdateCountryRequest
