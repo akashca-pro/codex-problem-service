@@ -19,6 +19,7 @@ import { toZonedTime } from 'date-fns-tz';
 import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
 import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
 import { LeaderboardData } from "@/dtos/Leaderboard.dto";
+import { GrpcUserService } from "@/transport/grpc/client/UserServices";
 
 /**
  * Class representing the service for managing submissions and leaderboard.
@@ -33,6 +34,7 @@ export class SubmissionService implements ISubmissionService {
     #_firstSubmissionRepo : IFirstSubmissionRepository;
     #_leaderboard : ILeaderboard;
     #_cacheProvider : ICacheProvider;
+    #_grpcUserService : GrpcUserService
 
     constructor(
         @inject(TYPES.ISubmissionRepository) submissionRepo : ISubmissionRepository,
@@ -128,6 +130,17 @@ export class SubmissionService implements ISubmissionService {
             status : updatedData.status,
             score : updatedData.status === 'accepted' ? score : undefined
         });
+
+        try {            
+            await this.#_grpcUserService.updateUserProgress({
+                userId : updatedSubmission?.userId!,
+                difficulty : updatedSubmission?.status === 'accepted' ? updatedSubmission.difficulty : undefined,
+                isSubmitted : true
+            })
+        } catch (error) {
+            // kafka event to retry it.
+            logger.error(`[SERVICE] ${method}: Failed to update user progress in user service`, { error })
+        }
 
         if (updatedSubmission && updatedSubmission.status === 'accepted' && submissionExist.isFirst) {
             

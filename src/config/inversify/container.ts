@@ -23,6 +23,7 @@ import { IFirstSubmissionRepository } from '@/repos/interfaces/firstSubmission.r
 import { FirstSubmissionRepository } from '@/repos/firstSubmission.repository';
 import { RedisLeaderboard } from '@/libs/leaderboard/RedisLeaderboard';
 import { ILeaderboard } from '@/libs/leaderboard/leaderboard.interface';
+import { GrpcUserService } from '@/transport/grpc/client/UserServices';
 
 const container = new Container();
 
@@ -69,5 +70,11 @@ container
     .bind<SubmissionHandler>(TYPES.SubmissionHandler)
     .to(SubmissionHandler);
 
+/**
+ * gRPC client calls.
+ */
+container
+    .bind<GrpcUserService>(TYPES.GrpcUserService)
+    .to(GrpcUserService).inSingletonScope();
 
 export default container
