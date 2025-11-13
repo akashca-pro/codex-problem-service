@@ -31,9 +31,6 @@ const TYPES = {
     GrpcUpdateSubmissionHandler : Symbol.for("GrpcUpdateSubmissionHandler"),
     GrpcGetSubmissionsHandler : Symbol.for("GrpcGetSubmissionsHandler"),
 
-    // gRPC client 
-    GrpcUserService : Symbol.for("GrpcUserService")
-
 }
 
 export default TYPES

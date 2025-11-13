@@ -139,6 +139,7 @@ export class SubmissionRepository
                         title: "$problem.title",
                         difficulty: "$problem.difficulty",
                         status: "$status",
+                        language : "$language",
                         createdAt: 1
                     }
                 }

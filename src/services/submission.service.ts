@@ -19,7 +19,7 @@ import { toZonedTime } from 'date-fns-tz';
 import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
 import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
 import { LeaderboardData } from "@/dtos/Leaderboard.dto";
-import { GrpcUserService } from "@/transport/grpc/client/UserServices";
+import grpcUserService from '@/transport/grpc/client/UserServices'
 
 /**
  * Class representing the service for managing submissions and leaderboard.
@@ -34,7 +34,6 @@ export class SubmissionService implements ISubmissionService {
     #_firstSubmissionRepo : IFirstSubmissionRepository;
     #_leaderboard : ILeaderboard;
     #_cacheProvider : ICacheProvider;
-    #_grpcUserService : GrpcUserService
 
     constructor(
         @inject(TYPES.ISubmissionRepository) submissionRepo : ISubmissionRepository,
@@ -132,7 +131,7 @@ export class SubmissionService implements ISubmissionService {
         });
 
         try {            
-            await this.#_grpcUserService.updateUserProgress({
+            await grpcUserService.updateUserProgress({
                 userId : updatedSubmission?.userId!,
                 difficulty : updatedSubmission?.status === 'accepted' ? updatedSubmission.difficulty : undefined,
                 isSubmitted : true
@@ -288,7 +287,7 @@ export class SubmissionService implements ISubmissionService {
             logger.info(`[SERVICE] ${method} heatmap cache hit`, { userId })
         } else {
             activity = await this.#_submissionRepo.getDailyActivity(userId, userTimezone);
-            await this.#_cacheProvider.set(cacheKeyHeatmap, activity, 300); // 5 mins
+            await this.#_cacheProvider.set(cacheKeyHeatmap, activity, 60); // 5 mins
             logger.info(`[SERVICE] ${method} heatmap cache miss`, { userId })
         }
 
@@ -367,6 +366,7 @@ export class SubmissionService implements ISubmissionService {
                     title: a.title,
                     difficulty: a.difficulty,
                     status: a.status,
+                    language : a.language,
                     timeAgo,
                 };
             });

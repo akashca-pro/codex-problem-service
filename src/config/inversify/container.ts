@@ -70,11 +70,5 @@ container
     .bind<SubmissionHandler>(TYPES.SubmissionHandler)
     .to(SubmissionHandler);
 
-/**
- * gRPC client calls.
- */
-container
-    .bind<GrpcUserService>(TYPES.GrpcUserService)
-    .to(GrpcUserService).inSingletonScope();
 
 export default container

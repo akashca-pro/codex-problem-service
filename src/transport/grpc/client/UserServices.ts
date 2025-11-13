@@ -1,4 +1,4 @@
-import { AuthUserServiceClient, UpdateUserProgressRequest, } from "@akashcapro/codex-shared-utils";
+import { AuthUserServiceClient,  UpdateUserProgressRequest, } from "@akashcapro/codex-shared-utils";
 import { GrpcBaseService } from "./GrpcBaseService";
 import { config } from "@/config";
 import { credentials } from "@grpc/grpc-js";
@@ -30,3 +30,5 @@ export class GrpcUserService extends GrpcBaseService {
     }
 
 }
+
+export default new GrpcUserService();

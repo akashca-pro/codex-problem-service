@@ -7,6 +7,7 @@ export interface IRecentActivity {
   title: string;
   difficulty: string;
   status: string;
+  language : string;
   createdAt: Date;
 }
 
