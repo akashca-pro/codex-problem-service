@@ -13,6 +13,7 @@ import { AddTestCaseRequest, BulkUploadTestCasesRequest, CreateProblemRequest,
 import { Empty } from "@akashcapro/codex-shared-utils/dist/proto/compiled/google/protobuf/empty";
 import { inject, injectable } from "inversify";
 import logger from '@/utils/pinoLogger'; // Import the logger
+import { UntypedServiceImplementation } from "@grpc/grpc-js";
 
 /**
  * Class Responsible for handling problem-related gRPC requests.
@@ -239,10 +240,7 @@ export class ProblemHandler {
         }
     )
 
-    /**
-     * * @returns {Record<string, Function>} - An object containing the bound handler methods for the gRPC service.
-     */
-    getServerHandlers() : Record<string,Function> {
+    getServerHandlers() : UntypedServiceImplementation {
         return {
             createProblem : this.createProblem,
             getProblem : this.getProblem,

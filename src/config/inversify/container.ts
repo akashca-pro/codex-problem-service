@@ -17,8 +17,8 @@ import { ProblemService } from '@/services/problem.service';
 import { ISubmissionService } from '@/services/interfaces/submission.service.interface';
 import { SubmissionService } from '@/services/submission.service';
 
-import { ProblemHandler } from '@/transport/grpc/handlers/problem.handler';
-import { SubmissionHandler } from '@/transport/grpc/handlers/submission.handler';
+import { ProblemHandler } from '@/transport/grpc/server/problem.handler';
+import { SubmissionHandler } from '@/transport/grpc/server/submission.handler';
 import { IFirstSubmissionRepository } from '@/repos/interfaces/firstSubmission.repository.interface';
 import { FirstSubmissionRepository } from '@/repos/firstSubmission.repository';
 import { RedisLeaderboard } from '@/libs/leaderboard/RedisLeaderboard';

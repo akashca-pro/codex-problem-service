@@ -6,6 +6,7 @@ import { CreateSubmissionRequest, GetDashboardStatsRequest, GetDashboardStatsRes
 import { Empty } from "@akashcapro/codex-shared-utils/dist/proto/compiled/google/protobuf/empty";
 import { inject, injectable } from "inversify";
 import logger from '@/utils/pinoLogger';
+import { UntypedServiceImplementation } from "@grpc/grpc-js";
 
 /**
  * Class Responsible for handling gRPC submissions requests.
@@ -174,11 +175,7 @@ export class SubmissionHandler {
         }
     )
 
-    /**
-     * Gets the service handlers for gRPC.
-     * * @returns {Record<string, Function>} - An object containing the bound handler methods for the gRPC service.
-     */
-    getServiceHandler() : Record<string, Function> {
+    getServiceHandler() : UntypedServiceImplementation {
         return {
             createSubmission : this.createSubmission,
             getSubmissions : this.getSubmissions,
