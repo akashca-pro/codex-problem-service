@@ -32,7 +32,6 @@ export interface IExample {
     _id? : string;
     input : string;
     output : string;
-    explanation : string;
 }
 
 /**

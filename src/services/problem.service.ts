@@ -245,7 +245,7 @@ export class ProblemService implements IProblemService {
         ...(updatedData.questionId && { questionId: updatedData.questionId }),
         ...(updatedData.examples?.length ? { examples: updatedData.examples } : {}),
         ...(updatedData.starterCodes?.length ? { starterCodes: updatedData.starterCodes } : {}),
-        active: updatedData.active ?? false, // always set, default false
+        active: updatedData.active ?? false, 
         };
         
         try {

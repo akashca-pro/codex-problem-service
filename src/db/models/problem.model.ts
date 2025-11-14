@@ -29,7 +29,6 @@ const ExamplesSchema = new Schema<IExample>(
     {
         input : { type : String, required : true },
         output : { type : String, required : true },
-        explanation : { type : String, required : true }
     }
 )
 
