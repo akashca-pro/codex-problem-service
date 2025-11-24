@@ -1,5 +1,6 @@
 import { 
     ExecutionResult as IGrpcExecutionResult,
+    HintsUsed as IGrpcHintsUsed,
     Stats as IGrpcStats,
     FailedTestCase as IGrpcFailedTestCase,
     Difficulty as GrpcDifficultyEnum, 
@@ -11,7 +12,7 @@ import { ICreateSubmissionRequestDTO } from "../submission/CreateSubmissionReque
 import { type Difficulty, DIFFICULTY } from "@/const/Difficulty.const";
 import { Language } from "@/enums/language.enum";
 import { IUpdateSubmissionRequestDTO } from "../submission/UpdateSubmissionRequestDTO";
-import { IExecutionResult, IFailedTestCase, IStats, ISubmission } from "@/db/interface/submission.interface";
+import { IExecutionResult, IFailedTestCase, IHintsUsed, IStats, ISubmission } from "@/db/interface/submission.interface";
 import { IGetSubmissionRequestDTO } from "../submission/getSubmissionRequestDTO";
 import { LeanDocument } from "mongoose";
 import { IListProblemSpecicSubmissionsDTO } from "../submission/listSubmissions.dto";
@@ -77,6 +78,8 @@ export class SubmissionMapper {
             : {}),
             difficulty : SubmissionMapper._mapServiceDifficulyEnum(body.difficulty),
             isFirst : body.isFirst,
+            hintsUsed : body.hintsUsed?.map(SubmissionMapper._mapServiceHintsUsed) ?? [],
+            isAiAssisted : body.isAiAssisted,
             status : body.status,
             updatedAt : body.updatedAt.toISOString(),
             createdAt : body.createdAt.toISOString()
@@ -116,12 +119,18 @@ export class SubmissionMapper {
                         failedTestCase,
                     },
                     userCode : sub.userCode,
+                    hintsUsed : sub.hintsUsed?.length ? sub.hintsUsed : [],
+                    isAiAssisted : sub.isAiAssisted,
                     createdAt : sub.createdAt.toISOString(),
                 };
             }),
             nextCursor,
             hasMore,
         };
+    }
+
+    static _mapServiceHintsUsed(h : IHintsUsed) : IGrpcHintsUsed {
+        return { Id : h._id!, level : h.level, description : h.description, hint : h.hint}
     }
 
     static _mapGrpcDifficultyEnum(difficulty : GrpcDifficultyEnum) : Difficulty {

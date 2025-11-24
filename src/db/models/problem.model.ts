@@ -1,5 +1,5 @@
 import mongoose, {Schema} from "mongoose";
-import { IExample, IProblem, IStarterCode, ITestCase, ITestCaseCollection, ITemplateCode } from "../interface/problem.interface";
+import { IExample, IProblem, IStarterCode, ITestCase, ITestCaseCollection, ITemplateCode, ISolutionRoadmap } from "../interface/problem.interface";
 import { Language } from "@/enums/language.enum";
 import { DIFFICULTY } from "@/const/Difficulty.const";
 const StarterCodeSchema = new Schema<IStarterCode>(
@@ -32,6 +32,13 @@ const ExamplesSchema = new Schema<IExample>(
     }
 )
 
+const SolutionRoadmapSchema = new Schema<ISolutionRoadmap>(
+    {
+        level : { type : Number, required : true },
+        description : { type : String, required : true }
+    },
+)
+
 const TemplateCodeSchema = new Schema<ITemplateCode>(
     {
         language: { type: String, required: true, enum: Object.values(Language) },
@@ -57,16 +64,19 @@ const ProblemSchema = new Schema<IProblem>(
         testcaseCollection: { type: TestCaseCollectionSchema, required: false, default : {} },
         templateCodes : { type :  [TemplateCodeSchema], required : false, default : [] },
         examples: { type: [ExamplesSchema], required: false  , default : []},
+        solutionRoadmap : { type : [SolutionRoadmapSchema], required : false, default : [] },
         active: { type: Boolean, default: true },
     },
 
     { timestamps : true }
 )
 
-ProblemSchema.index({ difficulty: 1, createdAt: 1 });
-ProblemSchema.index({ title: 1 });
-ProblemSchema.index({ tags : 1 });
-ProblemSchema.index({ questionId : 1 });
+    ProblemSchema.index({ questionId: 1 }, { unique: true });
+    ProblemSchema.index({ title: 1 }, { unique: true });
+    ProblemSchema.index({ title: 'text' });
+    ProblemSchema.index({ difficulty: 1, createdAt: 1 });
+    ProblemSchema.index({ tags: 1 });
+    ProblemSchema.index({ active: 1, difficulty: 1 });
 
 
 ProblemSchema.pre('save', function (next) {

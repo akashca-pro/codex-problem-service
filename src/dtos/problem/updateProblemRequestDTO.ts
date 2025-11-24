@@ -1,5 +1,6 @@
 import { type Difficulty } from "@/const/Difficulty.const";
 import { IExample, IStarterCode } from "@/db/interface/problem.interface";
+import { SolutionRoadmap } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 
 
 export interface IUpdatedDataForBasicProblem {
@@ -11,6 +12,7 @@ export interface IUpdatedDataForBasicProblem {
     tags? : string[];
     constraints? : string[];
     examples? : IExample[];
+    solutionRoadmap? : SolutionRoadmap[];
     starterCodes? : IStarterCode[];
 }
 

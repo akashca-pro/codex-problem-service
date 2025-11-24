@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IExecutionResult, IFailedTestCase, IStats, ISubmission } from "../interface/submission.interface";
+import { IExecutionResult, IFailedTestCase, IHintsUsed, IStats, ISubmission } from "../interface/submission.interface";
 import { SUBMISSION_STATUS_TYPES } from "@/const/SubmissionStatus.const";
 import { Language } from "@/enums/language.enum";
 import { DIFFICULTY } from "@/const/Difficulty.const";
@@ -35,6 +35,14 @@ const ExecutionSchema = new Schema<IExecutionResult>(
     {_id : false}
 )
 
+const HintsUsedSchema = new Schema<IHintsUsed>(
+    {
+        level : { type : Number, required : true },
+        description : { type : String, required : true },
+        hint : { type : String, required : true }
+    },
+)
+
 const SubmissionSchema = new Schema<ISubmission>(
     {
         problemId : { type : Schema.Types.ObjectId, ref : 'Problem', required : true },
@@ -49,15 +57,15 @@ const SubmissionSchema = new Schema<ISubmission>(
         userCode : { type : String, required : true },
         executionResult : { type : ExecutionSchema, required : false, default : {} },
         difficulty : { type : String, required : true, enum : Object.values(DIFFICULTY)},
-        isFirst : { type : Boolean, required : true, default : false }
+        isFirst : { type : Boolean, required : true, default : false },
+        isAiAssisted : { type : Boolean, required : true, default : false },
+        hintsUsed : { type : [HintsUsedSchema], required : false, default : [] }
     },
     { timestamps : true }
 )
 
 SubmissionSchema.index({ userId : 1 , createdAt : -1 });
 SubmissionSchema.index({ problemId : 1, createdAt : -1, userId : 1 });
-SubmissionSchema.index({ problemId : 1, userId : 1 });
-SubmissionSchema.index({ battleId : 1, userId : 1 });
 
 
 export const SubmissionModel = mongoose.model<ISubmission>('Submission',SubmissionSchema);

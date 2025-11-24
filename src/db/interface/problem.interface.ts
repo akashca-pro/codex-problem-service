@@ -55,6 +55,12 @@ export interface ITemplateCode {
     runWrapperCode : string;
 }
 
+export interface ISolutionRoadmap {
+    _id? : string;
+    level : number;
+    description : string;
+}
+
 /**
  * Interface representing the structure of the problem schema.
  * 
@@ -72,6 +78,7 @@ export interface IProblem extends Document {
     examples : IExample[];
     active : boolean;
     templateCodes : ITemplateCode[] | null;
+    solutionRoadmap : ISolutionRoadmap[] | null;
     createdAt : Date;
     updatedAt : Date;
 }

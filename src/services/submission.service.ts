@@ -214,7 +214,7 @@ export class SubmissionService implements ISubmissionService {
             logger.debug(`[SERVICE] ${method}: Applied cursor filter`, { createdAtLt: request.nextCursor });
         }
         
-        const select = ['status','language','executionResult','problemId','userId','createdAt','userCode']
+        const select = ['status','language','executionResult','problemId','userId','createdAt','userCode','hintsUsed','isAiAssisted']
         const submissions = await this.#_submissionRepo.findPaginatedLean(
             filter,
             0,          

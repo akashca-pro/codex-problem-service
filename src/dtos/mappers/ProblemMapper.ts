@@ -3,10 +3,11 @@ import { TESTCASE_TYPE, type TestcaseType } from "@/const/TestcaseType.const";
 import { Language } from "@/enums/language.enum";
 import { ICreateProblemRequestDTO } from "../problem/CreateProblemRequestDTO";
 import { IListProblemsRequestDTO } from "../problem/listProblemsRequestDTO";
-import { IExample, IProblem, IStarterCode, ITemplateCode, ITestCase, ITestCaseCollection } from "@/db/interface/problem.interface";
+import { IExample, IProblem, ISolutionRoadmap, IStarterCode, ITemplateCode, ITestCase, ITestCaseCollection } from "@/db/interface/problem.interface";
 import { IUpdateBasicProblemRequestDTO } from "../problem/updateProblemRequestDTO";
 import { 
     Example as IGrpcExample,
+    SolutionRoadmap as GrpcSolutionRoadmap,
     StarterCode as IGrpcStarterCode, 
     TestCase as IGrpcTestCase,
     TemplateCode as IGrpcTemplateCode,
@@ -87,6 +88,7 @@ export class ProblemMapper {
                 difficulty,
                 examples : body.examples?.map(ProblemMapper._mapGrpcExample) ?? [],
                 starterCodes : body.starterCodes?.map(ProblemMapper._mapGrpcStarterCode) ?? [],
+                solutionRoadmap : body.solutionRoadmap?.map(ProblemMapper._mapServiceSolutionRoadmap) ?? [],
                 tags : body.tags ?? [],
             }
         }
@@ -158,6 +160,7 @@ export class ProblemMapper {
                 submit: body.testcaseCollection?.submit?.map(ProblemMapper._mapServiceTestCase) ?? []
             },
             examples: body.examples?.map(ProblemMapper._mapServiceExample) ?? [],
+            solutionRoadmap : body.solutionRoadmap?.map(ProblemMapper._mapServiceSolutionRoadmap) ?? [],
             active: body.active ?? false,
             updatedAt: body.updatedAt instanceof Date ? body.updatedAt.toISOString() : body.updatedAt,
             createdAt: body.createdAt instanceof Date ? body.createdAt.toISOString() : body.createdAt
@@ -206,6 +209,10 @@ export class ProblemMapper {
 
     static _mapServiceExample(e : IExample) : IGrpcExample {
         return { Id : e._id!, input : e.input, output : e.output }
+    }
+
+    static _mapServiceSolutionRoadmap(s : ISolutionRoadmap) : GrpcSolutionRoadmap {
+        return { Id : s._id!, level : s.level, description : s.description }
     }
 
     static _mapGrpcStarterCode(s : IGrpcStarterCode) : IStarterCode {

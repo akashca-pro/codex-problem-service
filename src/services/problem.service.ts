@@ -244,6 +244,7 @@ export class ProblemService implements IProblemService {
         ...(updatedData.constraints?.length ? { constraints: updatedData.constraints } : {}),
         ...(updatedData.questionId && { questionId: updatedData.questionId }),
         ...(updatedData.examples?.length ? { examples: updatedData.examples } : {}),
+        ...(updatedData.solutionRoadmap?.length ? {solutionRoadmap : updatedData.solutionRoadmap} : {} ),
         ...(updatedData.starterCodes?.length ? { starterCodes: updatedData.starterCodes } : {}),
         active: updatedData.active ?? false, 
         };
