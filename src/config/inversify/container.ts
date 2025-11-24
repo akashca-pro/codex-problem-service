@@ -23,7 +23,8 @@ import { IFirstSubmissionRepository } from '@/repos/interfaces/firstSubmission.r
 import { FirstSubmissionRepository } from '@/repos/firstSubmission.repository';
 import { RedisLeaderboard } from '@/libs/leaderboard/RedisLeaderboard';
 import { ILeaderboard } from '@/libs/leaderboard/leaderboard.interface';
-import { GrpcUserService } from '@/transport/grpc/client/UserServices';
+import { IAiHintUsageRepository } from '@/repos/interfaces/aiHintUsage.repository.interface';
+import { AiHintUsageRepository } from '@/repos/aiHintUsage.repository';
 
 const container = new Container();
 
@@ -49,6 +50,9 @@ container
 container
     .bind<IFirstSubmissionRepository>(TYPES.IFirstSubmissionRepository)
     .to(FirstSubmissionRepository).inSingletonScope();
+container
+    .bind<IAiHintUsageRepository>(TYPES.IAiHintUsageRepository)
+    .to(AiHintUsageRepository).inSingletonScope();
 
 /**
  * Services

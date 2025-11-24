@@ -3,11 +3,13 @@ import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { 
     CreateSubmissionRequest, 
     GetDashboardStatsRequest, 
+    GetPreviousHintsRequest, 
     GetSubmissionsRequest, 
     ListProblemSpecificSubmissionRequest, 
     ListTopKCountryLeaderboardRequest, 
     ListTopKGlobalLeaderboardRequest, 
     RemoveUserRequest, 
+    RequestHintRequest, 
     UpdateCountryRequest, 
     UpdateSubmissionRequest 
 } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
@@ -55,6 +57,14 @@ export interface ISubmissionService {
 
     removeUserInLeaderboard(
         req : RemoveUserRequest
+    ) : Promise<ResponseDTO>
+
+    // requestAiHint(
+    //     req : RequestHintRequest
+    // ) : Promise<ResponseDTO>
+
+    getPreviousHints(
+        req : GetPreviousHintsRequest
     ) : Promise<ResponseDTO>
 
 }

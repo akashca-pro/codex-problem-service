@@ -38,8 +38,8 @@ const ExecutionSchema = new Schema<IExecutionResult>(
 const HintsUsedSchema = new Schema<IHintsUsed>(
     {
         level : { type : Number, required : true },
-        description : { type : String, required : true },
-        hint : { type : String, required : true }
+        hint : { type : String, required : true },
+        createdAt : { type : String, required : true }
     },
 )
 

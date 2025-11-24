@@ -5,7 +5,7 @@ import { ISubmissionService } from "./interfaces/submission.service.interface";
 import { ISubmissionRepository } from "@/repos/interfaces/submission.repository.interface";
 import mongoose, { Types } from "mongoose";
 import { PaginationDTO } from "@/dtos/PaginationDTO";
-import { CreateSubmissionRequest, GetDashboardStatsRequest, GetSubmissionsRequest, ListProblemSpecificSubmissionRequest, ListTopKCountryLeaderboardRequest, ListTopKGlobalLeaderboardRequest, UpdateCountryRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import { CreateSubmissionRequest, GetDashboardStatsRequest, GetPreviousHintsRequest, GetSubmissionsRequest, ListProblemSpecificSubmissionRequest, ListTopKCountryLeaderboardRequest, ListTopKGlobalLeaderboardRequest, UpdateCountryRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { IProblemRepository } from "@/repos/interfaces/problem.repository.interface";
 import { PROBLEM_ERROR_MESSAGES, SUBMISSION_ERROR_MESSAGES } from "@/const/ErrorType.const"
 import { SubmissionMapper } from "@/dtos/mappers/SubmissionMapper";
@@ -20,6 +20,7 @@ import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
 import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
 import { LeaderboardData } from "@/dtos/Leaderboard.dto";
 import grpcUserService from '@/transport/grpc/client/UserServices'
+import { IAiHintUsageRepository } from "@/repos/interfaces/aiHintUsage.repository.interface";
 
 /**
  * Class representing the service for managing submissions and leaderboard.
@@ -34,17 +35,20 @@ export class SubmissionService implements ISubmissionService {
     #_firstSubmissionRepo : IFirstSubmissionRepository;
     #_leaderboard : ILeaderboard;
     #_cacheProvider : ICacheProvider;
+    #_aiHintUsageRepo : IAiHintUsageRepository;
 
     constructor(
         @inject(TYPES.ISubmissionRepository) submissionRepo : ISubmissionRepository,
         @inject(TYPES.IProblemRepository) problemRepo : IProblemRepository,
         @inject(TYPES.IFirstSubmissionRepository) firstSubmissionRepo : IFirstSubmissionRepository,
+        @inject(TYPES.IAiHintUsageRepository) aiHintUsageRepo : IAiHintUsageRepository,
         @inject(TYPES.ILeaderboard) leaderboard : ILeaderboard,
         @inject(TYPES.ICacheProvider) cacheProvider : ICacheProvider
     ){
         this.#_submissionRepo = submissionRepo;
         this.#_problemRepo = problemRepo;
         this.#_firstSubmissionRepo = firstSubmissionRepo;
+        this.#_aiHintUsageRepo = aiHintUsageRepo;
         this.#_leaderboard = leaderboard;
         this.#_cacheProvider = cacheProvider;
     }
@@ -453,6 +457,30 @@ export class SubmissionService implements ISubmissionService {
         logger.info(`[SERVICE] ${method} completed successfully`, { userId });
         return {
             data : null,
+            success : true
+        }
+    }
+
+    async getPreviousHints(
+        req: GetPreviousHintsRequest
+    ): Promise<ResponseDTO> {
+        const method = 'getPreviousHints';
+        logger.info(`[SERVICE] ${method} started`, { userId: req.userId, problemId: req.problemId });
+        const usage = await this.#_aiHintUsageRepo.getUsedHintsByUserForProblem(req.userId, req.problemId);
+        if(!usage){
+            return {
+                data : null,
+                success : true
+            }
+        }
+        const formattedHints = usage.hintsUsed.map(hint => ({
+            hint: hint.hint,
+            level: hint.level,
+            createdAt: usage.createdAt.toISOString() 
+        }));
+        logger.info(`[SERVICE] ${method} completed`, { count: formattedHints.length });
+        return {
+            data : formattedHints,
             success : true
         }
     }

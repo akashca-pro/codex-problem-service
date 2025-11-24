@@ -9,6 +9,8 @@ const TYPES = {
     IProblemRepository : Symbol.for("IProblemRepository"),
     ISubmissionRepository : Symbol.for("ISubmissionRepository"),
     IFirstSubmissionRepository : Symbol.for("IFirstSubmissionRepository"),
+    IAiHintUsageRepository : Symbol.for("IAiHintUsageRepository"),
+
 
 
     // services

@@ -130,7 +130,7 @@ export class SubmissionMapper {
     }
 
     static _mapServiceHintsUsed(h : IHintsUsed) : IGrpcHintsUsed {
-        return { Id : h._id!, level : h.level, description : h.description, hint : h.hint}
+        return { Id : h._id!, level : h.level, hint : h.hint, createdAt : h.createdAt}
     }
 
     static _mapGrpcDifficultyEnum(difficulty : GrpcDifficultyEnum) : Difficulty {
