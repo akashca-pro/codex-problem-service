@@ -201,11 +201,11 @@ export class ProblemMapper {
     // ------------------ BASIC MAPPERS ------------------ //
 
     static _mapGrpcExample(e : IGrpcExample) : IExample {
-        return { _id : e.Id || undefined, input : e.input, output : e.output, explanation : e.explanation }
+        return { _id : e.Id || undefined, input : e.input, output : e.output }
     }
 
     static _mapServiceExample(e : IExample) : IGrpcExample {
-        return { Id : e._id!, input : e.input, output : e.output, explanation : e.explanation }
+        return { Id : e._id!, input : e.input, output : e.output }
     }
 
     static _mapGrpcStarterCode(s : IGrpcStarterCode) : IStarterCode {

@@ -212,42 +212,6 @@ export abstract class BaseRepository <T extends Document> {
     }
 
     /**
-     * Updates object that inside an array which itself is an object (field in the db) .
-     * @param documentId - The ID of the document to update.
-     * @param arrayName - The field name which itself an array of objects.
-     * @param itemId - The _id if the item inside the array.
-     * @param updatedFields - The object contains updated fields
-     */
-    async updateEmbeddedArrayItems(
-        documentId : string,
-        arrayName : string,
-        itemId : string,
-        updatedFields : Record<string,any>
-    ) : Promise<void> {
-        const startTime = Date.now();
-        const operation = `updateEmbeddedArrayItems:${this._model.modelName}`;
-        try {
-            logger.debug(`[REPO] Executing ${operation}`, { documentId, arrayName, itemId, updatedFieldKeys: Object.keys(updatedFields) });
-            const updateQuery : Record<string,any> = {};
-
-            for(const [key, value] of Object.entries(updatedFields)){
-                updateQuery[`${arrayName}.$.${key}`] = value;
-            }
-
-            const result = await this._model.updateOne(
-                {_id : documentId, [`${arrayName}._id`] : itemId },
-                { $set : updateQuery }
-            )
-            const matched = result.matchedCount > 0;
-            const modified = result.modifiedCount > 0;
-            logger.info(`[REPO] ${operation} successful`, { matched, modified, documentId, itemId, duration: Date.now() - startTime });
-        } catch (error) {
-            logger.error(`[REPO] ${operation} failed`, { error, documentId, arrayName, itemId, duration: Date.now() - startTime });
-            throw error;
-        }
-    }
-
-    /**
      * * @param filter - The filter query.
      * @returns The count of documents.
      */
