@@ -10,6 +10,7 @@ interface Config {
     PROBLEM_DETAILS_CACHE_EXPIRY : number;
     DEFAULT_GRPC_TIMEOUT: number;
     GRPC_AUTH_USER_SERVICE_URL : string;
+    GEMINI_API_KEY : string;
 }
 
 export const config : Config = {
@@ -20,5 +21,6 @@ export const config : Config = {
     SERVICE_NAME : "PROBLEM_SERVICE",
     PROBLEM_DETAILS_CACHE_EXPIRY : Number(process.env.PROBLEM_DETAILS_CACHE_EXPIRY)!,
     DEFAULT_GRPC_TIMEOUT : Number(process.env.DEFAULT_GRPC_TIMEOUT)!,
-    GRPC_AUTH_USER_SERVICE_URL : process.env.GRPC_AUTH_USER_SERVICE_URL!
+    GRPC_AUTH_USER_SERVICE_URL : process.env.GRPC_AUTH_USER_SERVICE_URL!,
+    GEMINI_API_KEY : process.env.GEMINI_API_KEY!
 }

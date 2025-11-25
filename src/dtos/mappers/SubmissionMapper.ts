@@ -202,18 +202,6 @@ export class SubmissionMapper {
     }
 }
 
-interface ICreateSubmissionInputDTO {
-    problemId : string;
-    userId : string;
-    username : string;
-    battleId? : string;
-    country? : string;
-    title : string;
-    language : GrpcLanguageEnum;
-    userCode : string;
-    difficulty : GrpcDifficultyEnum
-}
-
 interface IUpdateSubmissionInputDTO {
     Id : string;
     executionResult? : IGrpcExecutionResult;

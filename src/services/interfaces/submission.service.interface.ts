@@ -9,6 +9,7 @@ import {
     ListTopKCountryLeaderboardRequest, 
     ListTopKGlobalLeaderboardRequest, 
     RemoveUserRequest, 
+    RequestFullSolutionRequest, 
     RequestHintRequest, 
     UpdateCountryRequest, 
     UpdateSubmissionRequest 
@@ -59,12 +60,16 @@ export interface ISubmissionService {
         req : RemoveUserRequest
     ) : Promise<ResponseDTO>
 
-    // requestAiHint(
-    //     req : RequestHintRequest
-    // ) : Promise<ResponseDTO>
+    requestAiHint(
+        req : RequestHintRequest
+    ) : Promise<ResponseDTO>
 
     getPreviousHints(
         req : GetPreviousHintsRequest
+    ) : Promise<ResponseDTO>
+
+    requestFullSolution(
+        req : RequestFullSolutionRequest
     ) : Promise<ResponseDTO>
 
 }

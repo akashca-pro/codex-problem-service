@@ -5,7 +5,7 @@ import { ISubmissionService } from "./interfaces/submission.service.interface";
 import { ISubmissionRepository } from "@/repos/interfaces/submission.repository.interface";
 import mongoose, { Types } from "mongoose";
 import { PaginationDTO } from "@/dtos/PaginationDTO";
-import { CreateSubmissionRequest, GetDashboardStatsRequest, GetPreviousHintsRequest, GetSubmissionsRequest, ListProblemSpecificSubmissionRequest, ListTopKCountryLeaderboardRequest, ListTopKGlobalLeaderboardRequest, UpdateCountryRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import { CreateSubmissionRequest, GetDashboardStatsRequest, GetPreviousHintsRequest, GetSubmissionsRequest, ListProblemSpecificSubmissionRequest, ListTopKCountryLeaderboardRequest, ListTopKGlobalLeaderboardRequest, RequestFullSolutionRequest, RequestHintRequest, UpdateCountryRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { IProblemRepository } from "@/repos/interfaces/problem.repository.interface";
 import { PROBLEM_ERROR_MESSAGES, SUBMISSION_ERROR_MESSAGES } from "@/const/ErrorType.const"
 import { SubmissionMapper } from "@/dtos/mappers/SubmissionMapper";
@@ -21,6 +21,8 @@ import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
 import { LeaderboardData } from "@/dtos/Leaderboard.dto";
 import grpcUserService from '@/transport/grpc/client/UserServices'
 import { IAiHintUsageRepository } from "@/repos/interfaces/aiHintUsage.repository.interface";
+import ai from "@/config/gemini";
+import { generateFullSolutionPrompt, generateHintPrompt } from "@/utils/promptGenerator";
 
 /**
  * Class representing the service for managing submissions and leaderboard.
@@ -481,6 +483,153 @@ export class SubmissionService implements ISubmissionService {
         logger.info(`[SERVICE] ${method} completed`, { count: formattedHints.length });
         return {
             data : formattedHints,
+            success : true
+        }
+    }
+
+    async requestFullSolution(
+        req: RequestFullSolutionRequest
+    ): Promise<ResponseDTO> {
+        const method = 'requestFullSolution';
+        logger.info(`[SERVICE] ${method} started`, { userId: req.userId, problemId: req.problemId, language : req.language });
+        const cacheKey = `${REDIS_PREFIX.USER_PROBLEM_FULL_SOLUTION}${req.userId}:${req.problemId}:${req.language}`;
+        const cached = await this.#_cacheProvider.get(cacheKey);
+        if(cached){
+            logger.info(`[SERVICE] ${method} cache hit`);
+            return {
+                data : cached,
+                success : true
+            }
+        }
+        logger.info(`[SERVICE] ${method} cache miss`);
+        const problem = await this.#_problemRepo.findById(req.problemId);
+        if (!problem) {
+            logger.error(`[SERVICE] Problem not found`, { problemId: req.problemId });
+
+            return { 
+                success: false, 
+                data : null,
+                errorMessage: PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
+            };
+        }
+        const starterCode = problem.starterCodes.find(
+        (s) => s.language === req.language
+        );
+        const prompt = generateFullSolutionPrompt({
+            problemTitle : problem.title!,
+            problemDescription : problem.description!,
+            language : req.language,
+            functionStructure : starterCode?.code!
+        })
+        logger.debug(`[SERVICE] Generated full solution prompt`, { preview: prompt.slice(0, 150) + "..." });
+
+        const aiResponse = await ai.models.generateContent({
+            model : "gemini-2.0-flash",
+            contents : prompt
+        })
+        logger.debug(`[SERVICE] AI response received`);
+        const fullSolution = aiResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+        await this.#_cacheProvider.set(cacheKey, {solution : fullSolution}, 86400);
+        logger.info(`[SERVICE] ${method} completed successfully`, { userId: req.userId, problemId: req.problemId });
+        return {
+            data : {solution : fullSolution},
+            success : true
+        }
+    }
+
+    async requestAiHint(
+        req: RequestHintRequest
+    ): Promise<ResponseDTO> {
+        const method = 'requestAiHint';
+        const startTime = Date.now();
+        logger.info(`[SERVICE] ${method} started`, { userId: req.userId, problemId: req.problemId });
+
+        const usage = await this.#_aiHintUsageRepo.getUsedHintsByUserForProblem(req.userId, req.problemId);
+
+        logger.debug(`[SERVICE] Existing hint usage check`, { alreadyUsedHints: usage?.hintsUsed.length || 0,});
+
+        if (usage && usage.hintsUsed.length >= 5) {
+            logger.warn(`[SERVICE] AI hint limit reached`, { userId: req.userId, problemId: req.problemId });
+            return {
+                data: null,
+                success: false,
+                errorMessage: SUBMISSION_ERROR_MESSAGES.OUT_OF_AI_HINTS
+            };
+        }
+        const problem = await this.#_problemRepo.findById(req.problemId);
+
+        if (!problem) {
+            logger.error(`[SERVICE] Problem not found`, { problemId: req.problemId });
+
+            return { 
+                success: false, 
+                data : null,
+                errorMessage: PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
+            };
+        }
+
+        const prompt = generateHintPrompt({
+            problemTitle : problem?.title!,
+            problemDescription : problem?.description!,
+            language : req.language,
+            solutionRoadmap : problem?.solutionRoadmap!,
+            userCode : req.userCode
+        });
+
+        logger.debug(`[SERVICE] Generated AI prompt`, { preview: prompt.slice(0, 150) + "..." });
+        
+        const aiResponse = await ai.models.generateContent({
+            model : "gemini-2.0-flash",
+            contents : prompt
+        })
+
+        const rawText = aiResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+        const cleanedText = rawText!.replace(/```json|```/g, "").trim();
+
+        logger.debug(`[SERVICE] AI response received`);
+
+        const parsed = JSON.parse(cleanedText!) as {
+            current_step_analysis: string;
+            current_step_number: number;
+            hint_message: string;
+        };
+
+        logger.info(`[SERVICE] Parsed AI hint`, { 
+            current_step_analysis: parsed.current_step_analysis, 
+            current_step_number: parsed.current_step_number 
+        });
+
+        const step = problem?.solutionRoadmap?.find(
+        (s) => s.level === parsed.current_step_number
+        );
+
+        const newHint = {
+            level: parsed.current_step_number, 
+            description: step?.description!,
+            hint: `${parsed.current_step_analysis} ${parsed.hint_message}`
+        }
+
+        if(!usage){
+            logger.info(`[SERVICE] Creating new hint record`);
+            await this.#_aiHintUsageRepo.create({
+                userId : req.userId,
+                problemId : new Types.ObjectId(req.problemId),
+                hintsUsed: [newHint],
+                userCode : req.userCode
+            })
+        }else{
+            logger.info(`[SERVICE] Appending hint to existing record`, { oldHintCount: usage.hintsUsed.length });
+            usage.hintsUsed.push(newHint);
+            usage.userCode = req.userCode;
+            await usage.save();
+        }
+        logger.info(`[SERVICE] ${method} completed successfully`, {
+            duration: Date.now() - startTime,
+            newHintLevel: newHint.level,
+            hintPreview: newHint.hint.slice(0, 100) + "..."
+        });
+        return {
+            data : newHint,
             success : true
         }
     }

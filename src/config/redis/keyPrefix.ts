@@ -16,4 +16,5 @@ export const REDIS_PREFIX = {
 
   USER_STATS: 'user:stats:',                              // + userId
   USER_ACTIVITY: 'user:activity:',                        // + userId
+  USER_PROBLEM_FULL_SOLUTION : 'user:problem:fullSolution:',
 } as const;

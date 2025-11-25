@@ -2,7 +2,7 @@ import TYPES from "@/config/inversify/types";
 import { ISubmissionService } from "@/services/interfaces/submission.service.interface";
 import { withGrpcErrorHandler } from "@/utils/errorHandler";
 import { mapMessageToGrpcStatus } from "@/utils/mapMessageToGrpcCode";
-import { CreateSubmissionRequest, GetDashboardStatsRequest, GetDashboardStatsResponse, GetProblemSubmissionStatsResponse, GetSubmissionsRequest, GetSubmissionsResponse, ListProblemSpecificSubmissionRequest, ListProblemSpecificSubmissionResponse, ListTopKCountryLeaderboardRequest, ListTopKCountryLeaderboardResponse, ListTopKGlobalLeaderboardRequest, ListTopKGlobalLeaderboardResponse, RemoveUserRequest, Submission, UpdateCountryRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import { CreateSubmissionRequest, GetDashboardStatsRequest, GetDashboardStatsResponse, GetPreviousHintsRequest, GetPreviousHintsResponse, GetProblemSubmissionStatsResponse, GetSubmissionsRequest, GetSubmissionsResponse, ListProblemSpecificSubmissionRequest, ListProblemSpecificSubmissionResponse, ListTopKCountryLeaderboardRequest, ListTopKCountryLeaderboardResponse, ListTopKGlobalLeaderboardRequest, ListTopKGlobalLeaderboardResponse, RemoveUserRequest, RequestFullSolutionRequest, RequestFullSolutionResponse, RequestHintRequest, RequestHintResponse, Submission, UpdateCountryRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 import { Empty } from "@akashcapro/codex-shared-utils/dist/proto/compiled/google/protobuf/empty";
 import { inject, injectable } from "inversify";
 import logger from '@/utils/pinoLogger';
@@ -175,6 +175,53 @@ export class SubmissionHandler {
         }
     )
 
+    getPreviousHints = withGrpcErrorHandler<GetPreviousHintsRequest, GetPreviousHintsResponse>(
+        async (call, callback) => {
+            const method = 'getPreviousHints';
+            const req = call.request;
+            logger.info(`[gRPC] ${method} started`, { problemId : req.problemId, userId : req.userId });
+            const result = await this.#_submissionService.getPreviousHints(req);
+            logger.info(`[gRPC] ${method} completed successfully`, { problemId : req.problemId, userId : req.userId });
+            return callback(null,result.data);
+        }
+    )
+
+    requestHint = withGrpcErrorHandler<RequestHintRequest, RequestHintResponse>(
+        async (call, callback) => {
+            const method = 'requestHint';
+            const req = call.request;
+            logger.info(`[gRPC] ${method} started`, { problemId : req.problemId, userId : req.userId });
+            const result = await this.#_submissionService.requestAiHint(req);
+            if(!result.success){
+                logger.warn(`[gRPC] ${method} failed: ${result.errorMessage}`, { problemId: req.problemId });
+                return callback({
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
+                    message : result.errorMessage
+                },null)
+            }
+            logger.info(`[gRPC] ${method} completed successfully`, { problemId : req.problemId, userId : req.userId });
+            return callback(null,result.data);
+        }
+    )
+
+    requestFullSolution = withGrpcErrorHandler<RequestFullSolutionRequest, RequestFullSolutionResponse>(
+        async (call, callback) => {
+            const method = 'requestFullSolution';
+            const req = call.request;
+            logger.info(`[gRPC] ${method} started`, { problemId : req.problemId, userId : req.userId});
+            const result = await this.#_submissionService.requestFullSolution(req);
+            if(!result.success){
+                logger.warn(`[gRPC] ${method} failed: ${result.errorMessage}`, { problemId: req.problemId });
+                return callback({
+                    code : mapMessageToGrpcStatus(result.errorMessage!),
+                    message : result.errorMessage
+                },null)
+            }
+            logger.info(`[gRPC] ${method} completed successfully`, { problemId : req.problemId, userId : req.userId });
+            return callback(null,result.data);
+        }
+    )
+
     getServiceHandler() : UntypedServiceImplementation {
         return {
             createSubmission : this.createSubmission,
@@ -186,7 +233,10 @@ export class SubmissionHandler {
             getDashboardStats : this.getDashboardStats,
             updateCountryInLeaderboard : this.updateCountryInLeaderboard,
             removeUserInLeaderboard : this.removeUserInLeaderboard,
-            getProblemSubmissionStats : this.getProblemSubmissionStats
+            getProblemSubmissionStats : this.getProblemSubmissionStats,
+            getPreviousHints : this.getPreviousHints,
+            requestHint : this.requestHint,
+            requestFullSolution : this.requestFullSolution,
         }
     }
 }

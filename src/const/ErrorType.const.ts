@@ -13,6 +13,7 @@ export const SUBMISSION_ERROR_MESSAGES = {
   SUBMISSION_NOT_FOUND: "Submission not found",
   SUBMISSION_ALREADY_EXIST: "Submission already exists",
   INVALID_COUNTRY_CODE: "Invalid country code",
+  OUT_OF_AI_HINTS : "Used all your 5 hints"
 } as const;
 
 export const SYSTEM_ERROR_MESSAGES = {
