@@ -468,21 +468,32 @@ export class SubmissionService implements ISubmissionService {
     ): Promise<ResponseDTO> {
         const method = 'getPreviousHints';
         logger.info(`[SERVICE] ${method} started`, { userId: req.userId, problemId: req.problemId });
+        const cacheKey = `${REDIS_PREFIX.USER_PROBLEM_PREVIOUS_HINTS}${req.userId}:${req.problemId}`;
+        const cached = await this.#_cacheProvider.get(cacheKey);
+        if(cached){
+            logger.info(`[SERVICE] ${method} cache hit`);
+            return {
+                data : cached,
+                success : true
+            }
+        }
+        logger.info(`[SERVICE] ${method} cache miss`);
         const usage = await this.#_aiHintUsageRepo.getUsedHintsByUserForProblem(req.userId, req.problemId);
         if(!usage){
             return {
-                data : null,
+                data : {hints : []},
                 success : true
             }
         }
         const formattedHints = usage.hintsUsed.map(hint => ({
             hint: hint.hint,
             level: hint.level,
-            createdAt: usage.createdAt.toISOString() 
+            createdAt: hint.createdAt,
         }));
+        await this.#_cacheProvider.set(cacheKey, {hints : formattedHints}, 1800);
         logger.info(`[SERVICE] ${method} completed`, { count: formattedHints.length });
         return {
-            data : formattedHints,
+            data : {hints : formattedHints},
             success : true
         }
     }
@@ -568,12 +579,16 @@ export class SubmissionService implements ISubmissionService {
             };
         }
 
+        const cacheKey = `${REDIS_PREFIX.USER_PROBLEM_PREVIOUS_HINTS}${req.userId}:${req.problemId}`;
+        await this.#_cacheProvider.del(cacheKey);
+        logger.info(`[SERVICE] ${method} cache cleared`, { userId: req.userId, problemId: req.problemId })
+
         const prompt = generateHintPrompt({
             problemTitle : problem?.title!,
             problemDescription : problem?.description!,
             language : req.language,
             solutionRoadmap : problem?.solutionRoadmap!,
-            userCode : req.userCode
+            userCode : JSON.parse(req.userCode)
         });
 
         logger.debug(`[SERVICE] Generated AI prompt`, { preview: prompt.slice(0, 150) + "..." });
@@ -606,7 +621,8 @@ export class SubmissionService implements ISubmissionService {
         const newHint = {
             level: parsed.current_step_number, 
             description: step?.description!,
-            hint: `${parsed.current_step_analysis} ${parsed.hint_message}`
+            hint: `${parsed.current_step_analysis} ${parsed.hint_message}`,
+            createdAt : new Date().toISOString()
         }
 
         if(!usage){
@@ -628,8 +644,9 @@ export class SubmissionService implements ISubmissionService {
             newHintLevel: newHint.level,
             hintPreview: newHint.hint.slice(0, 100) + "..."
         });
+        console.log(newHint)
         return {
-            data : newHint,
+            data : {hint : newHint.hint},
             success : true
         }
     }
