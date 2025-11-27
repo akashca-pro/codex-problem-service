@@ -2,8 +2,6 @@ import { Document, Types } from "mongoose";
 
 export interface IHintsUsed {
     _id? : string;
-    level : number;
-    description : string;
     hint : string;
     createdAt : string;
 }

@@ -23,4 +23,32 @@ export class RedisCacheProvider {
         await this.#_redis.del(key);
     }
 
+    async invalidateByPattern(pattern: string): Promise<void> {
+        const stream = this.#_redis.scanStream({
+            match: pattern,
+            count: 100 // batch size
+        });
+
+        const keysToDelete: string[] = [];
+
+        return new Promise((resolve, reject) => {
+            stream.on("data", (keys: string[]) => {
+                if (keys.length) keysToDelete.push(...keys);
+            });
+
+            stream.on("end", async () => {
+                if (!keysToDelete.length) return resolve();
+
+                const pipeline = this.#_redis.pipeline();
+                keysToDelete.forEach(key => pipeline.del(key));
+
+                await pipeline.exec();
+                resolve();
+            });
+
+            stream.on("error", reject);
+        });
+    }
+
+
 }

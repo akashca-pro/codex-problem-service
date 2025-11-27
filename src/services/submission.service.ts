@@ -14,7 +14,7 @@ import { IFirstSubmissionRepository } from "@/repos/interfaces/firstSubmission.r
 import { ILeaderboard } from "@/libs/leaderboard/leaderboard.interface";
 import { SCORE_MAP } from "@/const/ScoreMap.const";
 import { IActivity, ISolvedByDifficulty } from "@/dtos/dashboard.dto";
-import { format, subDays, differenceInHours, differenceInDays } from 'date-fns';
+import { format, subDays, differenceInHours, differenceInDays, sub } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
 import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
@@ -136,6 +136,11 @@ export class SubmissionService implements ISubmissionService {
             score : updatedData.status === 'accepted' ? score : undefined
         });
 
+        if(updatedSubmission?.status === 'accepted'){
+            const cachePattern = `dashboard:${submissionExist.userId}:*`
+            await this.#_cacheProvider.invalidateByPattern(cachePattern);
+        }
+
         try {            
             await grpcUserService.updateUserProgress({
                 userId : updatedSubmission?.userId!,
@@ -150,7 +155,7 @@ export class SubmissionService implements ISubmissionService {
         if (updatedSubmission && updatedSubmission.status === 'accepted' && submissionExist.isFirst) {
             
             logger.info(`[SERVICE] ${method}: First accepted submission detected`, { submissionId, userId: updatedSubmission.userId });
-            const cacheKeyLeaderboard = `${REDIS_PREFIX.DASHBOARD_LEADERBOARD}${updatedSubmission.userId}`
+            const cacheKeyLeaderboard = REDIS_PREFIX.DASHBOARD_LEADERBOARD(updatedSubmission.userId);
 
             if (score > 0) {
                 try {
@@ -284,9 +289,15 @@ export class SubmissionService implements ISubmissionService {
         const method = 'getUserDashboardStats';
         logger.info(`[SERVICE] ${method} started`, { userId });
 
+        const cacheKeyHeatmap = REDIS_PREFIX.DASHBOARD_HEATMAP(userId);
+        const cacheKeyStreak = REDIS_PREFIX.DASHBOARD_STREAK(userId);
+        const cacheKeyRecentActivities = REDIS_PREFIX.DASHBOARD_RECENT_ACTIVITY(userId);
+        const cacheKeySolvedByDifficulty = REDIS_PREFIX.DASHBOARD_PROBLEMS_SOLVED_BY_DIFFICULTY(userId);
+        const cacheKeyProblemsSolved = REDIS_PREFIX.DASHBOARD_PROBLEMS_SOLVED(userId);
+        const cacheKeyLeaderboard = REDIS_PREFIX.DASHBOARD_LEADERBOARD(userId);
+
         // Heatmap
         let activity: IActivity[];
-        const cacheKeyHeatmap = `${REDIS_PREFIX.DASHBOARD_HEATMAP}${userId}`;
         const cachedHeatmap = await this.#_cacheProvider.get(cacheKeyHeatmap);
         if (cachedHeatmap) {
             activity = cachedHeatmap as IActivity[];
@@ -299,7 +310,6 @@ export class SubmissionService implements ISubmissionService {
 
         // Streak
         let streak: number;
-        const cacheKeyStreak = `${REDIS_PREFIX.DASHBOARD_STREAK}${userId}`;
         const cachedStreak = await this.#_cacheProvider.get(cacheKeyStreak);
         if (cachedStreak) {
             streak = cachedStreak as number;
@@ -312,7 +322,6 @@ export class SubmissionService implements ISubmissionService {
 
         // Leaderboard
         let leaderboardDetails: LeaderboardData;
-        const cacheKeyLeaderboard = `${REDIS_PREFIX.DASHBOARD_LEADERBOARD}${userId}`;
         const cachedLeaderboard = await this.#_cacheProvider.get(cacheKeyLeaderboard);
         if (cachedLeaderboard) {
             leaderboardDetails = cachedLeaderboard as LeaderboardData;
@@ -325,7 +334,6 @@ export class SubmissionService implements ISubmissionService {
 
         // Problems solved (overall)
         let problemsSolved: number;
-        const cacheKeyProblemsSolved = `${REDIS_PREFIX.DASHBOARD_PROBLEMS_SOLVED}${userId}`;
         const cachedSolved = await this.#_cacheProvider.get(cacheKeyProblemsSolved);
         if (cachedSolved) {
             problemsSolved = cachedSolved as number;
@@ -338,7 +346,6 @@ export class SubmissionService implements ISubmissionService {
 
         // Problems solved (based on difficulty)
         let solvedByDifficulty: ISolvedByDifficulty[];
-        const cacheKeySolvedByDifficulty = `${REDIS_PREFIX.DASHBOARD_PROBLEMS_SOLVED_BY_DIFFICULTY}${userId}`;
         const cachedSolvedByDifficulty = await this.#_cacheProvider.get(cacheKeySolvedByDifficulty);
         if (cachedSolvedByDifficulty) {
             solvedByDifficulty = cachedSolvedByDifficulty as ISolvedByDifficulty[];
@@ -350,7 +357,6 @@ export class SubmissionService implements ISubmissionService {
         }
 
         // Recent activities
-        const cacheKeyRecentActivities = `${REDIS_PREFIX.DASHBOARD_RECENT_ACTIVITY}${userId}`;
         let recentActivities: {title: string, difficulty: string, status: string, timeAgo: string}[];
         const cachedRecent = await this.#_cacheProvider.get(cacheKeyRecentActivities);
         if (cachedRecent) {
@@ -487,7 +493,6 @@ export class SubmissionService implements ISubmissionService {
         }
         const formattedHints = usage.hintsUsed.map(hint => ({
             hint: hint.hint,
-            level: hint.level,
             createdAt: hint.createdAt,
         }));
         await this.#_cacheProvider.set(cacheKey, {hints : formattedHints}, 1800);
@@ -597,34 +602,26 @@ export class SubmissionService implements ISubmissionService {
             model : "gemini-2.0-flash",
             contents : prompt
         })
-
         const rawText = aiResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+        console.log(rawText)
         const cleanedText = rawText!.replace(/```json|```/g, "").trim();
 
         logger.debug(`[SERVICE] AI response received`);
 
         const parsed = JSON.parse(cleanedText!) as {
             current_step_analysis: string;
-            current_step_number: number;
             hint_message: string;
         };
 
         logger.info(`[SERVICE] Parsed AI hint`, { 
             current_step_analysis: parsed.current_step_analysis, 
-            current_step_number: parsed.current_step_number 
+            hint_message : parsed.hint_message
         });
-
-        const step = problem?.solutionRoadmap?.find(
-        (s) => s.level === parsed.current_step_number
-        );
-
         const newHint = {
-            level: parsed.current_step_number, 
-            description: step?.description!,
             hint: `${parsed.current_step_analysis} ${parsed.hint_message}`,
             createdAt : new Date().toISOString()
         }
-
+        console.log(newHint)
         if(!usage){
             logger.info(`[SERVICE] Creating new hint record`);
             await this.#_aiHintUsageRepo.create({
@@ -641,7 +638,6 @@ export class SubmissionService implements ISubmissionService {
         }
         logger.info(`[SERVICE] ${method} completed successfully`, {
             duration: Date.now() - startTime,
-            newHintLevel: newHint.level,
             hintPreview: newHint.hint.slice(0, 100) + "..."
         });
         console.log(newHint)

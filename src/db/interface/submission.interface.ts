@@ -45,7 +45,6 @@ export interface IExecutionResult {
  */
 export interface IHintsUsed {
     _id? : string;
-    level : number;
     hint : string;
     createdAt : string;
 }
