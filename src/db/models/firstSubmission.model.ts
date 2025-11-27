@@ -49,7 +49,8 @@ const FirstSubmissionSchema = new Schema<IFirstSubmission>(
         userCode : { type : String, required : true },
         executionResult : { type : ExecutionSchema, required : false, default : {} },
         difficulty : { type : String, required : true, enum : Object.values(DIFFICULTY)},
-        isFirst : { type : Boolean, required : true, default : false }
+        isFirst : { type : Boolean, required : true, default : false },
+        isAiAssisted : { type : Boolean, required : true, default : false },
     },
     { timestamps : true }
 )

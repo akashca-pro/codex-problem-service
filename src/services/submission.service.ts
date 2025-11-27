@@ -12,7 +12,7 @@ import { SubmissionMapper } from "@/dtos/mappers/SubmissionMapper";
 import logger from '@/utils/pinoLogger';
 import { IFirstSubmissionRepository } from "@/repos/interfaces/firstSubmission.repository.interface";
 import { ILeaderboard } from "@/libs/leaderboard/leaderboard.interface";
-import { SCORE_MAP } from "@/const/ScoreMap.const";
+import { calculateScore, SCORE_MAP } from "@/const/ScoreMap.const";
 import { IActivity, ISolvedByDifficulty } from "@/dtos/dashboard.dto";
 import { format, subDays, differenceInHours, differenceInDays, sub } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
@@ -128,13 +128,27 @@ export class SubmissionService implements ISubmissionService {
                 errorMessage : SUBMISSION_ERROR_MESSAGES.SUBMISSION_NOT_FOUND
             }
         }
-        const score = SCORE_MAP[submissionExist.difficulty];
+        let score = 0;
+        let updateSubmissionRepoPayload : any = {
+            executionResult: updatedData.executionResult,
+            status: updatedData.status,
+        };
+        score = SCORE_MAP[submissionExist.difficulty];
+        if(updatedData.status === 'accepted'){
+            const hintUsage = await this.#_aiHintUsageRepo.getUsedHintsByUserForProblem(
+                submissionExist.userId,
+                submissionExist.problemId.toString()
+            );
+            if(hintUsage?.hintsUsed?.length && hintUsage?.hintsUsed?.length > 0){
+                score = calculateScore(submissionExist.difficulty, hintUsage.hintsUsed.length);
+                updateSubmissionRepoPayload.isAiAssisted = true;
+            }else {
+                score = SCORE_MAP[submissionExist.difficulty];
+            }
+            updateSubmissionRepoPayload.score = score;
+        }
 
-        const updatedSubmission = await this.#_submissionRepo.update(submissionId, {
-            executionResult : updatedData.executionResult,
-            status : updatedData.status,
-            score : updatedData.status === 'accepted' ? score : undefined
-        });
+        const updatedSubmission = await this.#_submissionRepo.update(submissionId, updateSubmissionRepoPayload);
 
         if(updatedSubmission?.status === 'accepted'){
             const cachePattern = `dashboard:${submissionExist.userId}:*`

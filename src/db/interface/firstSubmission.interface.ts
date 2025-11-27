@@ -19,6 +19,7 @@ export interface IFirstSubmission extends Document {
     hintsUsed : IHintsUsed[] | null;
     executionResult : IExecutionResult | null;
     difficulty : Difficulty;
+    isAiAssisted : boolean;
     isFirst : boolean;
     createdAt : Date;
     updatedAt : Date;
