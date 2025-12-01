@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IExecutionResult, IFailedTestCase, IHintsUsed, IStats, ISubmission } from "../interface/submission.interface";
+import { IExecutionResult, IFailedTestCase, IStats, ISubmission } from "../interface/submission.interface";
 import { SUBMISSION_STATUS_TYPES } from "@/const/SubmissionStatus.const";
 import { Language } from "@/enums/language.enum";
 import { DIFFICULTY } from "@/const/Difficulty.const";
@@ -35,13 +35,6 @@ const ExecutionSchema = new Schema<IExecutionResult>(
     {_id : false}
 )
 
-const HintsUsedSchema = new Schema<IHintsUsed>(
-    {
-        hint : { type : String, required : true },
-        createdAt : { type : String, required : true }
-    },
-)
-
 const SubmissionSchema = new Schema<ISubmission>(
     {
         problemId : { type : Schema.Types.ObjectId, ref : 'Problem', required : true },
@@ -57,8 +50,8 @@ const SubmissionSchema = new Schema<ISubmission>(
         executionResult : { type : ExecutionSchema, required : false, default : {} },
         difficulty : { type : String, required : true, enum : Object.values(DIFFICULTY)},
         isFirst : { type : Boolean, required : true, default : false },
+        hintsUsed : { type : Number, required : true, default : 0 },
         isAiAssisted : { type : Boolean, required : true, default : false },
-        hintsUsed : { type : [HintsUsedSchema], required : false, default : [] }
     },
     { timestamps : true }
 )

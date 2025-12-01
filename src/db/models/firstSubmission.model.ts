@@ -51,6 +51,7 @@ const FirstSubmissionSchema = new Schema<IFirstSubmission>(
         difficulty : { type : String, required : true, enum : Object.values(DIFFICULTY)},
         isFirst : { type : Boolean, required : true, default : false },
         isAiAssisted : { type : Boolean, required : true, default : false },
+        hintsUsed : { type : Number, required : true, default : 0 },
     },
     { timestamps : true }
 )

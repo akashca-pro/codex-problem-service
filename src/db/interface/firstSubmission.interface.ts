@@ -1,7 +1,7 @@
 import { SubmissionStatus } from "@/const/SubmissionStatus.const";
 import { Language } from "@/enums/language.enum";
 import { Document, Types } from "mongoose";
-import { IExecutionResult, IHintsUsed } from "./submission.interface";
+import { IExecutionResult } from "./submission.interface";
 import { Difficulty } from "@/const/Difficulty.const";
 
 export interface IFirstSubmission extends Document {
@@ -16,7 +16,7 @@ export interface IFirstSubmission extends Document {
     score : number;
     language : Language;
     userCode : string;
-    hintsUsed : IHintsUsed[] | null;
+    hintsUsed : number;
     executionResult : IExecutionResult | null;
     difficulty : Difficulty;
     isAiAssisted : boolean;

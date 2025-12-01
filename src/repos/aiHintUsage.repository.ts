@@ -17,7 +17,11 @@ export class AiHintUsageRepository extends BaseRepository<IAiHintUsage> implemen
         const operation = 'getUsedHintsByUserAndProblem';
         try {
             logger.debug(`[REPO] Executing ${operation}`, { userId, problemId });
-            const result = await this._model.findOne({ userId, problemId })
+            const result = await this._model.findOne({ 
+                userId, 
+                problemId,
+                submissionId: { $exists: false }
+            });
             const found = !!result;
             logger.info(`[REPO] ${operation} successful`, { found, userId, problemId, duration: Date.now() - startTime });
             return result;

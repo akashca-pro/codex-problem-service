@@ -1,4 +1,4 @@
-import { IExecutionResult, IHintsUsed } from "@/db/interface/submission.interface";
+import { IExecutionResult } from "@/db/interface/submission.interface";
 import { Language } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 
 interface Submission {
@@ -7,7 +7,7 @@ interface Submission {
     language : Language;
     executionResult : IExecutionResult,
     userCode : string,
-    hintsUsed : IHintsUsed[] | null;
+    hintsUsed : number;
     isAiAssisted : boolean;
     createdAt : string
 }

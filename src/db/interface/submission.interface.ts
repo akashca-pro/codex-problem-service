@@ -38,16 +38,6 @@ export interface IExecutionResult {
     failedTestCase : IFailedTestCase | null
 }
 
-/**
- * Interface representing the structure of ai hints used.
- * 
- * @inteface
- */
-export interface IHintsUsed {
-    _id? : string;
-    hint : string;
-    createdAt : string;
-}
 
 /**
  * Interface representing the structure of the submission result.
@@ -69,7 +59,7 @@ export interface ISubmission extends Document {
     difficulty : Difficulty;
     isFirst : boolean;
     isAiAssisted : boolean;
-    hintsUsed : IHintsUsed[] | null;
+    hintsUsed : number;
     createdAt : Date;
     updatedAt : Date;
 }

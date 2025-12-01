@@ -14,7 +14,7 @@ import { IFirstSubmissionRepository } from "@/repos/interfaces/firstSubmission.r
 import { ILeaderboard } from "@/libs/leaderboard/leaderboard.interface";
 import { calculateScore, SCORE_MAP } from "@/const/ScoreMap.const";
 import { IActivity, ISolvedByDifficulty } from "@/dtos/dashboard.dto";
-import { format, subDays, differenceInHours, differenceInDays, sub } from 'date-fns';
+import { format, subDays, differenceInHours, differenceInDays } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
 import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
@@ -142,6 +142,12 @@ export class SubmissionService implements ISubmissionService {
             if(hintUsage?.hintsUsed?.length && hintUsage?.hintsUsed?.length > 0){
                 score = calculateScore(submissionExist.difficulty, hintUsage.hintsUsed.length);
                 updateSubmissionRepoPayload.isAiAssisted = true;
+                updateSubmissionRepoPayload.hintsUsed = hintUsage.hintsUsed.length;
+                const previousHintCacheKey = `${REDIS_PREFIX.USER_PROBLEM_PREVIOUS_HINTS}${submissionExist.userId}:${submissionExist.problemId}`;
+                await this.#_cacheProvider.del(previousHintCacheKey);
+                await this.#_aiHintUsageRepo.update(hintUsage._id, {
+                    $set : { submissionId : submissionExist._id }
+                })
             }else {
                 score = SCORE_MAP[submissionExist.difficulty];
             }
@@ -635,7 +641,6 @@ export class SubmissionService implements ISubmissionService {
             hint: `${parsed.current_step_analysis} ${parsed.hint_message}`,
             createdAt : new Date().toISOString()
         }
-        console.log(newHint)
         if(!usage){
             logger.info(`[SERVICE] Creating new hint record`);
             await this.#_aiHintUsageRepo.create({
@@ -654,7 +659,6 @@ export class SubmissionService implements ISubmissionService {
             duration: Date.now() - startTime,
             hintPreview: newHint.hint.slice(0, 100) + "..."
         });
-        console.log(newHint)
         return {
             data : {hint : newHint.hint},
             success : true
