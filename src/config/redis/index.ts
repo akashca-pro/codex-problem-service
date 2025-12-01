@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
 import { config } from '@/config';
-import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
-import { RedisEvents } from '@/enums/redis.enum';
+import logger from '@/utils/pinoLogger';
+import { REDIS_EVENT_TYPES } from '@/const/RedisStatus.const';
 
 class RedisClient {
     private static _instance : Redis
@@ -24,22 +24,22 @@ class RedisClient {
     }
 
     public static setupEventListeners() : void {
-        RedisClient._instance.on(RedisEvents.READY,()=>{
+        RedisClient._instance.on(REDIS_EVENT_TYPES.READY,()=>{
             RedisClient._isConnected = true;
             logger.info('Redis is ready');
         })
 
-    RedisClient._instance.on(RedisEvents.ERROR, (error) => {
+    RedisClient._instance.on(REDIS_EVENT_TYPES.ERROR, (error) => {
       RedisClient._isConnected = false;
       logger.error('Redis connection error:', error);
     });
 
-    RedisClient._instance.on(RedisEvents.CLOSE, () => {
+    RedisClient._instance.on(REDIS_EVENT_TYPES.CLOSE, () => {
       RedisClient._isConnected = false;
       logger.warn('Redis connection closed');
     });
 
-    RedisClient._instance.on(RedisEvents.RECONNECTING, () => {
+    RedisClient._instance.on(REDIS_EVENT_TYPES.RECONNECTING, () => {
       logger.info('Reconnecting to Redis...');
     });
     }

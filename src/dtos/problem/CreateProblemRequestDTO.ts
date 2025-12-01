@@ -1,4 +1,4 @@
-import { Difficulty } from "@/enums/difficulty.enum";
+import { type Difficulty } from "@/const/Difficulty.const";
 
 /**
  * DTO (Data Tranfer Object) representing the data to create a problem.

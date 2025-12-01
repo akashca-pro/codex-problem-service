@@ -1,5 +1,4 @@
-import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
-import { SubmissionErrorType } from "@/enums/ErrorTypes/submissionErrorType.enum";
+import { PROBLEM_ERROR_MESSAGES, SUBMISSION_ERROR_MESSAGES } from "@/const/ErrorType.const"
 import { status } from "@grpc/grpc-js";
 
 /**
@@ -11,18 +10,18 @@ import { status } from "@grpc/grpc-js";
 export const mapMessageToGrpcStatus = (message : string) : status => {
     switch(true){
 
-        case message === ProblemErrorType.ProblemNotFound:
-        case message === SubmissionErrorType.SubmissionNotFound:
-        case message === ProblemErrorType.TestCaseNotFound:
-        case message === ProblemErrorType.SolutionCodeNotFound:
+        case message === PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND:
+        case message === SUBMISSION_ERROR_MESSAGES.SUBMISSION_NOT_FOUND:
+        case message === PROBLEM_ERROR_MESSAGES.TEST_CASE_NOT_FOUND:
+        case message === PROBLEM_ERROR_MESSAGES.TEMPLATE_CODE_NOT_FOUND:
             return status.NOT_FOUND
 
-        case message === SubmissionErrorType.InvalidCountryCode:
+        case message === SUBMISSION_ERROR_MESSAGES.INVALID_COUNTRY_CODE:
             return status.INVALID_ARGUMENT;
         
-        case message === ProblemErrorType.ProblemAlreadyExists:
-        case message.endsWith(ProblemErrorType.ProblemFieldAlreadyExist):
-        case message === SubmissionErrorType.SubmissionAlreadyExist:
+        case message === PROBLEM_ERROR_MESSAGES.PROBLEM_ALREADY_EXISTS:
+        case message.endsWith(PROBLEM_ERROR_MESSAGES.PROBLEM_FIELD_ALREADY_EXIST):
+        case message === SUBMISSION_ERROR_MESSAGES.SUBMISSION_ALREADY_EXIST:
             return status.ALREADY_EXISTS
 
         default:

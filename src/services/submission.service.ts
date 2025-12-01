@@ -2,108 +2,712 @@ import TYPES from "@/config/inversify/types";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
 import { inject, injectable } from "inversify";
 import { ISubmissionService } from "./interfaces/submission.service.interface";
-import { ICreateSubmissionRequestDTO } from "@/dtos/submission/CreateSubmissionRequestDTO";
-import { ISubmissionRepository } from "@/infra/repos/interfaces/submission.repository.interface";
-import { SubmissionErrorType } from "@/enums/ErrorTypes/submissionErrorType.enum";
-import mongoose from "mongoose";
+import { ISubmissionRepository } from "@/repos/interfaces/submission.repository.interface";
+import mongoose, { Types } from "mongoose";
 import { PaginationDTO } from "@/dtos/PaginationDTO";
-import { IGetSubmissionRequestDTO } from "@/dtos/submission/getSubmissionRequestDTO";
-import { IUpdateSubmissionRequestDTO } from "@/dtos/submission/UpdateSubmissionRequestDTO";
+import { CreateSubmissionRequest, GetDashboardStatsRequest, GetPreviousHintsRequest, GetSubmissionsRequest, ListProblemSpecificSubmissionRequest, ListTopKCountryLeaderboardRequest, ListTopKGlobalLeaderboardRequest, RequestFullSolutionRequest, RequestHintRequest, UpdateCountryRequest, UpdateSubmissionRequest } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import { IProblemRepository } from "@/repos/interfaces/problem.repository.interface";
+import { PROBLEM_ERROR_MESSAGES, SUBMISSION_ERROR_MESSAGES } from "@/const/ErrorType.const"
+import { SubmissionMapper } from "@/dtos/mappers/SubmissionMapper";
+import logger from '@/utils/pinoLogger';
+import { IFirstSubmissionRepository } from "@/repos/interfaces/firstSubmission.repository.interface";
+import { ILeaderboard } from "@/libs/leaderboard/leaderboard.interface";
+import { calculateScore, SCORE_MAP } from "@/const/ScoreMap.const";
+import { IActivity, ISolvedByDifficulty } from "@/dtos/dashboard.dto";
+import { format, subDays, differenceInHours, differenceInDays } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
+import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
+import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
+import { LeaderboardData } from "@/dtos/Leaderboard.dto";
+import grpcUserService from '@/transport/grpc/client/UserServices'
+import { IAiHintUsageRepository } from "@/repos/interfaces/aiHintUsage.repository.interface";
+import ai from "@/config/gemini";
+import { generateFullSolutionPrompt, generateHintPrompt } from "@/utils/promptGenerator";
 
 /**
- * Class representing the service for managing submissions.
- * 
+ * Class representing the service for managing submissions and leaderboard.
  * @class
+ * @implements {ISubmissionService}
  */
 @injectable()
 export class SubmissionService implements ISubmissionService {
 
     #_submissionRepo : ISubmissionRepository;
+    #_problemRepo : IProblemRepository;
+    #_firstSubmissionRepo : IFirstSubmissionRepository;
+    #_leaderboard : ILeaderboard;
+    #_cacheProvider : ICacheProvider;
+    #_aiHintUsageRepo : IAiHintUsageRepository;
 
-    /**
-     * Creates an instance of SubmissionService.
-     * 
-     * @param submissionRepo - The submission repository instance.
-     * @constructor
-     */
     constructor(
-        @inject(TYPES.ISubmissionRepository) submissionRepo : ISubmissionRepository
+        @inject(TYPES.ISubmissionRepository) submissionRepo : ISubmissionRepository,
+        @inject(TYPES.IProblemRepository) problemRepo : IProblemRepository,
+        @inject(TYPES.IFirstSubmissionRepository) firstSubmissionRepo : IFirstSubmissionRepository,
+        @inject(TYPES.IAiHintUsageRepository) aiHintUsageRepo : IAiHintUsageRepository,
+        @inject(TYPES.ILeaderboard) leaderboard : ILeaderboard,
+        @inject(TYPES.ICacheProvider) cacheProvider : ICacheProvider
     ){
         this.#_submissionRepo = submissionRepo;
+        this.#_problemRepo = problemRepo;
+        this.#_firstSubmissionRepo = firstSubmissionRepo;
+        this.#_aiHintUsageRepo = aiHintUsageRepo;
+        this.#_leaderboard = leaderboard;
+        this.#_cacheProvider = cacheProvider;
     }
 
-    async createSubmission(data: ICreateSubmissionRequestDTO): Promise<ResponseDTO> {
+    async createSubmission(data: CreateSubmissionRequest): Promise<ResponseDTO> {
+        const method = 'createSubmission';
+        logger.info(`[SERVICE] ${method} started`, { userId: data.userId, problemId: data.problemId, language: data.language });
         
-        const submissionAlreadyExist = await this.#_submissionRepo.findOne({ problemId : data.problemId });
-
-        if(submissionAlreadyExist){
-            return {
-                data : null,
-                success : false,
-                errorMessage : SubmissionErrorType.SubmissionNotFound
-            }
-        }
-
+        const submissionExist = await this.#_submissionRepo.findOne({
+            userId : data.userId, problemId : data.problemId
+        })
+        
+        const dto = SubmissionMapper.toCreateSubmissionService(data);
         const submissionData = {
-            ...data,
+            ...dto,
+            isFirst : submissionExist ? false : true,
             problemId : new mongoose.Types.ObjectId(data.problemId),
         }
+        
+        logger.debug(`[SERVICE] ${method}: isFirst=${submissionData.isFirst}`, { userId: data.userId, problemId: data.problemId });
 
         const submission = await this.#_submissionRepo.create(submissionData)
-
+        const outDTO = SubmissionMapper.toOutDTO(submission);
+        
+        logger.info(`[SERVICE] ${method} completed successfully`, { submissionId: submission._id.toString(), isFirst: submissionData.isFirst });
+        
         return {
-            data : submission,
+            data : outDTO,
             success : true
         }
     }
 
-    async getSubmission(filter: IGetSubmissionRequestDTO): Promise<PaginationDTO> {
-        
-        const updatingfilter : Record<string, any> = {};
+    async getSubmission(filter: GetSubmissionsRequest): Promise<PaginationDTO> {
+        const method = 'getSubmission (Paginated List)';
+        logger.info(`[SERVICE] ${method} started`, { page: filter.page, limit: filter.limit, userId: filter.userId, problemId: filter.problemId });
 
+        const updatingfilter : Record<string, any> = {};
         if(filter.problemId) updatingfilter.problemId = filter.problemId;
         if(filter.battleId) updatingfilter.battleId = filter.battleId;
         if(filter.userId) updatingfilter.userId = filter.userId;
-
+        
         const skip = (filter.page - 1) * filter.limit;
-
+        
         const [totalItems,submissions] = await Promise.all([
             await this.#_submissionRepo.countDocuments(updatingfilter),
             await this.#_submissionRepo.findPaginated(updatingfilter,skip,filter.limit)
         ]);
-
+        
         const totalPages = Math.ceil(totalItems/ filter.limit);
+        const outDTO = submissions.map(SubmissionMapper.toOutDTO);
+        
+        logger.info(`[SERVICE] ${method} completed successfully`, { totalItems, currentPage: filter.page });
 
         return {
-            body : submissions,
+            body : outDTO,
             currentPage : filter.page,
             totalItems,
             totalPages
         }
-
     }
 
-    async updateSubmission(id: string, updatedData: IUpdateSubmissionRequestDTO): Promise<ResponseDTO> {
-        
-        const submissionExist = await this.#_submissionRepo.findById(id);
+    async updateSubmission(request : UpdateSubmissionRequest): Promise<ResponseDTO> {
+        const method = 'updateSubmission';
+        logger.info(`[SERVICE] ${method} started`, { submissionId: request.Id, status: request.status });
 
+        const updatedData = SubmissionMapper.toUpdateSubmissionService(request);
+        const submissionId = request.Id;
+        
+        const submissionExist = await this.#_submissionRepo.findById(submissionId);
         if(!submissionExist){
+            logger.warn(`[SERVICE] ${method} failed: Submission not found`, { submissionId });
             return {
                 data : null,
                 success : false,
-                errorMessage : SubmissionErrorType.SubmissionNotFound
+                errorMessage : SUBMISSION_ERROR_MESSAGES.SUBMISSION_NOT_FOUND
             }
         }
+        let score = 0;
+        let updateSubmissionRepoPayload : any = {
+            executionResult: updatedData.executionResult,
+            status: updatedData.status,
+        };
+        score = SCORE_MAP[submissionExist.difficulty];
+        if(updatedData.status === 'accepted'){
+            const hintUsage = await this.#_aiHintUsageRepo.getUsedHintsByUserForProblem(
+                submissionExist.userId,
+                submissionExist.problemId.toString()
+            );
+            if(hintUsage?.hintsUsed?.length && hintUsage?.hintsUsed?.length > 0){
+                score = calculateScore(submissionExist.difficulty, hintUsage.hintsUsed.length);
+                updateSubmissionRepoPayload.isAiAssisted = true;
+                updateSubmissionRepoPayload.hintsUsed = hintUsage.hintsUsed.length;
+                const previousHintCacheKey = `${REDIS_PREFIX.USER_PROBLEM_PREVIOUS_HINTS}${submissionExist.userId}:${submissionExist.problemId}`;
+                await this.#_cacheProvider.del(previousHintCacheKey);
+                await this.#_aiHintUsageRepo.update(hintUsage._id, {
+                    $set : { submissionId : submissionExist._id }
+                })
+            }else {
+                score = SCORE_MAP[submissionExist.difficulty];
+            }
+            updateSubmissionRepoPayload.score = score;
+        }
 
-        const updatedSubmission = await this.#_submissionRepo.update(id, {
-            executionResult : updatedData.executionResult,
-            executionTime : updatedData.executionTime,
-            memoryUsage : updatedData.memoryUsage
-        });
+        const updatedSubmission = await this.#_submissionRepo.update(submissionId, updateSubmissionRepoPayload);
+
+        if(updatedSubmission?.status === 'accepted'){
+            const cachePattern = `dashboard:${submissionExist.userId}:*`
+            await this.#_cacheProvider.invalidateByPattern(cachePattern);
+        }
+
+        try {            
+            await grpcUserService.updateUserProgress({
+                userId : updatedSubmission?.userId!,
+                difficulty : updatedSubmission?.status === 'accepted' ? updatedSubmission.difficulty : undefined,
+                isSubmitted : true
+            })
+        } catch (error) {
+            // kafka event to retry it.
+            logger.error(`[SERVICE] ${method}: Failed to update user progress in user service`, { error })
+        }
+
+        if (updatedSubmission && updatedSubmission.status === 'accepted' && submissionExist.isFirst) {
+            
+            logger.info(`[SERVICE] ${method}: First accepted submission detected`, { submissionId, userId: updatedSubmission.userId });
+            const cacheKeyLeaderboard = REDIS_PREFIX.DASHBOARD_LEADERBOARD(updatedSubmission.userId);
+
+            if (score > 0) {
+                try {
+                    const { _id, ...submissionData } = updatedSubmission.toObject();
+                    await Promise.all([
+                        this.#_firstSubmissionRepo.create({
+                            ...submissionData,
+                            submissionId : _id as Types.ObjectId
+                        }),
+                        this.#_leaderboard.incrementScore(
+                            updatedSubmission.userId,
+                            updatedSubmission.country ?? '',
+                            score
+                        ),
+                        this.#_leaderboard.incrementProblemsSolved(updatedSubmission.userId),
+                        this.#_leaderboard.setUsername(
+                            updatedSubmission.userId, 
+                            updatedSubmission.username
+                        ),
+                        this.#_cacheProvider.del(cacheKeyLeaderboard),
+                    ])
+                    logger.info(`[SERVICE] ${method}: Leaderboard score incremented and problems solved updated`, { userId: updatedSubmission.userId, score });
+
+                } catch (leaderboardError) {
+                    logger.error(`[SERVICE] ${method}: Failed to update FirstSubmission or Leaderboard`, { 
+                        submissionId, 
+                        userId: updatedSubmission.userId, 
+                        error: leaderboardError 
+                    });
+                }
+            } else {
+                logger.warn(`[SERVICE] ${method}: No score found for difficulty ${updatedSubmission.difficulty}`, { submissionId });
+            }
+        }
+        
+        logger.info(`[SERVICE] ${method} completed successfully`, { submissionId, newStatus: request.status });
 
         return {
             data : updatedSubmission,
             success : true
         }
     }
+
+    async listSubmissionByProblem(
+        request: ListProblemSpecificSubmissionRequest
+    ): Promise<ResponseDTO> {
+        const method = 'listSubmissionByProblem';
+        logger.info(`[SERVICE] ${method} started`, { problemId: request.problemId, userId: request.userId, cursor: request.nextCursor, limit: request.limit });
+
+        const problem = await this.#_problemRepo.findByIdLean(request.problemId);
+        if(!problem){
+            logger.warn(`[SERVICE] ${method} failed: Problem not found`, { problemId: request.problemId });
+            return {
+                data : null,
+                success : false,
+                errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
+            }
+        }
+        
+        let filter: Record<string, any> = {};
+        filter.problemId = problem._id;
+        filter.status = { $nin: ['pending'] };
+        filter.userId = request.userId;
+        
+        if(request.nextCursor){
+            filter.createdAt = { $lt: new Date(request.nextCursor) }
+            logger.debug(`[SERVICE] ${method}: Applied cursor filter`, { createdAtLt: request.nextCursor });
+        }
+        
+        const select = ['status','language','executionResult','problemId','userId','createdAt','userCode','hintsUsed','isAiAssisted']
+        const submissions = await this.#_submissionRepo.findPaginatedLean(
+            filter,
+            0,          
+            request.limit,
+            select,
+            { createdAt: -1 }
+        );
+        
+        let nextCursor: string | null = null;
+        if (submissions.length === request.limit) {
+            nextCursor = submissions[submissions.length - 1].createdAt.toISOString();
+        }
+        
+        const hasMore = submissions.length === request.limit
+        const outDTO = SubmissionMapper.toListProblemSpecificSubmissions(
+            submissions,
+            nextCursor ?? '',
+            hasMore
+        )
+        logger.info(`[SERVICE] ${method} completed successfully`, { count: submissions.length, hasMore, nextCursor });
+
+        return {
+            data : outDTO,
+            success : true,
+        }
+    }
+
+    async listTopKGlobalLeaderboard(
+        req : ListTopKGlobalLeaderboardRequest
+    ): Promise<ResponseDTO> {
+        const { k } = req;
+        const method = 'listTopKGlobalLeaderboard';
+        logger.info(`[SERVICE] ${method} started`, { k });
+        const users = await this.#_leaderboard.getTopKGlobal(k);
+        console.log(users)
+        logger.info(`[SERVICE] ${method} completed successfully`, { k });
+        return {
+            data : { users },
+            success : true
+        }
+    }
+
+    async listTopKCountryLeaderboard(
+        req : ListTopKCountryLeaderboardRequest
+    ): Promise<ResponseDTO> {
+        const { country, k } = req;
+        const method = 'listTopKCountryLeaderboard';
+        logger.info(`[SERVICE] ${method} started`, { country, k });
+        const users = await this.#_leaderboard.getTopKEntity(country, k)
+        logger.info(`[SERVICE] ${method} completed successfully`, { country, k });
+        return {
+            data : { users },
+            success : true
+        }
+    }
+
+    async getUserDashboardStats(
+        req : GetDashboardStatsRequest
+    ) : Promise<ResponseDTO> {
+        const { userId, userTimezone } = req;
+        const method = 'getUserDashboardStats';
+        logger.info(`[SERVICE] ${method} started`, { userId });
+
+        const cacheKeyHeatmap = REDIS_PREFIX.DASHBOARD_HEATMAP(userId);
+        const cacheKeyStreak = REDIS_PREFIX.DASHBOARD_STREAK(userId);
+        const cacheKeyRecentActivities = REDIS_PREFIX.DASHBOARD_RECENT_ACTIVITY(userId);
+        const cacheKeySolvedByDifficulty = REDIS_PREFIX.DASHBOARD_PROBLEMS_SOLVED_BY_DIFFICULTY(userId);
+        const cacheKeyProblemsSolved = REDIS_PREFIX.DASHBOARD_PROBLEMS_SOLVED(userId);
+        const cacheKeyLeaderboard = REDIS_PREFIX.DASHBOARD_LEADERBOARD(userId);
+
+        // Heatmap
+        let activity: IActivity[];
+        const cachedHeatmap = await this.#_cacheProvider.get(cacheKeyHeatmap);
+        if (cachedHeatmap) {
+            activity = cachedHeatmap as IActivity[];
+            logger.info(`[SERVICE] ${method} heatmap cache hit`, { userId })
+        } else {
+            activity = await this.#_submissionRepo.getDailyActivity(userId, userTimezone);
+            await this.#_cacheProvider.set(cacheKeyHeatmap, activity, 60); // 5 mins
+            logger.info(`[SERVICE] ${method} heatmap cache miss`, { userId })
+        }
+
+        // Streak
+        let streak: number;
+        const cachedStreak = await this.#_cacheProvider.get(cacheKeyStreak);
+        if (cachedStreak) {
+            streak = cachedStreak as number;
+            logger.info(`[SERVICE] ${method} streak cache hit`, { userId })
+        } else {
+            streak = this.#_calculateStreak(activity, userTimezone);
+            await this.#_cacheProvider.set(cacheKeyStreak, streak, 86400); // 24 hours
+            logger.info(`[SERVICE] ${method} streak cache miss`, { userId })
+        }
+
+        // Leaderboard
+        let leaderboardDetails: LeaderboardData;
+        const cachedLeaderboard = await this.#_cacheProvider.get(cacheKeyLeaderboard);
+        if (cachedLeaderboard) {
+            leaderboardDetails = cachedLeaderboard as LeaderboardData;
+            logger.info(`[SERVICE] ${method} leaderboard cache hit`, { userId })
+        } else {
+            leaderboardDetails = await this.#_leaderboard.getUserLeaderboardData(userId);
+            await this.#_cacheProvider.set(cacheKeyLeaderboard, leaderboardDetails, 300); // 5 min
+            logger.info(`[SERVICE] ${method} leaderboard cache miss`, { userId })
+        }
+
+        // Problems solved (overall)
+        let problemsSolved: number;
+        const cachedSolved = await this.#_cacheProvider.get(cacheKeyProblemsSolved);
+        if (cachedSolved) {
+            problemsSolved = cachedSolved as number;
+            logger.info(`[SERVICE] ${method} problems solved cache hit`, { userId })
+        } else {
+            problemsSolved = await this.#_submissionRepo.getProblemsSolvedCount(userId);
+            await this.#_cacheProvider.set(cacheKeyProblemsSolved, problemsSolved, 600); // 10 min
+            logger.info(`[SERVICE] ${method} problems solved cache miss`, { userId })
+        }
+
+        // Problems solved (based on difficulty)
+        let solvedByDifficulty: ISolvedByDifficulty[];
+        const cachedSolvedByDifficulty = await this.#_cacheProvider.get(cacheKeySolvedByDifficulty);
+        if (cachedSolvedByDifficulty) {
+            solvedByDifficulty = cachedSolvedByDifficulty as ISolvedByDifficulty[];
+            logger.info(`[SERVICE] ${method} problems solved by difficulty cache hit`, { userId })
+        } else {
+            solvedByDifficulty = await this.#_submissionRepo.getProblemsSolvedByDifficulty(userId);
+            await this.#_cacheProvider.set(cacheKeySolvedByDifficulty, solvedByDifficulty, 600); // 10  
+            logger.info(`[SERVICE] ${method} problems solved by difficulty cache miss`, { userId })
+        }
+
+        // Recent activities
+        let recentActivities: {title: string, difficulty: string, status: string, timeAgo: string}[];
+        const cachedRecent = await this.#_cacheProvider.get(cacheKeyRecentActivities);
+        if (cachedRecent) {
+            recentActivities = cachedRecent as {title: string, difficulty: string, status: string, timeAgo: string}[];
+            logger.info(`[SERVICE] ${method} recent activities cache hit`, { userId })
+        } else {
+            const recent = await this.#_submissionRepo.getRecentActivities(userId, 5);
+            const now = new Date();
+                recentActivities = recent.map(a => {
+                const hours = differenceInHours(now, a.createdAt);
+                const days = differenceInDays(now, a.createdAt);
+                let timeAgo = '';
+
+                if (hours < 1) timeAgo = 'Just now';
+                else if (hours < 24) timeAgo = `${hours} hours ago`;
+                else timeAgo = `${days} days ago`;
+
+                return {
+                    title: a.title,
+                    difficulty: a.difficulty,
+                    status: a.status,
+                    language : a.language,
+                    timeAgo,
+                };
+            });
+            await this.#_cacheProvider.set(cacheKeyRecentActivities, recentActivities, 60); // 1 min
+            logger.info(`[SERVICE] ${method} recent activities cache miss`, { userId })
+        }
+        
+        logger.info(`[SERVICE] ${method} completed successfully`, { userId });
+        return {
+            success: true,
+            data: {
+                heatmap: activity,
+                currentStreak: streak,
+                leaderboardDetails,
+                problemsSolved,
+                recentActivities,
+                solvedByDifficulty
+            },
+        };
+    }
+
+    async getProblemSubmissionStats(): Promise<ResponseDTO> {
+        const method = 'getProblemSubmissionStats';
+        logger.info(`[SERVICE] ${method} started`);
+        const cacheKey = `${REDIS_PREFIX.DASHBOARD_ADMIN_STATS}`;
+        const cached = await this.#_cacheProvider.get(cacheKey);
+        if(cached){
+            logger.info(`[SERVICE] ${method} cache hit`);
+            return {
+                data : cached,
+                success : true
+            }
+        }
+        const [submissionStats, problemStats] = await Promise.all([
+            this.#_submissionRepo.getAdminSubmissionStats(),
+            this.#_problemRepo.getAdminProblemStats()
+        ])
+        const outDTO = {
+            submissionStats,
+            problemStats
+        }
+        await this.#_cacheProvider.set(cacheKey, outDTO, 60);
+        logger.info(`[SERVICE] ${method} cache  miss`);
+        return {
+            data : outDTO,
+            success : true
+        }
+    }
+
+    async updateCountryInLeaderboard(
+        req : UpdateCountryRequest
+    ): Promise<ResponseDTO> {
+        const { userId, country } = req;
+        const method = 'updateCountryInLeaderboard';
+        const isUserExistInLeaderboard =await this.#_firstSubmissionRepo.findOne({ userId })
+        if(!isUserExistInLeaderboard){
+            logger.warn(`[SERVICE] ${method} failed: User not found in leaderboard`, { userId });
+            return {
+                data : null,
+                success : false,
+                errorMessage : SUBMISSION_ERROR_MESSAGES.SUBMISSION_NOT_FOUND
+            }
+        }
+        logger.info(`[SERVICE] ${method} started`, { userId, country });
+        await this.#_leaderboard.updateEntityByUserId(userId, country);
+        const cacheKeyLeaderboard = `${REDIS_PREFIX.DASHBOARD_LEADERBOARD}${userId}`;
+        await this.#_cacheProvider.del(cacheKeyLeaderboard);
+        logger.info(`[SERVICE] ${method} completed successfully`, { userId, country });
+        return {
+            data : null,
+            success : true
+        }
+    }
+
+    async removeUserInLeaderboard(
+        req : UpdateCountryRequest
+    ): Promise<ResponseDTO> {
+        const { userId } = req;
+        const method = 'removeUserInLeaderboard';
+        logger.info(`[SERVICE] ${method} started`, { userId });
+        await this.#_leaderboard.removeUser(userId);
+        const cacheKeyLeaderboard = `${REDIS_PREFIX.DASHBOARD_LEADERBOARD}${userId}`;
+        await this.#_cacheProvider.del(cacheKeyLeaderboard);
+        logger.info(`[SERVICE] ${method} completed successfully`, { userId });
+        return {
+            data : null,
+            success : true
+        }
+    }
+
+    async getPreviousHints(
+        req: GetPreviousHintsRequest
+    ): Promise<ResponseDTO> {
+        const method = 'getPreviousHints';
+        logger.info(`[SERVICE] ${method} started`, { userId: req.userId, problemId: req.problemId });
+        const cacheKey = `${REDIS_PREFIX.USER_PROBLEM_PREVIOUS_HINTS}${req.userId}:${req.problemId}`;
+        const cached = await this.#_cacheProvider.get(cacheKey);
+        if(cached){
+            logger.info(`[SERVICE] ${method} cache hit`);
+            return {
+                data : cached,
+                success : true
+            }
+        }
+        logger.info(`[SERVICE] ${method} cache miss`);
+        const usage = await this.#_aiHintUsageRepo.getUsedHintsByUserForProblem(req.userId, req.problemId);
+        if(!usage){
+            return {
+                data : {hints : []},
+                success : true
+            }
+        }
+        const formattedHints = usage.hintsUsed.map(hint => ({
+            hint: hint.hint,
+            createdAt: hint.createdAt,
+        }));
+        await this.#_cacheProvider.set(cacheKey, {hints : formattedHints}, 1800);
+        logger.info(`[SERVICE] ${method} completed`, { count: formattedHints.length });
+        return {
+            data : {hints : formattedHints},
+            success : true
+        }
+    }
+
+    async requestFullSolution(
+        req: RequestFullSolutionRequest
+    ): Promise<ResponseDTO> {
+        const method = 'requestFullSolution';
+        logger.info(`[SERVICE] ${method} started`, { userId: req.userId, problemId: req.problemId, language : req.language });
+        const cacheKey = `${REDIS_PREFIX.USER_PROBLEM_FULL_SOLUTION}${req.userId}:${req.problemId}:${req.language}`;
+        const cached = await this.#_cacheProvider.get(cacheKey);
+        if(cached){
+            logger.info(`[SERVICE] ${method} cache hit`);
+            return {
+                data : cached,
+                success : true
+            }
+        }
+        logger.info(`[SERVICE] ${method} cache miss`);
+        const problem = await this.#_problemRepo.findById(req.problemId);
+        if (!problem) {
+            logger.error(`[SERVICE] Problem not found`, { problemId: req.problemId });
+
+            return { 
+                success: false, 
+                data : null,
+                errorMessage: PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
+            };
+        }
+        const starterCode = problem.starterCodes.find(
+        (s) => s.language === req.language
+        );
+        const prompt = generateFullSolutionPrompt({
+            problemTitle : problem.title!,
+            problemDescription : problem.description!,
+            language : req.language,
+            functionStructure : starterCode?.code!
+        })
+        logger.debug(`[SERVICE] Generated full solution prompt`, { preview: prompt.slice(0, 150) + "..." });
+
+        const aiResponse = await ai.models.generateContent({
+            model : "gemini-2.0-flash",
+            contents : prompt
+        })
+        logger.debug(`[SERVICE] AI response received`);
+        const fullSolution = aiResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+        await this.#_cacheProvider.set(cacheKey, {solution : fullSolution}, 86400);
+        logger.info(`[SERVICE] ${method} completed successfully`, { userId: req.userId, problemId: req.problemId });
+        return {
+            data : {solution : fullSolution},
+            success : true
+        }
+    }
+
+    async requestAiHint(
+        req: RequestHintRequest
+    ): Promise<ResponseDTO> {
+        const method = 'requestAiHint';
+        const startTime = Date.now();
+        logger.info(`[SERVICE] ${method} started`, { userId: req.userId, problemId: req.problemId });
+
+        const usage = await this.#_aiHintUsageRepo.getUsedHintsByUserForProblem(req.userId, req.problemId);
+
+        logger.debug(`[SERVICE] Existing hint usage check`, { alreadyUsedHints: usage?.hintsUsed.length || 0,});
+
+        if (usage && usage.hintsUsed.length >= 5) {
+            logger.warn(`[SERVICE] AI hint limit reached`, { userId: req.userId, problemId: req.problemId });
+            return {
+                data: null,
+                success: false,
+                errorMessage: SUBMISSION_ERROR_MESSAGES.OUT_OF_AI_HINTS
+            };
+        }
+        const problem = await this.#_problemRepo.findById(req.problemId);
+
+        if (!problem) {
+            logger.error(`[SERVICE] Problem not found`, { problemId: req.problemId });
+
+            return { 
+                success: false, 
+                data : null,
+                errorMessage: PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
+            };
+        }
+
+        const cacheKey = `${REDIS_PREFIX.USER_PROBLEM_PREVIOUS_HINTS}${req.userId}:${req.problemId}`;
+        await this.#_cacheProvider.del(cacheKey);
+        logger.info(`[SERVICE] ${method} cache cleared`, { userId: req.userId, problemId: req.problemId })
+
+        const prompt = generateHintPrompt({
+            problemTitle : problem?.title!,
+            problemDescription : problem?.description!,
+            language : req.language,
+            solutionRoadmap : problem?.solutionRoadmap!,
+            userCode : JSON.parse(req.userCode)
+        });
+
+        logger.debug(`[SERVICE] Generated AI prompt`, { preview: prompt.slice(0, 150) + "..." });
+        
+        const aiResponse = await ai.models.generateContent({
+            model : "gemini-2.0-flash",
+            contents : prompt
+        })
+        const rawText = aiResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+        console.log(rawText)
+        const cleanedText = rawText!.replace(/```json|```/g, "").trim();
+
+        logger.debug(`[SERVICE] AI response received`);
+
+        const parsed = JSON.parse(cleanedText!) as {
+            current_step_analysis: string;
+            hint_message: string;
+        };
+
+        logger.info(`[SERVICE] Parsed AI hint`, { 
+            current_step_analysis: parsed.current_step_analysis, 
+            hint_message : parsed.hint_message
+        });
+        const newHint = {
+            hint: `${parsed.current_step_analysis} ${parsed.hint_message}`,
+            createdAt : new Date().toISOString()
+        }
+        if(!usage){
+            logger.info(`[SERVICE] Creating new hint record`);
+            await this.#_aiHintUsageRepo.create({
+                userId : req.userId,
+                problemId : new Types.ObjectId(req.problemId),
+                hintsUsed: [newHint],
+                userCode : req.userCode
+            })
+        }else{
+            logger.info(`[SERVICE] Appending hint to existing record`, { oldHintCount: usage.hintsUsed.length });
+            usage.hintsUsed.push(newHint);
+            usage.userCode = req.userCode;
+            await usage.save();
+        }
+        logger.info(`[SERVICE] ${method} completed successfully`, {
+            duration: Date.now() - startTime,
+            hintPreview: newHint.hint.slice(0, 100) + "..."
+        });
+        return {
+            data : {hint : newHint.hint},
+            success : true
+        }
+    }
+
+    #_calculateStreak(activity: IActivity[], userTimezone: string): number {
+        if (activity.length === 0) {
+            return 0;
+        }
+
+        // 1. Get "today" and "yesterday" in the user's timezone
+        const now = new Date();
+        const today = format(toZonedTime(now, userTimezone), 'yyyy-MM-dd');
+        const yesterday = format(subDays(toZonedTime(now, userTimezone), 1), 'yyyy-MM-dd');
+        
+        let streak = 0;
+        let expectedDate: string; // The date we expect to see next
+
+        // 2. Check if the most recent submission was today or yesterday
+        const mostRecentDate = activity[0].date;
+
+        if (mostRecentDate === today) {
+            streak = 1;
+            expectedDate = yesterday;
+        } else if (mostRecentDate === yesterday) {
+            streak = 1;
+            expectedDate = format(subDays(toZonedTime(now, userTimezone), 2), 'yyyy-MM-dd');
+        } else {
+            // Most recent submission was not today or yesterday, so streak is 0
+            return 0;
+        }
+
+        // 3. Walk backwards through the rest of the activity
+        // (Start from the *second* item, since we already processed the first)
+        for (let i = 1; i < activity.length; i++) {
+            const currentDate = activity[i].date;
+            
+            if (currentDate === expectedDate) {
+                streak++;
+                // Update the next date we expect to see
+                const expectedDateObj = toZonedTime(new Date(expectedDate), userTimezone);
+                expectedDate = format(subDays(expectedDateObj, 1), 'yyyy-MM-dd');
+            } else {
+                // The streak is broken
+                break;
+            }
+        }
+        return streak;
+    }
+
 }

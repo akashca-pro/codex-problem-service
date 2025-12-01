@@ -1,23 +1,20 @@
-import express from 'express';
-import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
-import { config } from '@/config';
-import { startMetricsServer } from '@/config/metrics/metrics-server';
+import './config/tracing'
+import logger from '@/utils/pinoLogger';
 import { connectDB } from './config/db';
 import { startGrpcServer } from './transport/grpc/server';
+import container from './config/inversify/container';
+import { ILeaderboard } from './libs/leaderboard/leaderboard.interface';
+import TYPES from './config/inversify/types';
 
-const app = express();
-
-
-const startServer = () => {
+const startServer = async () => {
     try {
         // Connect to MongoDB
         connectDB();
-
-        // Start prometheus metrics server.
-        startMetricsServer(config.METRICS_PORT);
-
         // start gRPC server.
         startGrpcServer();
+        // resync leaderboard.
+        const leaderboard = container.get<ILeaderboard>(TYPES.ILeaderboard);
+        await leaderboard.init();
 
     } catch (error) {
         logger.error('Failed to start server : ',error);

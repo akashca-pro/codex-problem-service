@@ -1,26 +1,24 @@
 import { inject, injectable } from "inversify";
 import { IProblemService } from "./interfaces/problem.service.interface";
 import TYPES from "@/config/inversify/types";
-import { ICreateProblemRequestDTO } from "@/dtos/problem/CreateProblemRequestDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
-import { IProblemRepository } from "@/infra/repos/interfaces/problem.repository.interface";
-import { ProblemErrorType } from "@/enums/ErrorTypes/problemErrorType.enum";
+import { IProblemRepository } from "@/repos/interfaces/problem.repository.interface";
+import { PROBLEM_ERROR_MESSAGES } from "@/const/ErrorType.const"
 import { extractDup, isDupKeyError } from "@/utils/mongoError";
 import { ICacheProvider } from "@/libs/cache/ICacheProvider.interface";
 import { REDIS_PREFIX } from "@/config/redis/keyPrefix";
 import { ProblemMapper } from "@/dtos/mappers/ProblemMapper";
 import { config } from "@/config";
 import { PaginationDTO } from "@/dtos/PaginationDTO";
-import { IListProblemsRequestDTO } from "@/dtos/problem/listProblemsRequestDTO";
-import { IUpdateBasicProblemRequestDTO } from "@/dtos/problem/updateProblemRequestDTO";
-import { TestCaseCollectionType } from "@/enums/testCaseCollectionType.enum";
-import { ISolutionCode, ITestCase } from "@/infra/db/interface/problem.interface";
-import { IUpdateSolutionCodeDTO } from "@/dtos/problem/solutionCodeRequestDTOs";
+import { IUpdatedDataForBasicProblem } from "@/dtos/problem/updateProblemRequestDTO";
+import {AddTestCaseRequest, BulkUploadTestCasesRequest, CreateProblemRequest, GetProblemRequest, ListProblemRequest
+    , RemoveTestCaseRequest, UpdateBasicProblemDetailsRequest, UpdateTemplateCodeRequest 
+} from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
+import logger from '@/utils/pinoLogger'; // Import the logger
 
 /**
- * Class representing the Problem Service interface.
- * 
- * @class
+ * Class representing the Problem Service management.
+ * * @class
  * @implements {IProblemService}         
  */
 @injectable()
@@ -31,8 +29,7 @@ export class ProblemService implements IProblemService {
 
     /**
      * Creates an instance of ProblemService.
-     * 
-     * @param {IProblemRepository} problemRepo - The problem repository instance.
+     * * @param {IProblemRepository} problemRepo - The problem repository instance.
      * @constructor
      */
     constructor(
@@ -44,73 +41,83 @@ export class ProblemService implements IProblemService {
     }
 
     async createProblem(
-        data: ICreateProblemRequestDTO
+        request : CreateProblemRequest
     ): Promise<ResponseDTO> {
+        const method = 'createProblem';
+        logger.info(`[PROBLEM-SERVICE] ${method} started`, { title: request.title, questionId: request.questionId });
         
-        const problemAlreadyExist = await this.#_problemRepo.findByTitle(data.title);
-
+        const dto = ProblemMapper.toCreateProblemService(request);
+        
+        const problemAlreadyExist = await this.#_problemRepo.findByTitle(dto.title);
         if(problemAlreadyExist){
+            logger.warn(`[PROBLEM-SERVICE] ${method} failed: Title already exists`, { title: dto.title });
             return {
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.ProblemAlreadyExists
+                errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_ALREADY_EXISTS
             }
         }
-
+        
         try {
-            const result = await this.#_problemRepo.create({...data, active : false});
-
+            const result = await this.#_problemRepo.create({...dto, active : false});
+            const outDTO = ProblemMapper.toOutDTO(result);
+            logger.info(`[PROBLEM-SERVICE] ${method} completed successfully`, { problemId: result._id });
             return {
-                data : result,
+                data : outDTO,
                 success : true
             }
-
         } catch (error) {
             if(isDupKeyError(error)){
                 const { field } = extractDup(error as any);
+                logger.error(`[PROBLEM-SERVICE] ${method} failed: Duplicate key error`, { field, request });
                 return {
                     data : null,
                     success : false,
-                    errorMessage : ` ${field} ${ProblemErrorType.ProblemFieldAlreadyExist}`
+                    errorMessage : ` ${field} ${PROBLEM_ERROR_MESSAGES.PROBLEM_ALREADY_EXISTS}`
                 }
             }
+            logger.error(`[PROBLEM-SERVICE] ${method} failed unexpectedly`, { error });
             throw error;
         }
     }
 
     async getProblem(
-        id: string
+        request : GetProblemRequest
     ): Promise<ResponseDTO> {
+        const method = 'getProblem (Admin)';
+        const dto = ProblemMapper.toGetProblemDetails(request);
+        logger.info(`[PROBLEM-SERVICE] ${method} started`, { problemId: dto._id });
 
-        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${id}`;
-
+        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`;
         const cached = await this.#_cacheProvider.get(cacheKey);
-
+        
         if(cached){
+            logger.info(`[PROBLEM-SERVICE] ${method} cache hit`, { problemId: dto._id });
             return {
                 data : cached,
                 success : true
             }
         }
-    
-        const problem = await this.#_problemRepo.findByIdLean(id);
-
+        logger.debug(`[PROBLEM-SERVICE] ${method} cache miss`, { problemId: dto._id });
+        
+        const problem = await this.#_problemRepo.findByIdLean(dto._id);
+        
         if(!problem){
+            logger.warn(`[PROBLEM-SERVICE] ${method} failed: Problem not found`, { problemId: dto._id });
             return {
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
+                errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
             }
         }
-
+        
         const outDTO = ProblemMapper.toOutDTO(problem)
-
         await this.#_cacheProvider.set(
             cacheKey,
             outDTO,
             config.PROBLEM_DETAILS_CACHE_EXPIRY
         );
-
+        logger.info(`[PROBLEM-SERVICE] ${method} completed successfully (Cached)`, { problemId: dto._id });
         return {
             data : outDTO,
             success : true
@@ -118,39 +125,43 @@ export class ProblemService implements IProblemService {
     }
 
     async getProblemPublic(
-        id: string
+        request : GetProblemRequest
     ): Promise<ResponseDTO> {
-        
-        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${id}`;
+        const method = 'getProblemPublic';
+        const dto = ProblemMapper.toGetProblemDetails(request);
+        logger.info(`[PROBLEM-SERVICE] ${method} started`, { problemId: dto._id });
 
+        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
         const cached = await this.#_cacheProvider.get(cacheKey);
-
+        
         if(cached){
+            logger.info(`[PROBLEM-SERVICE] ${method} cache hit`, { problemId: dto._id });
             return {
                 data : cached,
                 success : true,
             }
         }
-
+        logger.debug(`[PROBLEM-SERVICE] ${method} cache miss`, { problemId: dto._id });
+        
         const select = ['questionId','title','description','difficulty','constraints','tags','testcaseCollection','examples','starterCodes','updatedAt','createdAt']
-
-        const problem = await this.#_problemRepo.findByIdLean(id,select);
+        const problem = await this.#_problemRepo.findByIdLean(dto._id, select);
+        
         if(!problem){
+            logger.warn(`[PROBLEM-SERVICE] ${method} failed: Problem not found`, { problemId: dto._id });
             return {
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
+                errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
             }
         }
-
+        
         const outDTO = ProblemMapper.toOutPublicDTO(problem)
-
         await this.#_cacheProvider.set(
             cacheKey,
             outDTO,
             config.PROBLEM_DETAILS_CACHE_EXPIRY
         );
-
+        logger.info(`[PROBLEM-SERVICE] ${method} completed successfully (Cached)`, { problemId: dto._id });
         return {
             data : outDTO,
             success : true
@@ -158,17 +169,20 @@ export class ProblemService implements IProblemService {
     }
 
     async listProblems(
-        filters: IListProblemsRequestDTO
+        request : ListProblemRequest
     ): Promise<PaginationDTO> {
+        const method = 'listProblems';
+        logger.info(`[PROBLEM-SERVICE] ${method} started`, { page: request.page, limit: request.limit });
         
+        const filters = ProblemMapper.toListProblemService(request);
         const sort : Record<string,1|-1> = {};
         const filter : Record<string, any> = {};
+        
         if(filters.difficulty) filter.difficulty = filters.difficulty;
         if(filters.questionId) filter.questionId = filters.questionId;
         if(filters.tags?.length) filter.tags = { $in : filters.tags };
-
         if(filters?.active !== null) !filters.active ? filter.active = false : filter.active = true;
-
+        
         if (filters.search) {
         filter.$or = [
             { title: { $regex: `^${filters.search}`, $options: "i" } }, 
@@ -176,26 +190,28 @@ export class ProblemService implements IProblemService {
             { tags: { $regex: `^${filters.search}`, $options: "i" } }
         ];
         }
-
+        
         if(filters.sort === 'latest'){
             sort.createdAt = -1
         }else{
             sort.createdAt = 1
         }
-
+        
         const skip = (filters.page - 1) * filters.limit;
-
         const select = ['title','questionId','difficulty','tags','active','createdAt','updatedAt'];
-
+        
         const [totalItems, problems] = await Promise.all([
             this.#_problemRepo.countDocuments(filter),
             this.#_problemRepo.findPaginatedLean(filter,skip,filters.limit,select,sort)
         ])
-
+        
         const totalPages = Math.ceil(totalItems/ filters.limit);
+        const outDTO = problems.map(p=>ProblemMapper.toOutListDTO(p)); 
 
+        logger.info(`[PROBLEM-SERVICE] ${method} completed successfully`, { totalItems, currentPage: filters.page });
+        
         return {
-            body : problems || [],
+            body : outDTO,
             currentPage : filters.page,
             totalItems,
             totalPages
@@ -203,89 +219,113 @@ export class ProblemService implements IProblemService {
     }
 
     async updateBasicProblemDetails(
-        id: string, 
-        updatedData: IUpdateBasicProblemRequestDTO
+        request : UpdateBasicProblemDetailsRequest
     ): Promise<ResponseDTO> {
+        const method = 'updateBasicProblemDetails';
+        logger.info(`[PROBLEM-SERVICE] ${method} started`, { problemId: request.Id });
 
-        const problemExist = await this.#_problemRepo.findById(id);
-
+        const { _id, updatedData } = ProblemMapper.toUpdateBasicProblemDetailsServive(request);
+        
+        const problemExist = await this.#_problemRepo.findById(_id);
         if(!problemExist){
+            logger.warn(`[PROBLEM-SERVICE] ${method} failed: Problem not found`, { problemId: _id });
             return { 
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
+                errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
             }
         }
         
-        const updatedQuery : IUpdateBasicProblemRequestDTO = {};
-
-        if(updatedData.title) updatedQuery.title = updatedData.title;
-        if(updatedData.description) updatedQuery.description = updatedData.description;
-        if(updatedData.difficulty) updatedQuery.difficulty = updatedData.difficulty;
-        if(updatedData.tags) updatedQuery.tags = updatedData.tags;
-        if(updatedData.constraints?.length !== 0) updatedQuery.constraints = updatedData.constraints;
-        if(updatedData.questionId) updatedQuery.questionId = updatedData.questionId;
-        if(updatedData.examples?.length !== 0) updatedQuery.examples = updatedData.examples;
-        if(updatedData.starterCodes?.length !== 0) updatedQuery.starterCodes = updatedData.starterCodes;
-        if(updatedData.active) updatedQuery.active = true;
-        else updatedQuery.active = false;
-
+        const updatedQuery: IUpdatedDataForBasicProblem = {
+        ...(updatedData.title && { title: updatedData.title }),
+        ...(updatedData.description && { description: updatedData.description }),
+        ...(updatedData.difficulty && { difficulty: updatedData.difficulty }),
+        ...(updatedData.tags && { tags: updatedData.tags }),
+        ...(updatedData.constraints?.length ? { constraints: updatedData.constraints } : {}),
+        ...(updatedData.questionId && { questionId: updatedData.questionId }),
+        ...(updatedData.examples?.length ? { examples: updatedData.examples } : {}),
+        ...(updatedData.solutionRoadmap?.length ? {solutionRoadmap : updatedData.solutionRoadmap} : {} ),
+        ...(updatedData.starterCodes?.length ? { starterCodes: updatedData.starterCodes } : {}),
+        active: updatedData.active ?? false, 
+        };
+        
         try {
-            const updatedProblem = await this.#_problemRepo.update(id,updatedQuery);
-
+            const updatedProblem = await this.#_problemRepo.update(_id, updatedQuery);
             if(!updatedProblem){
+                // This case should be rare since we already checked existence
+                logger.error(`[PROBLEM-SERVICE] ${method} failed: Update returned null despite problem existence check`, { problemId: _id, updatedQuery });
                 return {
                     data : null,
                     success : false
                 }
             }
-
-          const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${updatedProblem._id}`;
-            await this.#_cacheProvider.del(cacheKey);
-
+            
+            const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${_id}`; 
+            const cacheKeyCodeManage = `${REDIS_PREFIX.CODE_MANAGE_PROBLEM_DETAILS}${_id}` 
+            const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${_id}`;
+            
+            logger.debug(`[PROBLEM-SERVICE] ${method}: Invalidating caches`, { problemId: _id, keys: [cacheKey, cacheKeyAdmin, cacheKeyCodeManage] });
+            await Promise.all([
+                this.#_cacheProvider.del(cacheKey),
+                this.#_cacheProvider.del(cacheKeyAdmin),
+                this.#_cacheProvider.del(cacheKeyCodeManage)
+            ])
+            
+            logger.info(`[PROBLEM-SERVICE] ${method} completed successfully`, { problemId: _id });
             return {
                 data : null,
                 success : true,
             }
-
         } catch (error : unknown) {
-
             if(isDupKeyError(error)){
                 const { field } = extractDup(error as any);
+                logger.error(`[PROBLEM-SERVICE] ${method} failed: Duplicate key error during update`, { problemId: _id, field, updatedQuery });
                 return {
                     data : null,
                     success : false,
-                    errorMessage : `${field} ${ProblemErrorType.ProblemFieldAlreadyExist}`
+                    errorMessage : `${field} ${PROBLEM_ERROR_MESSAGES.PROBLEM_FIELD_ALREADY_EXIST}`
                 }
             }
+            logger.error(`[PROBLEM-SERVICE] ${method} failed unexpectedly`, { error, problemId: _id });
             throw error;
         }
     }
 
     async addTestCase(
-        problemId: string, 
-        testCaseCollectionType : TestCaseCollectionType,
-        testCase: ITestCase
+        request : AddTestCaseRequest
     ): Promise<ResponseDTO> {
+        const method = 'addTestCase';
+        logger.info(`[PROBLEM-SERVICE] ${method} started`, { problemId: request.Id, type: request.testCaseCollectionType });
         
-        const problemExist = await this.#_problemRepo.findById(problemId);
-
+        const dto = ProblemMapper.toAddTestCaseService(request);
+        const problemExist = await this.#_problemRepo.findById(dto._id);
         if(!problemExist){
+            logger.warn(`[PROBLEM-SERVICE] ${method} failed: Problem not found`, { problemId: dto._id });
             return { 
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
+                errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
             }
         }
-
+        
         await this.#_problemRepo.addTestCase(
-            problemId,
-            testCaseCollectionType,
-            testCase);
-
-        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${problemId}`;
-        await this.#_cacheProvider.del(cacheKey);
-
+            dto._id,
+            dto.testCaseCollectionType,
+            dto.testCase
+        );
+        
+        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`; 
+        const cacheKeyCodeManage = `${REDIS_PREFIX.CODE_MANAGE_PROBLEM_DETAILS}${dto._id}` 
+        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
+        
+        logger.debug(`[PROBLEM-SERVICE] ${method}: Invalidating caches`, { problemId: dto._id });
+        await Promise.all([
+            this.#_cacheProvider.del(cacheKey),
+            this.#_cacheProvider.del(cacheKeyAdmin),
+            this.#_cacheProvider.del(cacheKeyCodeManage)
+        ])
+        
+        logger.info(`[PROBLEM-SERVICE] ${method} completed successfully`, { problemId: dto._id });
         return {
             data : null,
             success : true
@@ -293,29 +333,40 @@ export class ProblemService implements IProblemService {
     }
 
     async bulkUploadTestCases(
-        problemId: string, 
-        testCaseCollectionType: TestCaseCollectionType, 
-        testCases: ITestCase[]
+        request : BulkUploadTestCasesRequest
     ): Promise<ResponseDTO> {
+        const method = 'bulkUploadTestCases';
+        logger.info(`[PROBLEM-SERVICE] ${method} started`, { problemId: request.Id, count: request.testCase?.length });
         
-        const problemExist = await this.#_problemRepo.findById(problemId);
-
+        const dto = ProblemMapper.toBulkUploadTestCaseService(request);
+        const problemExist = await this.#_problemRepo.findById(dto._id);
         if(!problemExist){
+            logger.warn(`[PROBLEM-SERVICE] ${method} failed: Problem not found`, { problemId: dto._id });
             return { 
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
+                errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
             }
         }
-
+        
         await this.#_problemRepo.bulkUploadTestCase(
-            problemId,
-            testCaseCollectionType,
-            testCases);
-
-        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${problemId}`;
-        await this.#_cacheProvider.del(cacheKey);
-
+            dto._id,
+            dto.testCaseCollectionType,
+            dto.testCase
+        );
+        
+        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`; 
+        const cacheKeyCodeManage = `${REDIS_PREFIX.CODE_MANAGE_PROBLEM_DETAILS}${dto._id}` 
+        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
+        
+        logger.debug(`[PROBLEM-SERVICE] ${method}: Invalidating caches`, { problemId: dto._id });
+        await Promise.all([
+            this.#_cacheProvider.del(cacheKey),
+            this.#_cacheProvider.del(cacheKeyAdmin),
+            this.#_cacheProvider.del(cacheKeyCodeManage)
+        ])
+        
+        logger.info(`[PROBLEM-SERVICE] ${method} completed successfully`, { problemId: dto._id });
         return {
             data : null,
             success : true
@@ -323,150 +374,39 @@ export class ProblemService implements IProblemService {
     }
 
     async removeTestCase(
-        problemId: string, 
-        testCaseId: string, 
-        testCaseCollectionType: TestCaseCollectionType
+        request : RemoveTestCaseRequest
     ): Promise<ResponseDTO> {
+        const method = 'removeTestCase';
+        logger.info(`[PROBLEM-SERVICE] ${method} started`, { problemId: request.Id, testCaseId: request.testCaseId });
         
-        const problemExist = await this.#_problemRepo.findById(problemId);
-
-        if(!problemExist){
-            return { 
-                data : null,
-                success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
-            }
-        }
-        
+        const dto = ProblemMapper.toRemoveTestCaseService(request);
         const removed = await this.#_problemRepo.removeTestCase(
-            problemId,
-            testCaseId,
-            testCaseCollectionType);
-
-        if(!removed){
-            return {
-                data : null,
-                success : false,
-                errorMessage : ProblemErrorType.TestCaseNotFound
-            }
-        }
-
-        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${problemId}`;
-        await this.#_cacheProvider.del(cacheKey);
-
-        return {
-            data : null,
-            success : true
-        }
-    }
-
-    async addSolutionCode(
-        problemId: string, 
-        solutionCode: ISolutionCode
-    ): Promise<ResponseDTO> {
-        
-        const problemExist = await this.#_problemRepo.findById(problemId);
-
-        if(!problemExist){
-            return { 
-                data : null,
-                success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
-            }
-        }
-
-        await this.#_problemRepo.addSolutionCode(
-            problemId,
-            solutionCode);
-        
-        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${problemId}`;
-        await this.#_cacheProvider.del(cacheKey);
-
-        return {
-            data : null,
-            success : true
-        }
-    }
-
-    async updateSolutionCode(
-        problemId: string, 
-        solutionId: string, 
-        updatedSolutionCode: IUpdateSolutionCodeDTO
-    ): Promise<ResponseDTO> {
-        
-        const problemExist = await this.#_problemRepo.findById(problemId);
-
-        if(!problemExist){
-            return { 
-                data : null,
-                success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
-            }
-        }
-
-        const solutionCode = await this.#_problemRepo.findOne({ _id : problemId,
-            solutionCodes : { $elemMatch : { _id : solutionId } }
-         })
-
-        if(!solutionCode){
-            return {
-                data : null,
-                success : false,
-                errorMessage : ProblemErrorType.SolutionCodeNotFound
-            }
-        }
-
-        const updatedQuery : IUpdateSolutionCodeDTO = {}
-        if(updatedSolutionCode.code) updatedQuery.code = updatedSolutionCode.code;
-        if(updatedSolutionCode.language) updatedQuery.language = updatedSolutionCode.language;
-        if(updatedSolutionCode.executionTime) updatedQuery.executionTime = updatedSolutionCode.executionTime;
-        if(updatedSolutionCode.memoryTaken) updatedQuery.memoryTaken = updatedSolutionCode.memoryTaken;
-        
-        await this.#_problemRepo.updateSolutionCode(
-            problemId,
-            solutionId,
-            updatedQuery);
-
-        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${problemId}`;
-        await this.#_cacheProvider.del(cacheKey);
-
-        return {
-            data : null,
-            success : true,
-        }
-    }
-
-    async removeSolutionCode(
-        problemId: string, 
-        solutionId: string
-    ): Promise<ResponseDTO> {
-        
-        const problemExist = await this.#_problemRepo.findById(problemId);
-
-        if(!problemExist){
-            return { 
-                data : null,
-                success : false,
-                errorMessage : ProblemErrorType.ProblemNotFound
-            }
-        }
-
-        const removed = await this.#_problemRepo.removeSolutionCode(
-            problemId,
-            solutionId
+            dto._id,
+            dto.testCaseId,
+            dto.testCaseCollectionType
         );
-
+        
         if(!removed){
-             return {
+            logger.warn(`[PROBLEM-SERVICE] ${method} failed: Test case not found or not removed`, { problemId: dto._id, testCaseId: dto.testCaseId });
+            return {
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.SolutionCodeNotFound
+                errorMessage : PROBLEM_ERROR_MESSAGES.TEST_CASE_NOT_FOUND
             }
         }
-
-        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${problemId}`;
-        await this.#_cacheProvider.del(cacheKey);
-
+        
+        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`; 
+        const cacheKeyCodeManage = `${REDIS_PREFIX.CODE_MANAGE_PROBLEM_DETAILS}${dto._id}` 
+        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
+        
+        logger.debug(`[PROBLEM-SERVICE] ${method}: Invalidating caches`, { problemId: dto._id });
+        await Promise.all([
+            this.#_cacheProvider.del(cacheKey),
+            this.#_cacheProvider.del(cacheKeyAdmin),
+            this.#_cacheProvider.del(cacheKeyCodeManage)
+        ])
+        
+        logger.info(`[PROBLEM-SERVICE] ${method} completed successfully`, { problemId: dto._id, testCaseId: dto.testCaseId });
         return {
             data : null,
             success : true
@@ -476,17 +416,21 @@ export class ProblemService implements IProblemService {
     async checkQuestionIdAvailability(
         questionId: string
     ): Promise<ResponseDTO> {
+        const method = 'checkQuestionIdAvailability';
+        logger.info(`[PROBLEM-SERVICE] ${method} started`, { questionId });
         
         const questionIdAlreadyExist = await this.#_problemRepo.findOne({ questionId });
-
+        
         if(questionIdAlreadyExist){
+            logger.warn(`[PROBLEM-SERVICE] ${method} failed: Question ID already exists`, { questionId });
             return {
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.QuestionIdAlreadyExist
+                errorMessage : PROBLEM_ERROR_MESSAGES.QUESTION_ID_ALREADY_EXIST
             }
         }
-
+        
+        logger.info(`[PROBLEM-SERVICE] ${method} completed successfully (Available)`, { questionId });
         return {
             data : null,
             success : true
@@ -496,23 +440,68 @@ export class ProblemService implements IProblemService {
     async checkProblemTitleAvailability(
         title: string
     ): Promise<ResponseDTO> {
-
+        const method = 'checkProblemTitleAvailability';
+        logger.info(`[PROBLEM-SERVICE] ${method} started`, { title });
+        
         const titleAlreadyExist = await this.#_problemRepo.findOne({
-        title: { $regex: `^${title}$`, $options: "i" } 
+            title: { $regex: `^${title}$`, $options: "i" } 
         });
-
-
+        
         if(titleAlreadyExist){
+            logger.warn(`[PROBLEM-SERVICE] ${method} failed: Title already exists (case-insensitive)`, { title });
             return {
                 data : null,
                 success : false,
-                errorMessage : ProblemErrorType.TitleAlreadyExist
+                errorMessage : PROBLEM_ERROR_MESSAGES.TITLE_ALREADY_EXIST
             }
         }
-
+        
+        logger.info(`[PROBLEM-SERVICE] ${method} completed successfully (Available)`, { title });
         return {
             data : null,
             success : true
         }
+    }
+
+    async updateTemplateCode(
+        request: UpdateTemplateCodeRequest
+    ): Promise<ResponseDTO> {
+        const method = 'updateTemplateCode';
+        logger.info(`[PROBLEM-SERVICE] ${method} started`, { problemId: request.Id, templateCodeId: request.templateCodeId });
+
+        const dto = ProblemMapper.toUpdateTemplateCodeService(request);
+        
+        const problemExist = await this.#_problemRepo.findById(dto._id);
+        if(!problemExist){
+            logger.warn(`[PROBLEM-SERVICE] ${method} failed: Problem not found`, { problemId: dto._id });
+            return { 
+                data : null,
+                success : false,
+                errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
+            }
+        }
+        
+        await this.#_problemRepo.updateTemplateCode(
+            dto._id, 
+            dto.templateCodeId, 
+            dto.updatedTemplateCode
+        );
+        
+        const cacheKeyAdmin = `${REDIS_PREFIX.PROBLEM_CACHE_ADMIN}${dto._id}`; 
+        const cacheKeyCodeManage = `${REDIS_PREFIX.CODE_MANAGE_PROBLEM_DETAILS}${dto._id}` 
+        const cacheKey = `${REDIS_PREFIX.PROBLEM_CACHE}${dto._id}`;
+        
+        logger.debug(`[PROBLEM-SERVICE] ${method}: Invalidating caches`, { problemId: dto._id });
+        await Promise.all([
+            this.#_cacheProvider.del(cacheKey),
+            this.#_cacheProvider.del(cacheKeyAdmin),
+            this.#_cacheProvider.del(cacheKeyCodeManage)
+        ])
+        
+        logger.info(`[PROBLEM-SERVICE] ${method} completed successfully`, { problemId: dto._id });
+        return {
+            data : null,
+            success : true
+        } 
     }
 }

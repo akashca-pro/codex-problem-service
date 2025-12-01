@@ -1,5 +1,5 @@
-import { SystemErrorType } from '@/enums/ErrorTypes/SystemErrorType.enum';
-import logger from '@akashcapro/codex-shared-utils/dist/utils/logger';
+import { SYSTEM_ERROR_MESSAGES } from "@/const/ErrorType.const"
+import logger from '@/utils/pinoLogger';
 import { sendUnaryData, ServerUnaryCall } from '@grpc/grpc-js';
 import { Status } from '@grpc/grpc-js/build/src/constants';
 
@@ -15,13 +15,13 @@ export function withGrpcErrorHandler<Req, Res>(
         try {
             await handler(call, callback);
         } catch (error) {
-            logger.error(SystemErrorType.InternalServerError, error);
+            logger.error(SYSTEM_ERROR_MESSAGES.INTERNAL_SERVER_ERROR, error);
             if (error instanceof GrpcError) {
                 return callback({ code: error.code, message: error.message }, null);
             }
             callback({
                 code : Status.INTERNAL,
-                message : SystemErrorType.InternalServerError
+                message : SYSTEM_ERROR_MESSAGES.INTERNAL_SERVER_ERROR
             },null)
         }
     }

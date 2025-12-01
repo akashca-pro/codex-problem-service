@@ -2,11 +2,16 @@ const TYPES = {
 
     // Providers
     ICacheProvider : Symbol.for("ICacheProvider"),
+    ILeaderboard : Symbol.for("ILeaderboard"),
 
     // Repos
 
     IProblemRepository : Symbol.for("IProblemRepository"),
     ISubmissionRepository : Symbol.for("ISubmissionRepository"),
+    IFirstSubmissionRepository : Symbol.for("IFirstSubmissionRepository"),
+    IAiHintUsageRepository : Symbol.for("IAiHintUsageRepository"),
+
+
 
     // services
     IProblemService : Symbol.for("IProblemService"),

@@ -1,8 +1,19 @@
 import { PaginationDTO } from "@/dtos/PaginationDTO";
 import { ResponseDTO } from "@/dtos/ResponseDTO";
-import { ICreateSubmissionRequestDTO } from "@/dtos/submission/CreateSubmissionRequestDTO";
-import { IGetSubmissionRequestDTO } from "@/dtos/submission/getSubmissionRequestDTO";
-import { IUpdateSubmissionRequestDTO } from "@/dtos/submission/UpdateSubmissionRequestDTO";
+import { 
+    CreateSubmissionRequest, 
+    GetDashboardStatsRequest, 
+    GetPreviousHintsRequest, 
+    GetSubmissionsRequest, 
+    ListProblemSpecificSubmissionRequest, 
+    ListTopKCountryLeaderboardRequest, 
+    ListTopKGlobalLeaderboardRequest, 
+    RemoveUserRequest, 
+    RequestFullSolutionRequest, 
+    RequestHintRequest, 
+    UpdateCountryRequest, 
+    UpdateSubmissionRequest 
+} from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
 
 /**
  * Interface representing the structure of the submission service.
@@ -11,39 +22,54 @@ import { IUpdateSubmissionRequestDTO } from "@/dtos/submission/UpdateSubmissionR
  */
 export interface ISubmissionService {
 
-    /**
-     * Creates a new submission.
-     * 
-     * @async
-     * @param data - data to create a new submission
-     * @returns {ResponseDTO} - the response data
-     */
     createSubmission(
-        data : ICreateSubmissionRequestDTO
+        data : CreateSubmissionRequest
     ) : Promise<ResponseDTO>;
 
-    /**
-     * Fetches the details of submissions based on the provided filter.
-     * 
-     * @async
-     * @param filter - filter to get submissions
-     * @returns {PaginationDTO} - the paginated response data
-     */
     getSubmission(
-        filter : IGetSubmissionRequestDTO
+        filter : GetSubmissionsRequest
     ) : Promise<PaginationDTO>;
 
-    /**
-     * Updates an existing submission.
-     * 
-     * @async
-     * @param id - submission id to update
-     * @param updatedData - data to update submission
-     * @returns {ResponseDTO} - the response data
-     */
+    listSubmissionByProblem(
+        request : ListProblemSpecificSubmissionRequest
+    ) : Promise<ResponseDTO>;
+
     updateSubmission(
-        id : string,
-        updatedData : IUpdateSubmissionRequestDTO
+        request : UpdateSubmissionRequest
+    ) : Promise<ResponseDTO>
+
+    listTopKGlobalLeaderboard(
+       req : ListTopKGlobalLeaderboardRequest
+    ) : Promise<ResponseDTO>
+
+    listTopKCountryLeaderboard(
+        req : ListTopKCountryLeaderboardRequest
+    ) : Promise<ResponseDTO>
+
+    getUserDashboardStats(
+        req : GetDashboardStatsRequest
+    ) : Promise<ResponseDTO>
+
+    getProblemSubmissionStats() : Promise<ResponseDTO>
+
+    updateCountryInLeaderboard(
+        req : UpdateCountryRequest
+    ) : Promise<ResponseDTO>
+
+    removeUserInLeaderboard(
+        req : RemoveUserRequest
+    ) : Promise<ResponseDTO>
+
+    requestAiHint(
+        req : RequestHintRequest
+    ) : Promise<ResponseDTO>
+
+    getPreviousHints(
+        req : GetPreviousHintsRequest
+    ) : Promise<ResponseDTO>
+
+    requestFullSolution(
+        req : RequestFullSolutionRequest
     ) : Promise<ResponseDTO>
 
 }

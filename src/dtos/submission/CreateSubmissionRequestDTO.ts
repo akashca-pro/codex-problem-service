@@ -1,4 +1,4 @@
-import { Difficulty } from "@/enums/difficulty.enum";
+import { type Difficulty } from "@/const/Difficulty.const";
 import { Language } from "@/enums/language.enum";
 
 /**
@@ -10,6 +10,7 @@ export interface ICreateSubmissionRequestDTO {
 
     problemId : string;
     userId : string;
+    username : string;
     battleId : string | null;
     country : string | null;
     title : string;

@@ -30,4 +30,11 @@ export interface ICacheProvider {
      * @returns {Promise<void>}
      */
     del(key : string) : Promise<void>
+
+    /**
+     * Invalidate all keys matching a pattern using SCAN + pipeline.
+     *
+     * @param pattern Redis key pattern (e.g. "dashboard:*:12345" or `${PREFIX}*${userId}`)
+     */
+    invalidateByPattern(pattern : string) : Promise<void>
 }
