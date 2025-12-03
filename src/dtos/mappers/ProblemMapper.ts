@@ -204,11 +204,11 @@ export class ProblemMapper {
     // ------------------ BASIC MAPPERS ------------------ //
 
     static _mapGrpcExample(e : IGrpcExample) : IExample {
-        return { _id : e.Id || undefined, input : e.input, output : e.output }
+        return { _id : e.Id || undefined, input : e.input, output : e.output, explanation : e.explanation ?? undefined }
     }
 
     static _mapServiceExample(e : IExample) : IGrpcExample {
-        return { Id : e._id!, input : e.input, output : e.output }
+        return { Id : e._id!, input : e.input, output : e.output, explanation : e.explanation ?? undefined }
     }
 
     static _mapServiceSolutionRoadmap(s : ISolutionRoadmap) : GrpcSolutionRoadmap {
