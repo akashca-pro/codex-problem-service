@@ -14,7 +14,7 @@ import { IUpdatedDataForBasicProblem } from "@/dtos/problem/updateProblemRequest
 import {AddTestCaseRequest, BulkUploadTestCasesRequest, CreateProblemRequest, GetProblemRequest, ListProblemRequest
     , RemoveTestCaseRequest, UpdateBasicProblemDetailsRequest, UpdateTemplateCodeRequest 
 } from "@akashcapro/codex-shared-utils/dist/proto/compiled/gateway/problem";
-import logger from '@/utils/pinoLogger'; // Import the logger
+import logger from '@/utils/pinoLogger';
 
 /**
  * Class representing the Problem Service management.
@@ -235,7 +235,6 @@ export class ProblemService implements IProblemService {
                 errorMessage : PROBLEM_ERROR_MESSAGES.PROBLEM_NOT_FOUND
             }
         }
-        
         const updatedQuery: IUpdatedDataForBasicProblem = {
         ...(updatedData.title && { title: updatedData.title }),
         ...(updatedData.description && { description: updatedData.description }),
