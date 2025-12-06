@@ -8,18 +8,18 @@ import fs from "fs";
 import { ProblemHandler } from "./problem.handler";
 import { SubmissionHandler } from "./submission.handler";
 
-const caCert = fs.readFileSync("/secrets/ca/ca.pem");
-const serverCert = fs.readFileSync("/secrets/cert/problem.pem");
-const serverKey = fs.readFileSync("/secrets/key/problem.key");
+// const caCert = fs.readFileSync("/secrets/ca/ca.pem");
+// const serverCert = fs.readFileSync("/secrets/cert/problem.pem");
+// const serverKey = fs.readFileSync("/secrets/key/problem.key");
 
-const creds = ServerCredentials.createSsl(
-  caCert,
-  [{
-    cert_chain: serverCert,
-    private_key: serverKey,
-  }],
-  true   
-);
+// const creds = ServerCredentials.createSsl(
+//   caCert,
+//   [{
+//     cert_chain: serverCert,
+//     private_key: serverKey,
+//   }],
+//   true   
+// );
 
 // Grpc handlers
 const problemHandlerInstance = container.get<ProblemHandler>(TYPES.ProblemHandler);
@@ -43,7 +43,7 @@ export const startGrpcServer = () => {
 
     server.bindAsync(
         config.GRPC_PROBLEM_SERVICE_SERVER_URL,
-        creds,
+        ServerCredentials.createInsecure(),
         (err,port) => {
             if(err){
                 logger.error('gRPC Server failed to start : ', err);
