@@ -9,7 +9,7 @@ import TYPES from './config/inversify/types';
 const startServer = async () => {
     try {
         // Connect to MongoDB
-        connectDB();
+        await connectDB();
         // start gRPC server.
         startGrpcServer();
         // resync leaderboard.
