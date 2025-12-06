@@ -33,5 +33,5 @@ jobs:
             --region ${{ secrets.GCP_REGION }} \
             --platform managed \
             --allow-unauthenticated \
-            --service-account ${{ secrets.PROBLEM_SA_EMAIL }} \
-            --set-secrets=/secrets/ca/ca.pem=codex-ca:latest,/secrets/key/problem.key=problem-tls-key:latest,/secrets/cert/problem.pem=problem-tls-cert:latest
+            --use-http2 \
+            --service-account ${{ secrets.PROBLEM_SA_EMAIL }} 
