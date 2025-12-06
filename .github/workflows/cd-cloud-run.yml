@@ -1,4 +1,4 @@
-name: CD - Deploy Gateway to Cloud Run
+name: CD - Deploy Problem-service to Cloud Run
 
 on:
   workflow_run:
