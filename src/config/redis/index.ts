@@ -12,7 +12,6 @@ class RedisClient {
     public static getInstance() : Redis {
         if(!RedisClient._instance){
             RedisClient._instance = new Redis(config.REDIS_URL, {
-                tls : {},
                 retryStrategy : (times : number) => {
                     const delay = Math.min(times * 50,2000);
                     return delay
